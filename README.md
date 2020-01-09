@@ -9,13 +9,13 @@
  
  ## Requirements
  discord.py
- pyodbc
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
 
 ```bash
 pip install discord.py
-pip install pyodbc
 ```
+
+[mysql connector](https://dev.mysql.com/downloads/connector/python/)
 
 ## Contributing
 Pull requests are welcome. 
