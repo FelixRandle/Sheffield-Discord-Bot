@@ -9,12 +9,9 @@ from discord.ext import commands
 
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-SQL_USER = os.getenv("SQL_USER")
-SQL_PASS = os.getenv("SQL_PASS")
 
-if BOT_TOKEN is None or SQL_USER is None or SQL_PASS is None:
-    print("Cannot find required environment variables. Exiting Program...")
-    exit()
+if BOT_TOKEN is None:
+    raise("Cannot find required bot token.")
 
 # Set our bot's prefix to ! this must be typed before any command
 bot = commands.Bot(command_prefix="!")
@@ -28,10 +25,9 @@ async def on_ready():
     # Load all of our cogs
     if os.path.exists("./cogs"):
         for file in os.listdir("./cogs"):
-            bot.load_extension("cogs." + file[:-3]) if file.endswith(".py") \
-                else None
-
-    # Connect to SQL database to store user data.
+            if file.endswith(".py"):
+                bot.load_extension("cogs." + file[:-3])
+                print(f"Loaded cog {file[:-3]}")
 
 
 @bot.event
@@ -60,5 +56,6 @@ async def on_command_error(ctx, error):
             "If you believe this is an error, please contact an Admin.")
 
 
+# Start the bot
 print("Starting bot...")
 bot.run(BOT_TOKEN)
