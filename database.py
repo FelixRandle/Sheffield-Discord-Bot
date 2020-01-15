@@ -1,7 +1,7 @@
 """Class to handle all database connections."""
 
 import os
-import mysql.connector
+import mysql.connector as sql
 
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
@@ -26,7 +26,7 @@ class Database:
             'autocommit': True
         }
 
-        self.db = mysql.connector.Connect(**dbconfig)
+        self.db = sql.Connect(**dbconfig)
 
         self.cursor = self.db.cursor()
 
@@ -62,7 +62,7 @@ class Database:
         for query in queryList:
             try:
                 self.cursor.execute(query)
-            except mysql.connector.errors.ProgrammingError:
+            except sql.errors.ProgrammingError:
                 print(f"Query \n'{query}'\n raised an error, ensure that the "
                       "syntax is correct.")
 
@@ -70,18 +70,21 @@ class Database:
         if member.bot:
             print("Cannot add bot to database")
             return
-        print(member.name, member.id)
-        self.cursor.execute(f"""
-            INSERT INTO USERS (
-                name, discordID
-            )
-            VALUES (
-                \"{member.name}\",
-                {member.id}
-            )
-        """)
+        try:
+            self.cursor.execute(f"""
+                INSERT INTO USERS (
+                    name, discordID
+                )
+                VALUES (
+                    \"{member.name}\",
+                    {member.id}
+                )
+            """)
 
-        self.db.commit()
+            self.db.commit()
+        except sql.errors.IntegrityError:
+            print(f"Cannot add user {member.name} : {member.id}, "
+                  "duplicate entry.")
 
 
 if __name__ == "__main__":

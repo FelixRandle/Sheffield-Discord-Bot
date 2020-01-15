@@ -7,6 +7,8 @@ Felix Randle
 import os
 from discord.ext import commands
 
+import database
+
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
@@ -15,6 +17,7 @@ if BOT_TOKEN is None:
 
 # Set our bot's prefix to ! this must be typed before any command
 bot = commands.Bot(command_prefix="!")
+db = database.Database()
 
 
 @bot.event
@@ -45,6 +48,8 @@ async def on_member_join(member):
         'Many thanks,\n'
         'The Discord Server Admin Team'
     )
+
+    db.add_user(member)
 
 
 @bot.event
