@@ -13,10 +13,10 @@ import database
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 if BOT_TOKEN is None:
-    raise("Cannot find required bot token.")
+    raise Exception("Cannot find required bot token.")
 
 # Set our bot's prefix to ! this must be typed before any command
-bot = commands.Bot(command_prefix="!")
+bot = commands.Bot(command_prefix="$")
 db = database.Database()
 
 
@@ -31,6 +31,19 @@ async def on_ready():
             if file.endswith(".py"):
                 bot.load_extension("cogs." + file[:-3])
                 print(f"Loaded cog {file[:-3]}")
+
+
+@bot.event
+async def on_guild_join(guild):
+    registering_id = None
+    member_id = None
+    for role in guild.roles:
+        if role.name.lower() == "registering":
+            registering_id = role.id
+        if role.name.lower() == "member":
+            member_id = role.id
+
+    db.add_guild(guild.id, registering_id, member_id)
 
 
 @bot.event
@@ -51,6 +64,27 @@ async def on_member_join(member):
 
     db.add_user(member)
 
+    role_id = await db.get_guild_info(member.guild.id, "registeringID")
+
+    await add_role(member, role_id)
+
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    expected_id = await db.get_guild_info(payload.guild_id, "welcomeMessageID")
+    if payload.message_id == expected_id:
+        message = await payload.member.guild.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        await message.remove_reaction(payload.emoji, payload.member)
+        if payload.emoji.name == u"\u2705":
+            registering_id = await db.get_guild_info(payload.guild_id, "registeringID")
+            member_id = await db.get_guild_info(payload.guild_id, "memberID")
+
+            await add_role(payload.member, member_id)
+            await remove_role(payload.member, registering_id)
+
+        elif payload.emoji.name == u"\u274E":
+            await payload.member.guild.kick(payload.member, reason="Rejected T's&C's")
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -60,6 +94,19 @@ async def on_command_error(ctx, error):
             "You do not have the correct permissions for this command."
             "If you believe this is an error, please contact an Admin.")
 
+
+async def add_role(member, role_id):
+    role = member.guild.get_role(role_id)
+
+    if role:
+        await member.add_roles(role)
+
+
+async def remove_role(member, role_id):
+    role = member.guild.get_role(role_id)
+
+    if role:
+        await member.remove_roles(role)
 
 # Start the bot
 print("Starting bot...")
