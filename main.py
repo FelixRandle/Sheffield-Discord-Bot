@@ -71,6 +71,9 @@ async def on_member_join(member):
 
 @bot.event
 async def on_raw_reaction_add(payload):
+    if payload.member.bot:
+        return
+
     expected_id = await db.get_guild_info(payload.guild_id, "welcomeMessageID")
     if payload.message_id == expected_id:
         message = await payload.member.guild.get_channel(payload.channel_id).fetch_message(payload.message_id)
