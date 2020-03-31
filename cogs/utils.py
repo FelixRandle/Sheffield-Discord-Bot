@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 """Cog for simple utility functions for the bot."""
 # In this case, discord import is not needed, in some cases it may be.
 # import discord
@@ -121,7 +123,7 @@ class UtilCog(commands.Cog):
                                                            "Please react with a thumbs up to confirm.")
 
         def check(check_reaction, check_user):
-            return check_user == ctx.author and str(check_reaction.emoji) == "👍"
+            return check_user == ctx.author and str(check_reaction.emoji) == u"\u1F44D"
 
         try:
             reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)

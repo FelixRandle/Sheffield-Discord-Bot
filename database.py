@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 """Class to handle all database connections."""
 
 import os
@@ -5,7 +7,8 @@ import mysql.connector as sql
 
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
-
+print(SQL_USER)
+print(SQL_PASS)
 if SQL_USER is None or SQL_PASS is None:
     raise Exception("Cannot find required database login information")
 

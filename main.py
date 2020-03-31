@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 """
 Main file of sheffield uni freshers comp sci discord bot.
 
@@ -11,7 +13,7 @@ import database
 
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-
+print(BOT_TOKEN)
 if BOT_TOKEN is None:
     raise Exception("Cannot find required bot token.")
 

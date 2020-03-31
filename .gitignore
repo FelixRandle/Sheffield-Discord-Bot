@@ -124,6 +124,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-*.xml
 # IDE
 .idea/
+# Startup script for Digital Ocean Droplet
+startup.config.js
