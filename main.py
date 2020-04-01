@@ -9,23 +9,23 @@ Felix Randle
 import os
 from discord.ext import commands
 
-import database
+import database as db
 
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-print(BOT_TOKEN)
 if BOT_TOKEN is None:
     raise Exception("Cannot find required bot token.")
 
 # Set our bot's prefix to ! this must be typed before any command
 bot = commands.Bot(command_prefix="$")
-db = database.Database()
 
 
 @bot.event
 async def on_ready():
     """Run post-launch setup."""
     print(f'{bot.user.name} has successfully connected to Discord!')
+
+    #await db.create_tables()
 
     # Load all of our cogs
     if os.path.exists("./cogs"):
@@ -45,7 +45,7 @@ async def on_guild_join(guild):
         if role.name.lower() == "member":
             member_id = role.id
 
-    db.add_guild(guild.id, registering_id, member_id)
+    await db.add_guild(guild.id, registering_id, member_id)
 
 
 @bot.event
@@ -64,7 +64,7 @@ async def on_member_join(member):
         'The Discord Server Admin Team'
     )
 
-    db.add_user(member)
+    await db.add_user(member)
 
     role_id = await db.get_guild_info(member.guild.id, "registeringID")
 
