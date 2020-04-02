@@ -118,7 +118,7 @@ async def add_user(discord_id, bot, name):
                 )
                 VALUES (
                     \"{name}\",
-                    {id}
+                    {discord_id}
                 )
             """)
 
