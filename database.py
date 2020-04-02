@@ -5,7 +5,6 @@
 import os
 import mysql.connector as sql
 
-
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
 
@@ -28,7 +27,7 @@ class Database:
             'use_unicode': True,
             'get_warnings': True,
             'autocommit': True,
-            'raise_on_warnings': True
+            'raise_on_warnings': False
         }
 
         self.connection = sql.Connect(**self.db_config)
@@ -59,7 +58,8 @@ async def create_tables():
             JAM_TEAM (
                 ID INT NOT NULL AUTO_INCREMENT,
                 teamName VARCHAR(255) NOT NULL UNIQUE,
-                gitLink VARCHAR(255) NOT NULL UNIQUE
+                gitLink VARCHAR(255) NOT NULL UNIQUE,
+                PRIMARY KEY (ID)
             )
             """,
             """
@@ -67,8 +67,9 @@ async def create_tables():
             JAM_TEAM_MEMBER (
                 ID INT NOT NULL AUTO_INCREMENT,
                 teamID INT NOT NULL,
-                userID INT NOT NULL,
-                creator INT NOT NULL
+                userID INT NOT NULL UNIQUE,
+                creator INT NOT NULL DEFAULT 0,
+                PRIMARY KEY (ID)
             )
             """,
             """
@@ -106,10 +107,9 @@ async def create_tables():
                       "syntax is correct.")
 
 
-async def add_user(member):
+async def add_user(discord_id, bot, name):
     with Database() as db:
-        if member.bot:
-            print("Cannot add bot to database")
+        if bot:
             return
         try:
             db.cursor.execute(f"""
@@ -117,18 +117,33 @@ async def add_user(member):
                     name, discordID
                 )
                 VALUES (
-                    \"{member.name}\",
-                    {member.id}
+                    \"{name}\",
+                    {id}
                 )
             """)
 
             db.connection.commit()
+            return db.cursor.lastrowid
         except sql.errors.IntegrityError:
-            print(f"Cannot add user {member.name} : {member.id}, "
-                  "duplicate entry.")
+            return False
 
 
-async def add_guild(id, registering_id, member_id):
+async def get_user_id(discord_id):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT ID FROM USERS
+            WHERE discordID = %s
+        """, (discord_id, ))
+
+        result = db.cursor.fetchone()
+        if result:
+            return result['ID']
+
+        result = await add_user(discord_id, False, "Unknown")
+        return result
+
+
+async def add_guild(guild_id, registering_id, member_id):
     with Database() as db:
         try:
             db.cursor.execute(f"""
@@ -136,7 +151,7 @@ async def add_guild(id, registering_id, member_id):
                     guildID, registeringID, memberID
                 )
                 VALUES (
-                    {id},
+                    {guild_id},
                     \"{registering_id}\",
                     \"{member_id}\"
                 )
@@ -144,8 +159,7 @@ async def add_guild(id, registering_id, member_id):
 
             db.connection.commit()
         except sql.errors.IntegrityError:
-            print(f"Cannot add guild {id}"
-                  "duplicate entry.")
+            pass
 
 
 async def get_guild_info(guild_id, field="*"):
@@ -155,7 +169,7 @@ async def get_guild_info(guild_id, field="*"):
         db.cursor.execute(f"""
             SELECT {field} FROM GUILDS
             WHERE guildID = %s
-        """, (guild_id, ))
+        """, (guild_id,))
 
         result = db.cursor.fetchone()
 
@@ -195,12 +209,72 @@ async def set_jamming(user_id, new_value):
         return True
 
 
+async def get_user_jam_team(discord_id):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        db.cursor.execute(f"""
+            SELECT teamID FROM JAM_TEAM_MEMBER
+            WHERE userID = %s
+        """, (user_id,))
+
+        result = db.cursor.fetchone()
+
+        if result:
+            return result['teamID']
+        return False
+
+
+async def add_user_jam_team(user_id, jam_team, creator="0"):
+    with Database() as db:
+        try:
+            db.cursor.execute(f"""
+                INSERT INTO JAM_TEAM_MEMBER
+                (teamID, userID, creator)
+                VALUES
+                (%s, %s, %s)
+            """, (jam_team, user_id, creator))
+
+            db.connection.commit()
+            return True
+        except sql.errors.IntegrityError:
+            return False
+
+
+async def create_jam_team(discord_id, team_name, git_link):
+    jam_team_id = await get_user_jam_team(discord_id)
+    if jam_team_id:
+        return False, "User is already a member of a team."
+    with Database() as db:
+        try:
+            db.cursor.execute(f"""
+                INSERT INTO JAM_TEAM
+                (teamName, gitLink)
+                VALUES
+                (%s, %s)
+            """, (team_name, git_link))
+
+            jam_team = db.cursor.lastrowid
+            user_id = await get_user_id(discord_id)
+            await add_user_jam_team(user_id, jam_team, creator="1")
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "Team name or git link already in use."
+
+
 async def test_function():
-    result = await get_guild_info("414123329952415745", "memberID")
+    result = await get_user_id("247428233086238720")
     print(result)
+    result = await get_user_jam_team("247428233086238720")
+    print(result)
+    result = await add_user_jam_team("7", "1", "1")
+    print(result)
+    result = await create_jam_team("247428233086238720", "The Lone Jammer", "https://git.com/LoneJammer")
+    print(result)
+
 
 if __name__ == "__main__":
     import asyncio
+
     loop = asyncio.get_event_loop()
     loop.run_until_complete(test_function())
     loop.close()

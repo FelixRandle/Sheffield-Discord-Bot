@@ -12,8 +12,9 @@ async def get_confirmation(ctx, bot, message):
     confirm_message = await ctx.send(message)
 
     def check(check_reaction, check_user):
-        return check_user == ctx.author and check_reaction == confirm_message and \
-               str(check_reaction.emoji) == u"\u1F44D" or str(check_reaction.emoji) == u"\u1F44E"
+        return (check_user == ctx.author) \
+            and check_reaction.message.id == confirm_message.id and \
+            ((str(check_reaction.emoji) == u"👍") or (str(check_reaction.emoji) == u"👎"))
 
     try:
         reaction, user = await bot.wait_for('reaction_add', timeout=60.0, check=check)
@@ -21,7 +22,7 @@ async def get_confirmation(ctx, bot, message):
         await confirm_message.delete()
         return False, "Timeout"
     else:
+        await confirm_message.delete()
         if str(reaction.emoji) == u"\u1F44D":
             return True, None
         return False, "Rejected"
-

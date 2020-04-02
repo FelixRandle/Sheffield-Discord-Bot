@@ -15,9 +15,7 @@ re_message_id = re.compile("\d{18}")
 
 
 async def find_id(msg):
-    print(msg)
     result = re_message_id.search(msg)
-    print(result)
     if result:
         return int(msg[result.start():result.end()])
     return False
@@ -41,14 +39,11 @@ class BasicCommandsCog(commands.Cog):
         This command adds some help text and also required that the user
         have the Member role, this is case-sensitive.
         """
-        print("test")
         with ctx.typing():
             for member in ctx.guild.members:
-                print("Testinggggg")
                 await db.add_user(member)
 
             await ctx.send("Added all users to database!")
-        print("also test")
 
     @commands.command(
         name="setregistering",

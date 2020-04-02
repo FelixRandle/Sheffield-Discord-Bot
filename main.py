@@ -25,7 +25,7 @@ async def on_ready():
     """Run post-launch setup."""
     print(f'{bot.user.name} has successfully connected to Discord!')
 
-    #await db.create_tables()
+    await db.create_tables()
 
     # Load all of our cogs
     if os.path.exists("./cogs"):
@@ -64,7 +64,7 @@ async def on_member_join(member):
         'The Discord Server Admin Team'
     )
 
-    await db.add_user(member)
+    await db.add_user(member.id, member.bot, member.name)
 
     role_id = await db.get_guild_info(member.guild.id, "registeringID")
 
