@@ -41,7 +41,7 @@ class BasicCommandsCog(commands.Cog):
         """
         with ctx.typing():
             for member in ctx.guild.members:
-                await db.add_user(member)
+                await db.add_user(member.id, member.bot, member.name)
 
             await ctx.send("Added all users to database!")
 
