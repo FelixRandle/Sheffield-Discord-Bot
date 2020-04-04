@@ -5,6 +5,8 @@
 import os
 import mysql.connector as sql
 
+import utils as ut
+
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
 
@@ -103,8 +105,8 @@ async def create_tables():
             try:
                 db.cursor.execute(query)
             except sql.errors.ProgrammingError:
-                print(f"Query \n'{query}'\n raised an error, ensure that the "
-                      "syntax is correct.")
+                ut.log_error(f"Query \n'{query}'\n raised an error, ensure that the "
+                             "syntax is correct.")
 
 
 async def add_user(discord_id, bot, name):
@@ -155,7 +157,7 @@ async def add_guild(guild_id, registering_id, member_id):
                     %s,
                     %s
                 )
-            """ (guild_id, registering_id, member_id))
+            """, (guild_id, registering_id, member_id))
 
             db.connection.commit()
         except sql.errors.IntegrityError:
