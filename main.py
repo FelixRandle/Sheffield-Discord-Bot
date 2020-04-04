@@ -95,8 +95,8 @@ async def on_raw_reaction_add(payload):
 @bot.event
 async def on_command_error(ctx, error):
     """Handle any command errors that may appear."""
-    # TODO Implement errors from https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#exceptions
-    # Not all of these need to be put in, but a fair few would be good. Some can reuse arguments.
+    # Implement errors from https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#exceptions
+    # Not all of these need to be put in, but a fair few would be good. Some can reuse message.
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send(
             "You do not have the correct permissions for this command."
@@ -106,7 +106,7 @@ async def on_command_error(ctx, error):
             f"Missing argument: {error.param.name}. "
             "Please add in the argument before running the command again."
         )
-    if isinstance(error, commands.errors.UserInputError):
+    if isinstance(error, commands.errors.UserInputEcorror):
         await ctx.send(
             f"Could not parse user input for the command. Please ensure you have entered all parameters correctly."
         )

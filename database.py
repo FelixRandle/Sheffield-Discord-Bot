@@ -179,8 +179,7 @@ async def get_guild_info(guild_id, field="*"):
             return int(result[field])
         elif result:
             return result
-        else:
-            return False
+        return False
 
 
 async def set_guild_info(guild_id, field, new_value):
