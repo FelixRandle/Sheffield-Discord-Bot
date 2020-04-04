@@ -177,7 +177,7 @@ async def get_guild_info(guild_id, field="*"):
 
         if field != "*" and result[field]:
             return int(result[field])
-        elif result:
+        if result:
             return result
         return False
 
