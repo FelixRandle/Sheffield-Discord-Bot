@@ -117,10 +117,10 @@ async def add_user(discord_id, bot, name):
                     name, discordID
                 )
                 VALUES (
-                    \"{name}\",
-                    {discord_id}
+                    %s,
+                    $s
                 )
-            """)
+            """, (name, discord_id))
 
             db.connection.commit()
             return db.cursor.lastrowid
@@ -151,11 +151,11 @@ async def add_guild(guild_id, registering_id, member_id):
                     guildID, registeringID, memberID
                 )
                 VALUES (
-                    {guild_id},
-                    \"{registering_id}\",
-                    \"{member_id}\"
+                    %s,
+                    %s,
+                    %s
                 )
-            """)
+            """ (guild_id, registering_id, member_id))
 
             db.connection.commit()
         except sql.errors.IntegrityError:
