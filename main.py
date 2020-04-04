@@ -10,6 +10,7 @@ import os
 from discord.ext import commands
 
 import database as db
+import utils as ut
 
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -23,7 +24,7 @@ bot = commands.Bot(command_prefix="$")
 @bot.event
 async def on_ready():
     """Run post-launch setup."""
-    print(f'{bot.user.name} has successfully connected to Discord!')
+    ut.log_info(f'{bot.user.name} has successfully connected to Discord!')
 
     await db.create_tables()
 
@@ -32,7 +33,7 @@ async def on_ready():
         for file in os.listdir("./cogs"):
             if file.endswith(".py"):
                 bot.load_extension("cogs." + file[:-3])
-                print(f"Loaded cog {file[:-3]}")
+                ut.log_info(f"Loaded cog {file[:-3]}")
 
 
 @bot.event
@@ -94,10 +95,24 @@ async def on_raw_reaction_add(payload):
 @bot.event
 async def on_command_error(ctx, error):
     """Handle any command errors that may appear."""
+    # Implement errors from https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#exceptions
+    # Not all of these need to be put in, but a fair few would be good. Some can reuse message.
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send(
             "You do not have the correct permissions for this command."
             "If you believe this is an error, please contact an Admin.")
+    if isinstance(error, commands.errors.MissingRequiredArgument):
+        await ctx.send(
+            f"Missing argument: {error.param.name}. "
+            "Please add in the argument before running the command again."
+        )
+    if isinstance(error, commands.errors.UserInputEcorror):
+        await ctx.send(
+            f"Could not parse user input for the command. Please ensure you have entered all parameters correctly."
+        )
+    else:
+        await ctx.send("Error running command. Please try again later or contact an administrator.")
+        ut.log_error(error)
 
 
 async def add_role(member, role_id):
@@ -114,5 +129,5 @@ async def remove_role(member, role_id):
         await member.remove_roles(role)
 
 # Start the bot
-print("Starting bot...")
+ut.log_info("Starting bot...")
 bot.run(BOT_TOKEN)

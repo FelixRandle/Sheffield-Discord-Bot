@@ -145,13 +145,26 @@ class BasicCommandsCog(commands.Cog):
         """
         Repeats the users message
 
-        This command allows admins to get the bot to create messages. Mainly for announcement purposes
+        This command allows admins to get the bot to create messages. Mainly for announcement purposes.
         """
         if len(content) == 0:
             await ctx.send("You must include a message.")
             return
 
         await ctx.send(content)
+
+    @commands.command(
+        name="clear",
+        help="Clears messages from the channel")
+    @commands.has_permissions(manage_messages=True)
+    async def clear(self, ctx, message_count: int):
+        """
+        Clears the given amount of messages from the channels history.
+
+        Clears an extra one to remove the commands message.
+        """
+        async for message in ctx.history(limit=message_count+1):
+            await message.delete()
 
 
 def setup(bot):
