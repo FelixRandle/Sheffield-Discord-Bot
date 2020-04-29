@@ -8,9 +8,14 @@ Felix Randle
 """
 import os
 from discord.ext import commands
+from dotenv import load_dotenv
+
+# We must load env variables before importing DB so the SQL information is ready for it.
+load_dotenv()
 
 import database as db
 import utils as ut
+
 
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
