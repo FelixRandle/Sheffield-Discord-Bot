@@ -8,14 +8,23 @@
  N/A
  
  ## Requirements
- discord.py
+ *discord.py*
+ 
+ *mysql-connector*
+ 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
 
 ```bash
 pip install discord.py
+pip install mysql-connector
+pip install python-dotenv
 ```
 
-[mysql connector](https://dev.mysql.com/downloads/connector/python/)
+## Running The Program
+
+After installing the requirements listed above, you will need to add
+some environment variables to store sensitive data (SQL password, Bot token etc...)
+
 
 ## Contributing
 Pull requests are welcome. 

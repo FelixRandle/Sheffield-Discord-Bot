@@ -4,9 +4,14 @@
 
 import os
 import mysql.connector as sql
+from time import time
 
 import utils as ut
 
+# Load env if we're just running this file.
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
 
@@ -77,12 +82,11 @@ async def create_tables():
             """
             CREATE TABLE IF NOT EXISTS
             EVENTS (
-                ID INT NOT NULL AUTO_INCREMENT,
+                ID INT PRIMARY KEY AUTO_INCREMENT,
                 title VARCHAR(255) NOT NULL,
                 description VARCHAR(1024) NOT NULL,
                 date DATETIME NOT NULL,
                 creator INT NOT NULL,
-                PRIMARY KEY (ID),
                 FOREIGN KEY (creator)
                     REFERENCES USERS(ID)
             )
@@ -90,15 +94,25 @@ async def create_tables():
             """
             CREATE TABLE IF NOT EXISTS
             GUILDS (
-                ID INT NOT NULL AUTO_INCREMENT,
+                ID INT PRIMARY KEY AUTO_INCREMENT,
                 guildID VARCHAR(255) NOT NULL UNIQUE,
                 registeringID VARCHAR(255) UNIQUE,
                 memberID VARCHAR(255) UNIQUE,
-                welcomeMessageID VARCHAR(255) UNIQUE,
-                
-                PRIMARY KEY(ID)
+                welcomeMessageID VARCHAR(255) UNIQUE
             )
+            """,
             """
+            CREATE TABLE IF NOT EXISTS
+            CHANNELS (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                channelID VARCHAR(255) NOT NULL UNIQUE,
+                voice INT NOT NULL,
+                owner INT NOT NULL UNIQUE,
+                createdDate INT NOT NULL,
+                
+                FOREIGN KEY (owner)
+                    REFERENCES USERS(ID)
+            )"""
         )
 
         for query in query_list:
@@ -262,15 +276,50 @@ async def create_jam_team(discord_id, team_name, git_link):
             return False, "Team name or git link already in use."
 
 
+async def user_create_channel(discord_id, channel_id, is_voice):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        try:
+            db.cursor.execute(f"""
+                INSERT INTO CHANNELS
+                (channelID, voice, owner, createdDate)
+                VALUES
+                (%s, %s, %s, %s)
+            """, (channel_id, is_voice, user_id, int(time())))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed..."
+
+
+async def user_delete_channel(discord_id):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        try:
+            db.cursor.execute(f"""
+                DELETE FROM CHANNELS
+                WHERE owner = %s
+            """, (user_id,))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed..."
+
+
+async def user_has_channel(discord_id):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        db.cursor.execute(f"""
+            SELECT channelID FROM CHANNELS
+            WHERE owner = %s
+        """, (user_id,))
+
+        result = db.cursor.fetchone()
+        if result:
+            return result['channelID']
+        return False
+
+
 async def test_function():
-    result = await get_user_id("247428233086238720")
-    print(result)
-    result = await get_user_jam_team("247428233086238720")
-    print(result)
-    result = await add_user_jam_team("7", "1", "1")
-    print(result)
-    result = await create_jam_team("247428233086238720", "The Lone Jammer", "https://git.com/LoneJammer")
-    print(result)
+    print(await user_has_channel(247428233086238720))
 
 
 if __name__ == "__main__":
