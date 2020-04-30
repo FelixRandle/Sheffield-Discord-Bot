@@ -23,7 +23,7 @@ if BOT_TOKEN is None:
     raise Exception("Cannot find required bot token.")
 
 # Set our bot's prefix to ! this must be typed before any command
-bot = commands.Bot(command_prefix="$")
+bot = commands.Bot(command_prefix="$", case_insensitive=True)
 
 
 @bot.event
@@ -111,7 +111,7 @@ async def on_command_error(ctx, error):
             f"Missing argument: {error.param.name}. "
             "Please add in the argument before running the command again."
         )
-    if isinstance(error, commands.errors.UserInputEcorror):
+    if isinstance(error, commands.errors.UserInputError):
         await ctx.send(
             f"Could not parse user input for the command. Please ensure you have entered all parameters correctly."
         )
