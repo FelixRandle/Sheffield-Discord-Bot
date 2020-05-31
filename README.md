@@ -25,6 +25,8 @@ pip install python-dotenv
 After installing the requirements listed above, you will need to add
 some environment variables to store sensitive data (SQL password, Bot token etc...)
 
+Can also be included in a .env file
+
 
 ## Contributing
 Pull requests are welcome. 
