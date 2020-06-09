@@ -357,6 +357,36 @@ async def user_has_channel(discord_id):
         return False
 
 
+async def user_has_poll(discord_id):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        db.cursor.execute("""
+            SELECT messageID FROM POLLS
+            WHERE creator
+        """, (user_id, ))
+
+        result = db.cursor.fetchone()
+        if result:
+            return result['messageID']
+        return False
+
+
+async def user_create_poll(discord_id, message_id, poll_title, duration: int):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        end_date = int(time.time()) + duration
+        try:
+            db.cursor.execute("""
+                INSERT INTO POLLS
+                (owner, messageID, title, endDate)
+                VALUES
+                (%s, %s, %s, %s)
+            """, (discord_id, message_id, poll_title, end_date))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed"
+
+
 async def test_function():
     print(await user_has_channel(247428233086238720))
 
