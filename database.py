@@ -371,10 +371,9 @@ async def user_has_poll(discord_id):
         return False
 
 
-async def user_create_poll(discord_id, message_id, poll_title, duration: int):
+async def user_create_poll(discord_id, message_id, poll_title, end_date: int):
     with Database() as db:
         user_id = await get_user_id(discord_id)
-        end_date = int(time.time()) + duration
         try:
             db.cursor.execute("""
                 INSERT INTO POLLS
