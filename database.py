@@ -366,13 +366,13 @@ async def user_get_poll(discord_id, discord_guild_id):
         user_id = await get_user_id(discord_id)
         guild_id = await get_guild_info(discord_guild_id, field="guildID")
         db.cursor.execute("""
-            SELECT messageID FROM POLLS
+            SELECT ID, messageID FROM POLLS
             WHERE creator = %s AND guild = %s
         """, (user_id, guild_id))
 
         result = db.cursor.fetchone()
         if result:
-            return result['messageID']
+            return result['ID'], result['messageID']
 
 
 async def user_create_poll(discord_id, message_id, poll_title, end_date: int):
