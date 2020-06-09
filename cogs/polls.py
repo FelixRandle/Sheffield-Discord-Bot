@@ -45,7 +45,7 @@ class PollsCog(commands.Cog, name="Polls"):
         Users are limited to one ongoing poll per guild
         """
 
-        user_poll = await db.user_has_poll(ctx.author.id)
+        user_poll = await db.user_get_poll(ctx.author.id, ctx.guild.id)
         if user_poll:
             await ctx.send("You have a poll ongoing! Contact an adminstrator "
                            "if you think this is a mistake")
