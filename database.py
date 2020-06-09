@@ -147,13 +147,13 @@ async def create_tables():
             CREATE TABLE IF NOT EXISTS
             POLL_RESPONSES (
                 ID INT PRIMARY KEY AUTO_INCREMENT,
-                poll INT NOT NULL,
                 user INT NOT NULL,
+                choice INT NOT NULL,
 
-                FOREIGN KEY (poll)
-                    REFERENCES POLLS(ID),
                 FOREIGN KEY (user)
                     REFERENCES USERS(ID)
+                FOREIGN KEY (choice)
+                    REFERENCES POLL_CHOICES(ID)
             )
             """
         )
@@ -371,7 +371,7 @@ async def user_has_poll(discord_id):
 
         result = db.cursor.fetchone()
         if result:
-            return result['messageID']
+            return True
         return False
 
 
