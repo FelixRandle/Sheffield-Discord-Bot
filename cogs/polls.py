@@ -49,25 +49,27 @@ class PollsCog(commands.Cog, name="Polls"):
         if user_poll:
             await ctx.send("You have a poll ongoing! Contact an adminstrator "
                            "if you think this is a mistake")
+            return
+
+        if duration is None:
+            duration = datetime.timedelta(hours=1)
         else:
-            if duration is None:
-                duration = datetime.timedelta(hours=1)
-            else:
-                duration = await self.parse_time_as_delta(duration)
+            duration = await self.parse_time_as_delta(duration)
 
-            if not duration:
-                await ctx.send("Poll must have a valid duration "
-                               "that is greater than zero")
+        if not duration:
+            await ctx.send("Poll must have a valid duration "
+                           "that is greater than zero")
+            return
 
-            end_date = datetime.datetime.now() + duration
-            description = end_date.strftime("Poll ends: %d/%m/%Y %H:%M:%S")
+        end_date = datetime.datetime.now() + duration
+        description = end_date.strftime("Poll ends: %d/%m/%Y %H:%M:%S")
 
-            embed = discord.Embed(title=title, description=description,
-                                  color=0x0000aa)
-            message = await ctx.send(embed=embed)
+        embed = discord.Embed(title=title, description=description,
+                                color=0x0000aa)
+        message = await ctx.send(embed=embed)
 
-            await db.user_create_poll(ctx.author.id, message.id,
-                                      title, int(end_date.timestamp()))
+        await db.user_create_poll(ctx.author.id, message.id,
+                                  title, int(end_date.timestamp()))
 
 
 def setup(bot):
