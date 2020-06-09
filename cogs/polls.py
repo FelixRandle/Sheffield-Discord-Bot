@@ -68,7 +68,7 @@ class PollsCog(commands.Cog, name="Polls"):
                                 color=0x0000aa)
         message = await ctx.send(embed=embed)
 
-        await db.user_create_poll(ctx.author.id, message.id,
+        await db.user_create_poll(ctx.author.id, message.id, ctx.guild.id,
                                   title, int(end_date.timestamp()))
 
 
