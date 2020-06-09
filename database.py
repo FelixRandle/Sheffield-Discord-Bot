@@ -112,7 +112,46 @@ async def create_tables():
                 
                 FOREIGN KEY (owner)
                     REFERENCES USERS(ID)
-            )"""
+            )""",
+            """
+            CREATE TABLE IF NOT EXISTS
+            POLLS (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                messageID VARCHAR(255) NOT NULL UNIQUE,
+                creator INT NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                endDate INT NOT NULL,
+
+                FOREIGN KEY(creator)
+                    REFERENCES USERS(ID)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS
+            POLLS_CHOICES (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                poll INT NOT NULL,
+                reaction VARCHAR(255) NOT NULL,
+                text VARCHAR(255) NOT NULL,
+
+                UNIQUE (pollID, reaction),
+                FOREIGN KEY (poll)
+                    REFERENCES POLLS(ID)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS
+            POLLS_RESPONSES (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                poll INT NOT NULL,
+                user INT NOT NULL,
+
+                FOREIGN KEY (poll)
+                    REFERENCES POLLS(ID),
+                FOREIGN KEY (user)
+                    REFERENCES USERS(ID)
+            )
+            """
         )
 
         for query in query_list:
