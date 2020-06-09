@@ -117,13 +117,17 @@ async def create_tables():
             CREATE TABLE IF NOT EXISTS
             POLLS (
                 ID INT PRIMARY KEY AUTO_INCREMENT,
-                messageID VARCHAR(255) NOT NULL UNIQUE,
+                messageID VARCHAR(255) NOT NULL,
+                guild INT NOT NULL,
                 creator INT NOT NULL,
                 title VARCHAR(255) NOT NULL,
                 endDate INT NOT NULL,
 
+                UNIQUE KEY (creator, guild),
                 FOREIGN KEY(creator)
-                    REFERENCES USERS(ID)
+                    REFERENCES USERS(ID),
+                FOREIGN KEY(guild)
+                    REFERENCES GUILDS(ID)
             )
             """,
             """
