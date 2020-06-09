@@ -151,7 +151,7 @@ async def create_tables():
                 choice INT NOT NULL,
 
                 FOREIGN KEY (user)
-                    REFERENCES USERS(ID)
+                    REFERENCES USERS(ID),
                 FOREIGN KEY (choice)
                     REFERENCES POLL_CHOICES(ID)
             )
