@@ -36,13 +36,13 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @commands.command(
         name="createpoll",
-        help="Creates a poll. You can add responses to it later")
+        help="Creates a poll. You can add choices to it later")
     @commands.has_role("Member")
     async def create_poll(self, ctx, title, duration=None):
         """
         Allows a user to create a poll.
 
-        Users are limited to one ongoing poll
+        Users are limited to one ongoing poll per guild
         """
 
         user_poll = await db.user_has_poll(ctx.author.id)
