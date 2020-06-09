@@ -128,20 +128,20 @@ async def create_tables():
             """,
             """
             CREATE TABLE IF NOT EXISTS
-            POLLS_CHOICES (
+            POLL_CHOICES (
                 ID INT PRIMARY KEY AUTO_INCREMENT,
                 poll INT NOT NULL,
                 reaction VARCHAR(255) NOT NULL,
                 text VARCHAR(255) NOT NULL,
 
-                UNIQUE (pollID, reaction),
+                UNIQUE KEY (poll, reaction),
                 FOREIGN KEY (poll)
                     REFERENCES POLLS(ID)
             )
             """,
             """
             CREATE TABLE IF NOT EXISTS
-            POLLS_RESPONSES (
+            POLL_RESPONSES (
                 ID INT PRIMARY KEY AUTO_INCREMENT,
                 poll INT NOT NULL,
                 user INT NOT NULL,
