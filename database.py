@@ -377,18 +377,19 @@ async def get_poll(message_id, field="*"):
             return result
 
 
-async def user_create_poll(discord_id, message_id, discord_guild_id,
-                           poll_title, end_date: int):
+async def user_create_poll(discord_id, message_id, channel_id,
+                           discord_guild_id, poll_title, end_date: int):
     with Database() as db:
         user_id = await get_user_id(discord_id)
         guild_id = await get_guild_info(discord_guild_id, field="ID")
         try:
             db.cursor.execute("""
                 INSERT INTO POLLS
-                (creator, messageID, guild, title, endDate)
+                (creator, messageID, channelID, guild, title, endDate)
                 VALUES
-                (%s, %s, %s, %s, %s)
-            """, (user_id, message_id, guild_id, poll_title, end_date))
+                (%s, %s, %s, %s, %s, %s)
+            """, (user_id, message_id, channel_id,
+                  guild_id, poll_title, end_date))
             db.connection.commit()
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"

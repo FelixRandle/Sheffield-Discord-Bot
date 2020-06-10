@@ -222,8 +222,9 @@ class PollsCog(commands.Cog, name="Polls"):
         await message.add_reaction('➕')
         await message.add_reaction('✖️')
 
-        await db.user_create_poll(ctx.author.id, message.id, ctx.guild.id,
-                                  title, int(end_date.timestamp()))
+        await db.user_create_poll(
+            ctx.author.id, message.id, message.channel.id,
+            ctx.guild.id, title, int(end_date.timestamp()))
 
 
 def setup(bot):
