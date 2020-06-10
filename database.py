@@ -150,6 +150,7 @@ async def create_tables():
                 user INT NOT NULL,
                 choice INT NOT NULL,
 
+                UNIQUE KEY (user, choice),
                 FOREIGN KEY (user)
                     REFERENCES USERS(ID),
                 FOREIGN KEY (choice)
