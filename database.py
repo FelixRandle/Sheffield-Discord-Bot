@@ -392,6 +392,15 @@ async def user_create_poll(discord_id, message_id, discord_guild_id,
             return False, "UNIQUE constraint failed"
 
 
+async def delete_poll(poll_id):
+    with Database() as db:
+        db.cursor.execute("""
+            DELETE FROM POLLS
+            WHERE ID = %s
+        """, (poll_id, ))
+        db.connection.commit()
+
+
 async def get_poll_choice(poll_id, reaction, field="*"):
     with Database() as db:
         db.cursor.execute(f"""

@@ -94,6 +94,25 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await db.add_poll_choice(poll_id, reaction, text)
 
+    async def delete_poll(self, poll_id, message, user):
+        poll = await db.get_poll(message.id, field="creator")
+        poll_creator_id = poll['creator']
+
+        current_user_id = int(await db.get_user_id(user.id))
+        if poll_creator_id != current_user_id:
+            await message.channel.send(
+                "You don't have permission to delete this poll!")
+            return
+
+        result, reason = await ut.get_confirmation(
+            message.channel, user, self.bot,
+            "Are you sure you want to delete the poll? "
+            "All responses and choices will be deleted")
+
+        if result:
+            await message.delete()
+            await db.delete_poll(poll_id)
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """
@@ -115,8 +134,10 @@ class PollsCog(commands.Cog, name="Polls"):
         user = self.bot.get_user(payload.user_id)
         if emoji.name == '➕':
             await self.get_new_choice(poll_id, message, user)
+        elif emoji.name == '✖️':
+            await self.delete_poll(poll_id, message, user)
 
-        if emoji.name in ('➕', '✖️'):
+        if emoji.name in ('➕', ):
             await message.remove_reaction(emoji, user)
 
     @commands.command(

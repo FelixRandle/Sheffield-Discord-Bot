@@ -11,13 +11,13 @@ import asyncio
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 
 
-async def get_confirmation(ctx, bot, message):
-    confirm_message = await ctx.send(message)
+async def get_confirmation(channel, user, bot, message):
+    confirm_message = await channel.send(message)
     await confirm_message.add_reaction(u"👍")
     await confirm_message.add_reaction(u"👎")
 
     def check(check_reaction, check_user):
-        return (check_user == ctx.author) \
+        return (check_user == user) \
             and check_reaction.message.id == confirm_message.id and \
             ((str(check_reaction.emoji) == u"👍") or (str(check_reaction.emoji) == u"👎"))
 
@@ -28,7 +28,7 @@ async def get_confirmation(ctx, bot, message):
         return False, "Timeout"
     else:
         await confirm_message.delete()
-        if str(reaction.emoji) == u"\u1F44D":
+        if str(reaction.emoji) == u"👍":
             return True, None
         return False, "Rejected"
 
