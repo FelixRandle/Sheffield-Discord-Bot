@@ -36,7 +36,11 @@ class PollsCog(commands.Cog, name="Polls"):
             return datetime.timedelta(**values_dict)
 
     async def create_poll_embed(self, title: str, end_date: datetime.datetime):
-        description = end_date.strftime("Poll ends: %d/%m/%Y %H:%M:%S")
+        description = end_date.strftime(
+            "Poll ends: %d/%m/%Y %H:%M:%S\n"
+            "React with ➕ to add a choice\n"
+            "React with ✖️ to delete the poll\n"
+            "React with 🛑 to end the poll and show the results")
         return discord.Embed(title=title, description=description,
                              color=0x0000ff)
 
