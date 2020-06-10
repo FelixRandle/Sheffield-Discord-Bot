@@ -116,6 +116,12 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def toggle_poll_response(self, poll_id, user_id,
                                    reaction, message, is_add=True):
+        poll = await db.get_poll(message.id, field='endDate')
+        end_date = int(poll['endDate'])
+
+        if time.time() >= end_date:
+            return
+
         if is_add:
             result, reason = await db.user_add_response(user_id, poll_id,
                                                         reaction)
