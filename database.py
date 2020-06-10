@@ -389,6 +389,31 @@ async def user_create_poll(discord_id, message_id, discord_guild_id,
             return False, "UNIQUE constraint failed"
 
 
+async def get_poll_choice(poll_id, reaction, field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLL_CHOICES
+            WHERE poll = %s AND reaction = %s
+        """, (poll_id, reaction.encode('unicode_escape')))
+
+        result = db.cursor.fetchone()
+        if result:
+            return result
+
+
+async def add_poll_choice(poll_id, reaction, text):
+    with Database() as db:
+        try:
+            db.cursor.execute("""
+                INSERT INTO POLL_CHOICES
+                (poll, reaction, text)
+                VALUES
+                (%s, %s, %s)
+            """, (poll_id, reaction.encode('unicode_escape'), text))
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed"
+
+
 async def test_function():
     print(await user_has_channel(247428233086238720))
 
