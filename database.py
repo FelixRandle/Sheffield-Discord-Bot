@@ -122,6 +122,7 @@ async def create_tables():
                 creator INT NOT NULL,
                 title VARCHAR(255) NOT NULL,
                 endDate INT NOT NULL,
+                ended BOOLEAN NOT NULL DEFAULT FALSE,
 
                 FOREIGN KEY(creator)
                     REFERENCES USERS(ID),
