@@ -25,6 +25,12 @@ if BOT_TOKEN is None:
 # Set our bot's prefix to ! this must be typed before any command
 bot = commands.Bot(command_prefix="$", case_insensitive=True)
 
+# Load all of our cogs
+if os.path.exists("./cogs"):
+    for file in os.listdir("./cogs"):
+        if file.endswith(".py"):
+            bot.load_extension("cogs." + file[:-3])
+            ut.log_info(f"Loaded cog {file[:-3]}")
 
 @bot.event
 async def on_ready():
@@ -32,14 +38,6 @@ async def on_ready():
     ut.log_info(f'{bot.user.name} has successfully connected to Discord!')
 
     await db.create_tables()
-
-    # Load all of our cogs
-    if os.path.exists("./cogs"):
-        for file in os.listdir("./cogs"):
-            if file.endswith(".py"):
-                bot.load_extension("cogs." + file[:-3])
-                ut.log_info(f"Loaded cog {file[:-3]}")
-
 
 @bot.event
 async def on_guild_join(guild):
