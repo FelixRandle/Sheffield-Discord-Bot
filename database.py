@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """Class to handle all database connections."""
 
 import os
@@ -109,7 +109,7 @@ async def create_tables():
                 voice INT NOT NULL,
                 owner INT NOT NULL UNIQUE,
                 createdDate INT NOT NULL,
-                
+
                 FOREIGN KEY (owner)
                     REFERENCES USERS(ID)
             )""",
@@ -441,6 +441,23 @@ async def user_add_response(discord_id, poll_id, reaction):
             return True, None
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"
+
+
+async def user_remove_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        choice_id = choice['ID']
+
+        db.cursor.execute("""
+            DELETE FROM POLL_RESPONSES
+            WHERE choice = %s AND user = %s
+        """, (choice_id, user_id))
+
+        if db.cursor.rowcount > 0:
+            return True, None
+        else:
+            return False, "Response did not exist"
 
 
 async def test_function():

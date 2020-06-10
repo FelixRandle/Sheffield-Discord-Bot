@@ -56,7 +56,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return m.author == user
 
         try:
-            response = await self.bot.wait_for('message', check=check, 
+            response = await self.bot.wait_for('message', check=check,
                                                timeout=30.0)
         except asyncio.TimeoutError:
             await message.channel.send("You didn't respond in time. "
@@ -89,7 +89,7 @@ class PollsCog(commands.Cog, name="Polls"):
         await message.edit(embed=embed)
         await message.add_reaction(reaction)
 
-        # Cleans up the message that had the choice info 
+        # Cleans up the message that had the choice info
         # sent by the user
         await response.delete()
 
@@ -114,16 +114,23 @@ class PollsCog(commands.Cog, name="Polls"):
             await message.delete()
             await db.delete_poll(poll_id)
 
-    async def add_poll_response(self, poll_id, user_id, reaction, message):
-        result, reason = await db.user_add_response(user_id, poll_id, reaction)
+    async def toggle_poll_response(self, poll_id, user_id,
+                                   reaction, message, is_add=True):
+        if is_add:
+            result, reason = await db.user_add_response(user_id, poll_id,
+                                                        reaction)
+        else:
+            result, reason = await db.user_remove_response(user_id, poll_id,
+                                                           reaction)
+
         if not result:
             return
         embed = message.embeds[0]
         for index, field in enumerate(embed.fields):
             if field.name.startswith(reaction):
                 count = int(field.name.split()[-1])
-                count += 1
-                
+                count += 1 if is_add else -1
+
                 embed.set_field_at(index, name=f"{reaction} {count}",
                                     value=field.value, inline=False)
                 break
@@ -133,13 +140,12 @@ class PollsCog(commands.Cog, name="Polls"):
         await message.edit(embed=embed)
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_remove(self, payload):
         """
-        Listens for reactions to poll messages
+        Listens for reactions that are removed from poll messages
         """
         emoji = payload.emoji
-        if payload.member.bot or (emoji.name in ('➕', '✖️') 
-                                  and payload.event_type == 'REACTION_REMOVE'):
+        if emoji.name in ('➕', '✖️'):
             return
 
         message_id = payload.message_id
@@ -151,14 +157,35 @@ class PollsCog(commands.Cog, name="Polls"):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
         user = self.bot.get_user(payload.user_id)
+
+        await self.toggle_poll_response(poll_id, user.id, emoji.name,
+                                        message, False)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        """
+        Listens for reactions to poll messages
+        """
+        emoji = payload.emoji
+        if payload.member.bot:
+            return
+
+        message_id = payload.message_id
+        poll = await db.get_poll(message_id, field="ID")
+        if not poll:
+            return
+
+        poll_id = poll['ID']
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(message_id)
+        user = payload.member
         if emoji.name == '➕':
             await self.get_new_choice(poll_id, message, user)
         elif emoji.name == '✖️':
             await self.delete_poll(poll_id, message, user)
         else:
-            if payload.event_type == 'REACTION_ADD':
-                await self.add_poll_response(poll_id, user.id, 
-                                             emoji.name, message)
+            await self.toggle_poll_response(poll_id, user.id, emoji.name, 
+                                            message, True)
 
         if emoji.name in ('➕', ):
             await message.remove_reaction(emoji, user)
