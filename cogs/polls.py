@@ -82,7 +82,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Fetches embed from poll message
         embed = message.embeds[0]
-        embed.add_field(name=reaction, value=text, inline=False)
+        embed.add_field(name=f"{reaction} 0", value=text, inline=False)
 
         # Message must be updated with new embed
         await message.edit(embed=embed)
