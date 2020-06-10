@@ -34,6 +34,11 @@ class PollsCog(commands.Cog, name="Polls"):
 
             return datetime.timedelta(**values_dict)
 
+    async def create_poll_embed(self, title: str, end_date: datetime.datetime):
+        description = end_date.strftime("Poll ends: %d/%m/%Y %H:%M:%S")
+        return discord.Embed(title=title, description=description,
+                             color=0x0000ff)
+
     @commands.command(
         name="createpoll",
         help="Creates a poll. You can add choices to it later")
@@ -62,10 +67,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         end_date = datetime.datetime.now() + duration
-        description = end_date.strftime("Poll ends: %d/%m/%Y %H:%M:%S")
-
-        embed = discord.Embed(title=title, description=description,
-                                color=0x0000aa)
+        embed = await self.create_poll_embed(title, end_date)
         message = await ctx.send(embed=embed)
 
         await db.user_create_poll(ctx.author.id, message.id, ctx.guild.id,
