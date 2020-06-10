@@ -46,15 +46,7 @@ class PollsCog(commands.Cog, name="Polls"):
     async def create_poll(self, ctx, title, duration=None):
         """
         Allows a user to create a poll.
-
-        Users are limited to one ongoing poll per guild
         """
-
-        user_poll = await db.user_get_poll(ctx.author.id, ctx.guild.id)
-        if user_poll:
-            await ctx.send("You have a poll ongoing! Contact an adminstrator "
-                           "if you think this is a mistake")
-            return
 
         if duration is None:
             duration = datetime.timedelta(hours=1)
