@@ -62,6 +62,9 @@ class PollsCog(commands.Cog, name="Polls"):
         embed = await self.create_poll_embed(title, end_date)
         message = await ctx.send(embed=embed)
 
+        await message.add_reaction('➕')
+        await message.add_reaction('✖️')
+
         await db.user_create_poll(ctx.author.id, message.id, ctx.guild.id,
                                   title, int(end_date.timestamp()))
 
