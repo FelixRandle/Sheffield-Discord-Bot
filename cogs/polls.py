@@ -6,6 +6,7 @@
 import asyncio
 import datetime
 import re
+import time
 
 import discord
 from discord.ext import commands
@@ -113,6 +114,24 @@ class PollsCog(commands.Cog, name="Polls"):
             await message.delete()
             await db.delete_poll(poll_id)
 
+    async def add_poll_response(self, poll_id, user_id, reaction, message):
+        result, reason = await db.user_add_response(user_id, poll_id, reaction)
+        if not result:
+            return
+        embed = message.embeds[0]
+        for index, field in enumerate(embed.fields):
+            if field.name.startswith(reaction):
+                count = int(field.name.split()[-1])
+                count += 1
+                
+                embed.set_field_at(index, name=f"{reaction} {count}",
+                                    value=field.value, inline=False)
+                break
+        else:
+            return
+
+        await message.edit(embed=embed)
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """
@@ -136,6 +155,10 @@ class PollsCog(commands.Cog, name="Polls"):
             await self.get_new_choice(poll_id, message, user)
         elif emoji.name == '✖️':
             await self.delete_poll(poll_id, message, user)
+        else:
+            if payload.event_type == 'REACTION_ADD':
+                await self.add_poll_response(poll_id, user.id, 
+                                             emoji.name, message)
 
         if emoji.name in ('➕', ):
             await message.remove_reaction(emoji, user)

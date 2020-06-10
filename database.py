@@ -426,6 +426,23 @@ async def add_poll_choice(poll_id, reaction, text):
             return False, "UNIQUE constraint failed"
 
 
+async def user_add_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        choice_id = choice['ID']
+        try:
+            db.cursor.execute("""
+                INSERT INTO POLL_RESPONSES
+                (choice, user)
+                VALUES
+                (%s, %s)
+            """, (choice_id, user_id))
+            return True, None
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed"
+
+
 async def test_function():
     print(await user_has_channel(247428233086238720))
 
