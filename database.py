@@ -118,6 +118,7 @@ async def create_tables():
             POLLS (
                 ID INT PRIMARY KEY AUTO_INCREMENT,
                 messageID VARCHAR(255) NOT NULL,
+                channelID VARCHAR(255) NOT NULL,
                 guild INT NOT NULL,
                 creator INT NOT NULL,
                 title VARCHAR(255) NOT NULL,
