@@ -360,14 +360,12 @@ async def user_has_channel(discord_id):
         return False
 
 
-async def user_get_poll(discord_id, discord_guild_id, field="*"):
+async def get_poll(message_id, field="*"):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
-        guild_id = await get_guild_info(discord_guild_id, field="ID")
         db.cursor.execute(f"""
             SELECT {field} FROM POLLS
-            WHERE creator = %s AND guild = %s
-        """, (user_id, guild_id))
+            WHERE messageID = %s
+        """, (message_id, ))
 
         result = db.cursor.fetchone()
         if result:
