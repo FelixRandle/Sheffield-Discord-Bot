@@ -123,7 +123,6 @@ async def create_tables():
                 title VARCHAR(255) NOT NULL,
                 endDate INT NOT NULL,
 
-                UNIQUE KEY (creator, guild),
                 FOREIGN KEY(creator)
                     REFERENCES USERS(ID),
                 FOREIGN KEY(guild)
