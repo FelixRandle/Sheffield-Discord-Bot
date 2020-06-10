@@ -140,6 +140,7 @@ async def create_tables():
                 UNIQUE KEY (poll, reaction),
                 FOREIGN KEY (poll)
                     REFERENCES POLLS(ID)
+                    ON DELETE CASCADE
             )
             """,
             """
@@ -153,6 +154,7 @@ async def create_tables():
                     REFERENCES USERS(ID),
                 FOREIGN KEY (choice)
                     REFERENCES POLL_CHOICES(ID)
+                    ON DELETE CASCADE
             )
             """
         )
