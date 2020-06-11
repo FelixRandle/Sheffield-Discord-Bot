@@ -62,7 +62,7 @@ class PollsCog(commands.Cog, name="Polls"):
                                                timeout=30.0)
         except asyncio.TimeoutError:
             await message.channel.send("You didn't respond in time. "
-                                       "Click ➕ again to add a new choice")
+                                       "React with ➕ to try again.")
             return
         finally:
             await prompt_msg.delete()
@@ -73,14 +73,15 @@ class PollsCog(commands.Cog, name="Polls"):
         # Expect split be into 2 parts exactly
         if len(values) != 2:
             await message.channel.send(
-                "New choice wasn't given the correct format. Try again.")
+                "New choice wasn't given in the correct format. "
+                "React with ➕ to try again.")
             return
 
         reaction, text = values
         if await db.get_poll_choice(poll['ID'], reaction):
             await message.channel.send(
                 f"Choice already exists for {reaction}. "
-                "Click ➕ to try again")
+                "React with ➕ to try again.")
             return
 
         # Fetches embed from poll message
