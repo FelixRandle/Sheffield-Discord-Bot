@@ -76,6 +76,13 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         reaction, text = values
+
+        if reaction in ('➕', '✖️', '🛑'):
+            await message.channel.send(
+                f"You can't use {reaction} as a choice. "
+                "It is reserved for controlling the poll.")
+            return
+
         if await db.get_poll_choice(poll['ID'], reaction):
             await message.channel.send(
                 f"Choice already exists for {reaction}. "
@@ -84,6 +91,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Cleans up the message that had the choice info
         # sent by the user
+        await message.add_reaction(reaction)
         await response.delete()
 
         await db.add_poll_choice(poll['ID'], reaction, text)
