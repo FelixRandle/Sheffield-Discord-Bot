@@ -134,11 +134,18 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def end_poll(self, poll):
         poll_id = int(poll['ID'])
-        title = poll['title'].decode()
         channel = self.bot.get_channel(int(poll['channelID']))
+        message = await channel.fetch_message(int(poll['messageID']))
 
         await db.end_poll(poll_id)
-        await channel.send(f"Poll '{title}' has now ended")
+        await message.remove_reaction('➕', self.bot.user)
+        await message.remove_reaction('🛑', self.bot.user)
+
+        embed = message.embeds[0]
+        embed.description = ("Poll has now ended\n"
+                             "React with ✖️ to delete the poll")
+
+        await message.edit(embed=embed)
 
     async def user_end_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
