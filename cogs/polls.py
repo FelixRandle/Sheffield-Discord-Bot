@@ -13,6 +13,7 @@ from discord.ext import commands, tasks
 
 import database as db
 import utils as ut
+import traceback
 
 DURATION_REGEX = re.compile(
     r"((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?")
@@ -24,7 +25,7 @@ class PollsCog(commands.Cog, name="Polls"):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
-        self.poll_cleaner.start()
+        self.poll_daemon.start()
 
     async def parse_time_as_delta(self, time: str):
         match = DURATION_REGEX.match(time)
@@ -121,27 +122,13 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         if is_add:
-            result, reason = await db.user_add_response(user_id, poll['ID'],
-                                                        reaction)
+            result, reason = await db.user_add_response(
+                user_id, poll['ID'], reaction)
         else:
-            result, reason = await db.user_remove_response(user_id, poll['ID'],
-                                                           reaction)
+            result, reason = await db.user_remove_response(
+                user_id, poll['ID'], reaction)
 
-        if not result:
-            return
-        embed = message.embeds[0]
-        for index, field in enumerate(embed.fields):
-            if field.name.startswith(reaction):
-                count = int(field.name.split()[-1])
-                count += 1 if is_add else -1
-
-                embed.set_field_at(index, name=f"{reaction} {count}",
-                                   value=field.value, inline=False)
-                break
-        else:
-            return
-
-        await message.edit(embed=embed)
+        return result
 
     async def end_poll(self, poll):
         poll_id = int(poll['ID'])
@@ -168,7 +155,7 @@ class PollsCog(commands.Cog, name="Polls"):
             await self.end_poll(poll)
 
     @tasks.loop(seconds=5.0)
-    async def poll_cleaner(self):
+    async def poll_daemon(self):
         """
         Task loop that ends any unended polls
         that are need to be ended
@@ -179,8 +166,21 @@ class PollsCog(commands.Cog, name="Polls"):
             if time.time() >= end_date:
                 await self.end_poll(poll)
 
-    @poll_cleaner.before_loop
-    async def before_poll_cleaner(self):
+            channel = self.bot.get_channel(int(poll['channelID']))
+            message = await channel.fetch_message(int(poll['messageID']))
+            count_dict = await db.get_response_count_by_choice(poll['ID'])
+
+            embed = message.embeds[0]
+            for index, field in enumerate(embed.fields):
+                reaction = field.name.split()[0]
+                count = count_dict.get(reaction, 0)
+                embed.set_field_at(index, name=f"{reaction} {count}",
+                                value=field.value, inline=False)
+
+            await message.edit(embed=embed)
+
+    @poll_daemon.before_loop
+    async def before_poll_daemon_start(self):
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener()

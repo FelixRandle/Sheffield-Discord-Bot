@@ -483,6 +483,26 @@ async def user_remove_response(discord_id, poll_id, reaction):
             return False, "Response did not exist"
 
 
+async def get_response_count_by_choice(poll_id):
+    with Database() as db:
+        db.cursor.execute("""
+            SELECT reaction, COUNT(POLL_CHOICES.ID) AS count
+            FROM POLL_CHOICES, POLL_RESPONSES
+            WHERE POLL_CHOICES.poll = %s
+                  AND POLL_RESPONSES.choice = POLL_CHOICES.ID
+            GROUP BY reaction
+        """, (poll_id, ))
+
+        choices = db.cursor.fetchall()
+        count_dict = {}
+
+        for choice in choices:
+            emoji = choice['reaction'].decode('unicode-escape')
+            count_dict[emoji] = int(choice['count'])
+
+        return count_dict
+
+
 async def test_function():
     print(await user_has_channel(247428233086238720))
 
