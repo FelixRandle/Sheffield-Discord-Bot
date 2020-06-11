@@ -89,10 +89,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 "React with ➕ to try again.")
             return
 
-        # Cleans up the message that had the choice info
-        # sent by the user
         await message.add_reaction(reaction)
-        await response.delete()
 
         await db.add_poll_choice(poll['ID'], reaction, text)
 
