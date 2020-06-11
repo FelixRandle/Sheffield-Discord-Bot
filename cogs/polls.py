@@ -122,12 +122,6 @@ class PollsCog(commands.Cog, name="Polls"):
     async def toggle_poll_response(self, poll, user_id,
                                    reaction, message, is_add=True):
 
-        # Changes to responses are only accepted 
-        # if the poll is still in session
-        end_date = int(poll['endDate'])
-        if time.time() >= end_date or poll['ended']:
-            return
-
         if is_add:
             result, reason = await db.user_add_response(
                 user_id, poll['ID'], reaction)
@@ -259,6 +253,10 @@ class PollsCog(commands.Cog, name="Polls"):
         if not poll:
             return
 
+        end_date = int(poll['endDate'])
+        if time.time() >= end_date or poll['ended']:
+            return
+
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
         user = self.bot.get_user(payload.user_id)
@@ -287,12 +285,21 @@ class PollsCog(commands.Cog, name="Polls"):
         message = await channel.fetch_message(message_id)
         user = payload.member
 
-        if emoji.name == '➕':
-            await self.get_new_choice(poll, message, user)
-        elif emoji.name == '✖️':
+        if emoji.name == '✖️':
             deleted = await self.delete_poll(poll, message, user)
             if not deleted:
                 await message.remove_reaction(emoji, user)
+            return
+
+
+        # If the poll has ended, then the only action
+        # that is still applicable is to delete the poll
+        end_date = int(poll['endDate'])
+        if time.time() >= end_date or poll['ended']:
+            return
+
+        if emoji.name == '➕':
+            await self.get_new_choice(poll, message, user)
         elif emoji.name == '🛑':
             await self.user_end_poll(poll, message, user)
         else:
