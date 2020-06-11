@@ -46,7 +46,7 @@ class PollsCog(commands.Cog, name="Polls"):
         return discord.Embed(title=title, description=description,
                              color=0x0000ff)
 
-    async def get_new_choice(self, poll_id, message, user):
+    async def get_new_choice(self, poll, message, user):
         prompt_msg = await message.channel.send(
             "Send a message for the choice in the format `<emoji> <text>`, "
             "e.g. :heart: Heart")
@@ -76,7 +76,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         reaction, text = values
-        if await db.get_poll_choice(poll_id, reaction):
+        if await db.get_poll_choice(poll['ID'], reaction):
             await message.channel.send(
                 f"Choice already exists for {reaction}. "
                 "Click ➕ to try again")
@@ -94,13 +94,12 @@ class PollsCog(commands.Cog, name="Polls"):
         # sent by the user
         await response.delete()
 
-        await db.add_poll_choice(poll_id, reaction, text)
+        await db.add_poll_choice(poll['ID'], reaction, text)
 
-    async def delete_poll(self, poll_id, message, user):
-        poll = await db.get_poll(message.id, field="creator")
+    async def delete_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
-
         current_user_id = int(await db.get_user_id(user.id))
+
         if poll_creator_id != current_user_id:
             await message.channel.send(
                 "You don't have permission to delete this poll!")
@@ -113,21 +112,20 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if result:
             await message.delete()
-            await db.delete_poll(poll_id)
+            await db.delete_poll(poll['ID'])
 
-    async def toggle_poll_response(self, poll_id, user_id,
+    async def toggle_poll_response(self, poll, user_id,
                                    reaction, message, is_add=True):
-        poll = await db.get_poll(message.id, field='endDate')
         end_date = int(poll['endDate'])
 
         if time.time() >= end_date:
             return
 
         if is_add:
-            result, reason = await db.user_add_response(user_id, poll_id,
+            result, reason = await db.user_add_response(user_id, poll['ID'],
                                                         reaction)
         else:
-            result, reason = await db.user_remove_response(user_id, poll_id,
+            result, reason = await db.user_remove_response(user_id, poll['ID'],
                                                            reaction)
 
         if not result:
@@ -139,7 +137,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 count += 1 if is_add else -1
 
                 embed.set_field_at(index, name=f"{reaction} {count}",
-                                    value=field.value, inline=False)
+                                   value=field.value, inline=False)
                 break
         else:
             return
@@ -180,16 +178,15 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         message_id = payload.message_id
-        poll = await db.get_poll(message_id, field="ID")
+        poll = await db.get_poll(message_id)
         if not poll:
             return
 
-        poll_id = poll['ID']
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
         user = self.bot.get_user(payload.user_id)
 
-        await self.toggle_poll_response(poll_id, user.id, emoji.name,
+        await self.toggle_poll_response(poll, user.id, emoji.name,
                                         message, False)
 
     @commands.Cog.listener()
@@ -202,20 +199,19 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         message_id = payload.message_id
-        poll = await db.get_poll(message_id, field="ID")
+        poll = await db.get_poll(message_id)
         if not poll:
             return
 
-        poll_id = poll['ID']
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
         user = payload.member
         if emoji.name == '➕':
-            await self.get_new_choice(poll_id, message, user)
+            await self.get_new_choice(poll, message, user)
         elif emoji.name == '✖️':
-            await self.delete_poll(poll_id, message, user)
+            await self.delete_poll(poll, message, user)
         else:
-            await self.toggle_poll_response(poll_id, user.id, emoji.name, 
+            await self.toggle_poll_response(poll, user.id, emoji.name,
                                             message, True)
 
         if emoji.name in ('➕', ):
