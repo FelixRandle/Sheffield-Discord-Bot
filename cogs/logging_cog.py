@@ -28,6 +28,86 @@ class LoggingCog(commands.Cog):
         await db.log_message(message.author.id, message.id,
                              message.content.encode('unicode-escape'), int(time.time()))
 
+    @commands.Cog.listener('on_message_delete')
+    async def on_message_delete(self, message):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_bulk_message_delete')
+    async def on_bulk_message_delete(self, messages):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_raw_message_delete')
+    async def on_raw_message_delete(self, payload):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_raw_bulk_message_delete')
+    async def on_raw_bulk_message_delete(self, payload):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_message_edit')
+    async def on_message_edit(self, before, after):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_raw_message_edit')
+    async def on_raw_message_edit(self, payload):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_guild_channel_delete')
+    async def on_bulk_message_delete(self, channel):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_guild_channel_create')
+    async def on_guild_channel_create(self, channel):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_guild_channel_delete')
+    async def on_guild_channel_update(self, before, after):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_guild_role_create')
+    async def on_guild_role_create(self, role):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_guild_role_delete')
+    async def on_guild_role_delete(self, role):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_guild_role_update')
+    async def on_guild_role_update(self, before, after):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_member_ban')
+    async def on_member_ban(self, guild, user):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_member_unban')
+    async def on_member_unban(self, guild, user):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_invite_create')
+    async def on_invite_create(self, invite):
+        # TODO Implement
+        pass
+
+    @commands.Cog.listener('on_invite_delete')
+    async def on_invite_delete(self, invite):
+        # TODO Implement
+        pass
+
 
 def setup(bot):
     """
