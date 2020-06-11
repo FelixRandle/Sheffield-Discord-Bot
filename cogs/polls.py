@@ -15,6 +15,7 @@ import database as db
 import utils as ut
 import traceback
 
+# Regex from extracting time from format 00h00m00s
 DURATION_REGEX = re.compile(
     r"((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?")
 
@@ -28,24 +29,21 @@ class PollsCog(commands.Cog, name="Polls"):
         self.poll_daemon.start()
 
     async def parse_time_as_delta(self, time: str):
+        """
+        Uses a regex to extract a duration in the format 00h00m00s
+        to a `datetime.timedelta`
+        """
         match = DURATION_REGEX.match(time)
         if match:
             values_dict = match.groupdict()
             for key in values_dict:
+                # If no value for a time unit is found
+                # then it is assumed to be 0
                 if values_dict[key] is None:
                     values_dict[key] = 0
                 values_dict[key] = int(values_dict[key])
 
             return datetime.timedelta(**values_dict)
-
-    async def create_poll_embed(self, title: str, end_date: datetime.datetime):
-        description = end_date.strftime(
-            "Poll ends: %d/%m/%Y %H:%M:%S\n"
-            "React with ➕ to add a choice\n"
-            "React with ✖️ to delete the poll\n"
-            "React with 🛑 to end the poll and show the results")
-        return discord.Embed(title=title, description=description,
-                             color=0x0000ff)
 
     async def get_new_choice(self, poll, message, user):
         prompt_msg = await message.channel.send(
@@ -102,17 +100,20 @@ class PollsCog(commands.Cog, name="Polls"):
         poll_creator_id = poll['creator']
         current_user_id = int(await db.get_user_id(user.id))
 
+        # Only the creator of the poll can delete it
         if poll_creator_id != current_user_id:
             await message.channel.send(
                 "You don't have permission to delete this poll!")
             return
 
+        # Awaits confirmation of the deletion
         result, reason = await ut.get_confirmation(
             message.channel, user, self.bot,
             "Are you sure you want to delete the poll? "
             "All responses and choices will be deleted")
 
         if result:
+            # The message containing the poll is also deleted
             await message.delete()
             await db.delete_poll(poll['ID'])
 
@@ -120,6 +121,9 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def toggle_poll_response(self, poll, user_id,
                                    reaction, message, is_add=True):
+
+        # Changes to responses are only accepted 
+        # if the poll is still in session
         end_date = int(poll['endDate'])
         if time.time() >= end_date or poll['ended']:
             return
@@ -139,6 +143,8 @@ class PollsCog(commands.Cog, name="Polls"):
         message = await channel.fetch_message(int(poll['messageID']))
 
         await db.end_poll(poll_id)
+
+        # Remove unnecessary poll controls
         await message.remove_reaction('➕', self.bot.user)
         await message.remove_reaction('🛑', self.bot.user)
 
@@ -148,12 +154,11 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await message.edit(embed=embed)
 
-        await self.update_response_counts(poll)
-
     async def user_end_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
         current_user_id = int(await db.get_user_id(user.id))
 
+        # Only the creator of the poll can end the poll
         if poll_creator_id != current_user_id:
             await message.channel.send(
                 "You don't have permission to end this poll!")
@@ -163,10 +168,9 @@ class PollsCog(commands.Cog, name="Polls"):
             message.channel, user, self.bot,
             "Are you sure you want to end the poll now?")
 
-        # Brings forward the end date for the poll,
-        # effectively ending it immediately
+        # Brings forward the end date for the poll to current time
         #
-        # The poll task loop will perform the cleanup
+        # The poll will end the poll on its next iteration
         if result:
             await db.change_poll_end_date(poll['ID'], int(time.time()))
 
@@ -206,6 +210,7 @@ class PollsCog(commands.Cog, name="Polls"):
             embed.add_field(name=f"{reaction} {count}",
                             value=choice['text'].decode(), inline=False)
 
+        # Indicates that results are being updated
         footer_text = datetime.datetime.now().strftime(
             "Results last updated: %d/%M/%Y %H:%M:%S")
         embed.set_footer(text=footer_text)
@@ -218,6 +223,9 @@ class PollsCog(commands.Cog, name="Polls"):
         Task loop that ends any unended polls
         that are need to be ended
         """
+
+        # try-except can be replaced with a coroutine
+        # wrapped with discord.ext.tasks.Loop.error on release of 1.4
         try:
             ongoing_polls = await db.get_all_ongoing_polls()
             for poll in ongoing_polls:
@@ -226,8 +234,8 @@ class PollsCog(commands.Cog, name="Polls"):
                     await self.end_poll(poll)
 
                 await self.update_response_counts(poll)
-        except Exception as e:
-            print(e)
+        except Exception:
+            traceback.print_exc()
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
@@ -238,10 +246,14 @@ class PollsCog(commands.Cog, name="Polls"):
         """
         Listens for reactions that are removed from poll messages
         """
+
+        # Ignores removal of any control reactions
         emoji = payload.emoji
         if emoji.name in ('➕', '✖️', '🛑'):
             return
 
+        # If the message that was reacted doesn't correspond
+        # to a poll message, then it can be ignored
         message_id = payload.message_id
         poll = await db.get_poll(message_id)
         if not poll:
@@ -259,10 +271,13 @@ class PollsCog(commands.Cog, name="Polls"):
         """
         Listens for reactions to poll messages
         """
+
+        # Ignores if any bots reacts
         emoji = payload.emoji
         if payload.member.bot:
             return
 
+        # Ignores react if the message doesn't correspond to a poll
         message_id = payload.message_id
         poll = await db.get_poll(message_id)
         if not poll:
@@ -271,6 +286,7 @@ class PollsCog(commands.Cog, name="Polls"):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
         user = payload.member
+
         if emoji.name == '➕':
             await self.get_new_choice(poll, message, user)
         elif emoji.name == '✖️':
@@ -306,9 +322,16 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         end_date = datetime.datetime.now() + duration
-        embed = await self.create_poll_embed(title, end_date)
+        description = end_date.strftime(
+            "Poll ends: %d/%m/%Y %H:%M:%S\n"
+            "React with ➕ to add a choice\n"
+            "React with ✖️ to delete the poll\n"
+            "React with 🛑 to end the poll and show the results")
+        embed = discord.Embed(title=title, description=description,
+                              color=0x0000ff)
         message = await ctx.send(embed=embed)
 
+        # Adds control emojis
         await message.add_reaction('➕')
         await message.add_reaction('✖️')
         await message.add_reaction('🛑')
