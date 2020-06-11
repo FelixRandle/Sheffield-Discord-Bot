@@ -405,6 +405,14 @@ async def get_all_ongoing_polls(field="*"):
         return db.cursor.fetchall()
 
 
+async def change_poll_end_date(poll_id, end_date):
+    with Database() as db:
+        db.cursor.execute("""
+            UPDATE POLLS SET endDate = %s
+            WHERE ID = %s
+        """, (end_date, poll_id))
+
+
 async def end_poll(poll_id):
     with Database() as db:
         db.cursor.execute("""

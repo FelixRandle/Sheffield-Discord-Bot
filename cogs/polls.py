@@ -162,8 +162,12 @@ class PollsCog(commands.Cog, name="Polls"):
             message.channel, user, self.bot,
             "Are you sure you want to end the poll now?")
 
+        # Brings forward the end date for the poll,
+        # effectively ending it immediately
+        # 
+        # The poll task loop will perform the cleanup
         if result:
-            await self.end_poll(poll)
+            await db.change_poll_end_date(poll['ID'], int(time.time()))
 
     async def update_response_counts(self, poll):
         channel = self.bot.get_channel(int(poll['channelID']))
