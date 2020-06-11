@@ -165,7 +165,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Brings forward the end date for the poll,
         # effectively ending it immediately
-        # 
+        #
         # The poll task loop will perform the cleanup
         if result:
             await db.change_poll_end_date(poll['ID'], int(time.time()))
@@ -181,6 +181,10 @@ class PollsCog(commands.Cog, name="Polls"):
             count = count_dict.get(reaction, 0)
             embed.set_field_at(index, name=f"{reaction} {count}",
                                value=field.value, inline=False)
+
+        footer_text = datetime.datetime.now().strftime(
+            "Results last updated: %d/%M/%Y %H:%M:%S")
+        embed.set_footer(text=footer_text)
 
         await message.edit(embed=embed)
 
