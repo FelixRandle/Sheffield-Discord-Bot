@@ -9,7 +9,7 @@ import re
 import time
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import database as db
 import utils as ut
@@ -24,6 +24,7 @@ class PollsCog(commands.Cog, name="Polls"):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
+        self.poll_cleaner.start()
 
     async def parse_time_as_delta(self, time: str):
         match = DURATION_REGEX.match(time)
@@ -144,6 +145,30 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         await message.edit(embed=embed)
+
+    async def end_poll(self, poll):
+        poll_id = int(poll['ID'])
+        title = poll['title'].decode()
+        channel = self.bot.get_channel(int(poll['channelID']))
+
+        await db.end_poll(poll_id)
+        await channel.send(f"Poll '{title}' has now ended")
+
+    @tasks.loop(seconds=5.0)
+    async def poll_cleaner(self):
+        """
+        Task loop that ends any unended polls
+        that are need to be ended
+        """
+        ongoing_polls = await db.get_all_ongoing_polls()
+        for poll in ongoing_polls:
+            end_date = poll['endDate']
+            if time.time() >= end_date:
+                await self.end_poll(poll)
+
+    @poll_cleaner.before_loop
+    async def before_poll_cleaner(self):
+        await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):

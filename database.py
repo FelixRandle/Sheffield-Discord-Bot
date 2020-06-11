@@ -395,6 +395,26 @@ async def user_create_poll(discord_id, message_id, channel_id,
             return False, "UNIQUE constraint failed"
 
 
+async def get_all_ongoing_polls(field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLLS
+            WHERE ended = FALSE
+        """)
+
+        return db.cursor.fetchall()
+
+
+async def end_poll(poll_id):
+    with Database() as db:
+        db.cursor.execute("""
+            UPDATE POLLS SET ended = TRUE
+            WHERE ID = %s
+        """, (poll_id, ))
+
+        return db.cursor.rowcount > 0
+
+
 async def delete_poll(poll_id):
     with Database() as db:
         db.cursor.execute("""
