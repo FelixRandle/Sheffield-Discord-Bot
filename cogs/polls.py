@@ -147,6 +147,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await message.edit(embed=embed)
 
+        await self.update_response_counts(poll)
+
     async def user_end_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
         current_user_id = int(await db.get_user_id(user.id))
@@ -163,6 +165,20 @@ class PollsCog(commands.Cog, name="Polls"):
         if result:
             await self.end_poll(poll)
 
+    async def update_response_counts(self, poll):
+        channel = self.bot.get_channel(int(poll['channelID']))
+        message = await channel.fetch_message(int(poll['messageID']))
+        count_dict = await db.get_response_count_by_choice(poll['ID'])
+
+        embed = message.embeds[0]
+        for index, field in enumerate(embed.fields):
+            reaction = field.name.split()[0]
+            count = count_dict.get(reaction, 0)
+            embed.set_field_at(index, name=f"{reaction} {count}",
+                               value=field.value, inline=False)
+
+        await message.edit(embed=embed)
+
     @tasks.loop(seconds=5.0)
     async def poll_daemon(self):
         """
@@ -175,18 +191,7 @@ class PollsCog(commands.Cog, name="Polls"):
             if time.time() >= end_date:
                 await self.end_poll(poll)
 
-            channel = self.bot.get_channel(int(poll['channelID']))
-            message = await channel.fetch_message(int(poll['messageID']))
-            count_dict = await db.get_response_count_by_choice(poll['ID'])
-
-            embed = message.embeds[0]
-            for index, field in enumerate(embed.fields):
-                reaction = field.name.split()[0]
-                count = count_dict.get(reaction, 0)
-                embed.set_field_at(index, name=f"{reaction} {count}",
-                                value=field.value, inline=False)
-
-            await message.edit(embed=embed)
+            await self.update_response_counts(poll)
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
