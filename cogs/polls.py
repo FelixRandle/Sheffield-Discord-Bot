@@ -152,6 +152,22 @@ class PollsCog(commands.Cog, name="Polls"):
         await db.end_poll(poll_id)
         await channel.send(f"Poll '{title}' has now ended")
 
+    async def user_end_poll(self, poll, message, user):
+        poll_creator_id = poll['creator']
+        current_user_id = int(await db.get_user_id(user.id))
+
+        if poll_creator_id != current_user_id:
+            await message.channel.send(
+                "You don't have permission to end this poll!")
+            return
+
+        result, reason = await ut.get_confirmation(
+            message.channel, user, self.bot,
+            "Are you sure you want to end the poll now?")
+
+        if result:
+            await self.end_poll(poll)
+
     @tasks.loop(seconds=5.0)
     async def poll_cleaner(self):
         """
@@ -174,7 +190,7 @@ class PollsCog(commands.Cog, name="Polls"):
         Listens for reactions that are removed from poll messages
         """
         emoji = payload.emoji
-        if emoji.name in ('➕', '✖️'):
+        if emoji.name in ('➕', '✖️', '🛑'):
             return
 
         message_id = payload.message_id
@@ -210,11 +226,13 @@ class PollsCog(commands.Cog, name="Polls"):
             await self.get_new_choice(poll, message, user)
         elif emoji.name == '✖️':
             await self.delete_poll(poll, message, user)
+        elif emoji.name == '🛑':
+            await self.user_end_poll(poll, message, user)
         else:
             await self.toggle_poll_response(poll, user.id, emoji.name,
                                             message, True)
 
-        if emoji.name in ('➕', ):
+        if emoji.name in ('➕', '🛑'):
             await message.remove_reaction(emoji, user)
 
     @commands.command(
@@ -242,6 +260,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await message.add_reaction('➕')
         await message.add_reaction('✖️')
+        await message.add_reaction('🛑')
 
         await db.user_create_poll(
             ctx.author.id, message.id, message.channel.id,
