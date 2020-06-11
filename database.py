@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """Class to handle all database connections."""
 
 import os
@@ -14,8 +14,9 @@ if __name__ == "__main__":
     load_dotenv()
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
+SQL_DB = os.getenv("SQL_DB")
 
-if SQL_USER is None or SQL_PASS is None:
+if SQL_USER is None or SQL_PASS is None or SQL_DB is None:
     raise Exception("Cannot find required database login information")
 
 
@@ -27,7 +28,7 @@ class Database:
         self.db_config = {
             'host': '209.97.130.228',
             'port': 3306,
-            'database': 'sheffieldcompsci',
+            'database': SQL_DB,
             'user': SQL_USER,
             'password': SQL_PASS,
             'charset': 'utf8',
@@ -112,7 +113,19 @@ async def create_tables():
                 
                 FOREIGN KEY (owner)
                     REFERENCES USERS(ID)
-            )"""
+            )""",
+            """
+            CREATE TABLE IF NOT EXISTS
+            MESSAGE_LOG (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                authorID INT NOT NULL,
+                messageID VARCHAR(255) NOT NULL,
+                content VARCHAR(4096),
+                dateSent INT NOT NULL,
+                FOREIGN KEY (authorID)
+                    REFERENCES USERS(ID)
+            )
+            """
         )
 
         for query in query_list:
@@ -316,6 +329,23 @@ async def user_has_channel(discord_id):
         if result:
             return result['channelID']
         return False
+
+
+async def log_message(discord_id, message_id, message, date_sent):
+    with Database() as db:
+        try:
+            user_id = await get_user_id(discord_id)
+            db.cursor.execute(f"""
+                INSERT INTO MESSAGE_LOG
+                (authorID, messageID, content, dateSent)
+                VALUES
+                (%s, %s, %s, %s)
+            """, (user_id, message_id, message, date_sent))
+
+            db.connection.commit()
+            return True
+        except sql.errors.IntegrityError:
+            return False
 
 
 async def test_function():
