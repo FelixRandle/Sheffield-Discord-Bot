@@ -494,7 +494,8 @@ async def user_remove_response(discord_id, poll_id, reaction):
 async def get_response_count_by_choice(poll_id):
     with Database() as db:
         db.cursor.execute("""
-            SELECT reaction, COUNT(POLL_RESPONSES.ID) AS count
+            SELECT POLL_CHOICES.reaction, POLL_CHOICES.text,
+                COUNT(POLL_RESPONSES.ID) AS count
             FROM POLL_CHOICES
                 LEFT JOIN POLL_RESPONSES
                 ON POLL_RESPONSES.choice = POLL_CHOICES.ID
@@ -502,14 +503,7 @@ async def get_response_count_by_choice(poll_id):
             GROUP BY reaction
         """, (poll_id, ))
 
-        choices = db.cursor.fetchall()
-        count_dict = {}
-
-        for choice in choices:
-            emoji = choice['reaction'].decode('unicode-escape')
-            count_dict[emoji] = int(choice['count'])
-
-        return count_dict
+        return db.cursor.fetchall()
 
 
 async def test_function():

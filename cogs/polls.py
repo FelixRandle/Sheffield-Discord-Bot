@@ -171,16 +171,40 @@ class PollsCog(commands.Cog, name="Polls"):
             await db.change_poll_end_date(poll['ID'], int(time.time()))
 
     async def update_response_counts(self, poll):
+
+        def key(choice):
+            try:
+                # Returns the index of the choice's emoji
+                # in the list of emojis in the message reactions
+                return emojis.index(
+                    choice['reaction'].decode('unicode-escape'))
+            except ValueError:
+                # If emoji isn't found, then return the length
+                # of the choices list
+                #
+                # This guarantees that the choice are displayed
+                # at the end of the list (along with the others
+                # that are not found)
+                return len(choices)
+
         channel = self.bot.get_channel(int(poll['channelID']))
         message = await channel.fetch_message(int(poll['messageID']))
-        count_dict = await db.get_response_count_by_choice(poll['ID'])
+        choices = await db.get_response_count_by_choice(poll['ID'])
+
+        # Choices are sorted in the order of appearance
+        # of the emoji in the message - also the order in
+        # which they are added
+        emojis = [reaction.emoji for reaction in message.reactions]
+        choices.sort(key=key)
 
         embed = message.embeds[0]
-        for index, field in enumerate(embed.fields):
-            reaction = field.name.split()[0]
-            count = count_dict.get(reaction, 0)
-            embed.set_field_at(index, name=f"{reaction} {count}",
-                               value=field.value, inline=False)
+        embed.clear_fields()
+
+        for choice in choices:
+            reaction = choice['reaction'].decode('unicode-escape')
+            count = int(choice['count'])
+            embed.add_field(name=f"{reaction} {count}",
+                            value=choice['text'].decode(), inline=False)
 
         footer_text = datetime.datetime.now().strftime(
             "Results last updated: %d/%M/%Y %H:%M:%S")
@@ -194,13 +218,16 @@ class PollsCog(commands.Cog, name="Polls"):
         Task loop that ends any unended polls
         that are need to be ended
         """
-        ongoing_polls = await db.get_all_ongoing_polls()
-        for poll in ongoing_polls:
-            end_date = poll['endDate']
-            if time.time() >= end_date:
-                await self.end_poll(poll)
+        try:
+            ongoing_polls = await db.get_all_ongoing_polls()
+            for poll in ongoing_polls:
+                end_date = poll['endDate']
+                if time.time() >= end_date:
+                    await self.end_poll(poll)
 
-            await self.update_response_counts(poll)
+                await self.update_response_counts(poll)
+        except Exception as e:
+            print(e)
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
