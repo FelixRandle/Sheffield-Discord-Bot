@@ -45,7 +45,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
             return datetime.timedelta(**values_dict)
 
-    async def get_new_choice(self, poll, message, user):
+    async def add_new_choice(self, poll, message, user):
         prompt_msg = await message.channel.send(
             "Send a message for the choice in the format `<emoji> <text>`, "
             "e.g. :heart: Heart")
@@ -296,7 +296,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         if emoji.name == '➕':
-            await self.get_new_choice(poll, message, user)
+            await self.add_new_choice(poll, message, user)
         elif emoji.name == '🛑':
             await self.user_end_poll(poll, message, user)
         else:
