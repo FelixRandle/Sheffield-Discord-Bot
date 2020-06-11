@@ -82,14 +82,6 @@ class PollsCog(commands.Cog, name="Polls"):
                 "React with ➕ to try again.")
             return
 
-        # Fetches embed from poll message
-        embed = message.embeds[0]
-        embed.add_field(name=f"{reaction} 0", value=text, inline=False)
-
-        # Message must be updated with new embed
-        await message.edit(embed=embed)
-        await message.add_reaction(reaction)
-
         # Cleans up the message that had the choice info
         # sent by the user
         await response.delete()
