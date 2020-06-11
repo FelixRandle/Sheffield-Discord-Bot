@@ -115,6 +115,8 @@ class PollsCog(commands.Cog, name="Polls"):
             await message.delete()
             await db.delete_poll(poll['ID'])
 
+        return result
+
     async def toggle_poll_response(self, poll, user_id,
                                    reaction, message, is_add=True):
         end_date = int(poll['endDate'])
@@ -224,7 +226,9 @@ class PollsCog(commands.Cog, name="Polls"):
         if emoji.name == '➕':
             await self.get_new_choice(poll, message, user)
         elif emoji.name == '✖️':
-            await self.delete_poll(poll, message, user)
+            deleted = await self.delete_poll(poll, message, user)
+            if not deleted:
+                await message.remove_reaction(emoji, user)
         elif emoji.name == '🛑':
             await self.user_end_poll(poll, message, user)
         else:
