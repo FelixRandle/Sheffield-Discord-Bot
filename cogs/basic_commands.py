@@ -163,8 +163,7 @@ class BasicCommandsCog(commands.Cog):
 
         Clears an extra one to remove the commands message.
         """
-        async for message in ctx.history(limit=message_count+1):
-            await message.delete()
+        await ctx.channel.purge(limit=message_count + 1)
 
 
 def setup(bot):
