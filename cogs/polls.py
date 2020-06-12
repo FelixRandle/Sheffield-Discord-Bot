@@ -346,15 +346,12 @@ class PollsCog(commands.Cog, name="Polls"):
         name="createpoll",
         help="Creates a poll. You can add choices to it later")
     @commands.has_role("Member")
-    async def create_poll(self, ctx, title, duration=None):
+    async def create_poll(self, ctx, duration, *, title):
         """
         Allows a user to create a poll.
         """
 
-        if duration is None:
-            duration = datetime.timedelta(hours=1)
-        else:
-            duration = await self.parse_time_as_delta(duration)
+        duration = await self.parse_time_as_delta(duration)
 
         if not duration:
             await ctx.send("Poll must have a valid duration "
