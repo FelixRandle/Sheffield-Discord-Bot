@@ -117,7 +117,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await self.check_add_new_choice(poll, message, response)
 
-    async def delete_poll(self, poll, message, user):
+    async def user_delete_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
         current_user_id = int(await db.get_user_id(user.id))
 
@@ -309,7 +309,7 @@ class PollsCog(commands.Cog, name="Polls"):
         user = payload.member
 
         if emoji.name == '✖️':
-            deleted = await self.delete_poll(poll, message, user)
+            deleted = await self.user_delete_poll(poll, message, user)
             if not deleted:
                 await message.remove_reaction(emoji, user)
             return
@@ -330,6 +330,19 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if emoji.name in ('➕', '🛑'):
             await message.remove_reaction(emoji, user)
+
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload):
+        """
+        Listens to any message deletion events
+        """
+
+        # If the message containing the poll is deleted
+        # then the poll is also deleted
+
+        poll = await db.get_poll(payload.message_id, field='ID')
+        if poll:
+            await db.delete_poll(poll['ID'])
 
     @commands.command(
         name="createpoll",
