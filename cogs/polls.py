@@ -232,7 +232,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await message.edit(embed=embed)
 
-    @tasks.loop(seconds=5.0)
+    @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
         """
         Task loop that update response counts
