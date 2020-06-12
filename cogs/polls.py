@@ -82,18 +82,18 @@ class PollsCog(commands.Cog, name="Polls"):
         if error_msg is not None:
             error_prompt = await message.channel.send(
                 f"{error_msg} You may edit your original message.")
-            try:
-                check = get_message_edit_check(response)
 
+            check = get_message_edit_check(response)
+
+            try:
                 _, new_response = await self.bot.wait_for(
                     'message_edit', check=check, timeout=30.0)
-
+            except asyncio.TimeoutError:
+                await response.delete()
+                await error_prompt.delete()
+            else:
                 await error_prompt.delete()
                 await self.check_add_new_choice(poll, message, new_response)
-            except asyncio.TimeoutError:
-                await message.channel.send(
-                    "You didn't edit your message in time."
-                    "React with ➕ to try again.")
         else:
             await response.delete()
             await db.add_poll_choice(int(poll['ID']), reaction, text)
@@ -113,13 +113,11 @@ class PollsCog(commands.Cog, name="Polls"):
             response = await self.bot.wait_for('message', check=author_check,
                                                timeout=30.0)
         except asyncio.TimeoutError:
-            await message.channel.send("You didn't respond in time. "
-                                       "React with ➕ to try again.")
-            return
+            pass
+        else:
+            await self.check_add_new_choice(poll, message, response)
         finally:
             await prompt_msg.delete()
-
-        await self.check_add_new_choice(poll, message, response)
 
     async def user_delete_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
@@ -127,8 +125,6 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Only the creator of the poll can delete it
         if poll_creator_id != current_user_id:
-            await message.channel.send(
-                "You don't have permission to delete this poll!")
             return
 
         # Awaits confirmation of the deletion
@@ -179,8 +175,6 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Only the creator of the poll can end the poll
         if poll_creator_id != current_user_id:
-            await message.channel.send(
-                "You don't have permission to end this poll!")
             return
 
         result, reason = await ut.get_confirmation(
