@@ -487,8 +487,7 @@ async def user_remove_response(discord_id, poll_id, reaction):
 
         if db.cursor.rowcount > 0:
             return True, None
-        else:
-            return False, "Response did not exist"
+        return False, "Response did not exist"
 
 
 async def get_response_count_by_choice(poll_id):
