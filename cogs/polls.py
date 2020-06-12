@@ -17,7 +17,8 @@ import traceback
 
 # Regex from extracting time from format 00h00m00s
 DURATION_REGEX = re.compile(
-    r"((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?")
+    r"((?P<days>\d+?)d)?((?P<hours>\d+?)h)?"
+    r"((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?")
 
 
 class PollsCog(commands.Cog, name="Polls"):
