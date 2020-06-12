@@ -103,7 +103,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         prompt_msg = await message.channel.send(
             "Send a message for the choice in the format `<emoji> <text>`, "
-            "e.g. :heart: Heart")
+            "e.g. :heart: Red Heart")
 
         try:
             response = await self.bot.wait_for('message', check=author_check,
