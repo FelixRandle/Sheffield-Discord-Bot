@@ -234,8 +234,8 @@ class PollsCog(commands.Cog, name="Polls"):
     @tasks.loop(seconds=5.0)
     async def poll_daemon(self):
         """
-        Task loop that ends any unended polls
-        that are need to be ended
+        Task loop that update response counts
+        and ends polls that need to be ended
         """
 
         # try-except can be replaced with a coroutine
@@ -253,6 +253,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
+        # Waits until the bot is ready
+        # before starting the task loop
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
@@ -322,8 +324,8 @@ class PollsCog(commands.Cog, name="Polls"):
         elif emoji.name == '🛑':
             await self.user_end_poll(poll, message, user)
         else:
-            await self.toggle_poll_response(poll, user.id, emoji.name,
-                                            message, True)
+            await self.toggle_poll_response(
+                poll, user.id, emoji.name, message, True)
 
         if emoji.name in ('➕', '🛑'):
             await message.remove_reaction(emoji, user)
@@ -354,7 +356,7 @@ class PollsCog(commands.Cog, name="Polls"):
             "React with ✖️ to delete the poll\n"
             "React with 🛑 to end the poll and show the results")
         embed = discord.Embed(title=title, description=description,
-                              color=0x0000ff)
+                              color=0x009fe3)
         message = await ctx.send(embed=embed)
 
         # Adds control emojis
