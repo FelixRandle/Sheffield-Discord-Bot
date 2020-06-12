@@ -284,8 +284,8 @@ class PollsCog(commands.Cog, name="Polls"):
         message = await channel.fetch_message(message_id)
         user = self.bot.get_user(payload.user_id)
 
-        await self.toggle_poll_response(poll, user.id, emoji.name,
-                                        message, False)
+        await self.toggle_poll_response(
+            poll, user.id, str(emoji), message, False)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -326,7 +326,7 @@ class PollsCog(commands.Cog, name="Polls"):
             await self.user_end_poll(poll, message, user)
         else:
             await self.toggle_poll_response(
-                poll, user.id, emoji.name, message, True)
+                poll, user.id, str(emoji), message, True)
 
         if emoji.name in ('➕', '🛑'):
             await message.remove_reaction(emoji, user)
