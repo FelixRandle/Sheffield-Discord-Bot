@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Cog for organising polls"""
+"""
+Cog for organising polls
+
+Author: William Lee
+"""
 
 import asyncio
 import datetime

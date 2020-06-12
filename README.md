@@ -5,7 +5,7 @@
  Felix Randle
  
  Contributors:
- N/A
+ William Lee
  
  ## Requirements
  *discord.py*
