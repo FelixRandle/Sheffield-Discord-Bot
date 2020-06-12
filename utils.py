@@ -22,7 +22,7 @@ async def get_confirmation(channel, user, bot, message):
             ((str(check_reaction.emoji) == u"👍") or (str(check_reaction.emoji) == u"👎"))
 
     try:
-        reaction, user = await bot.wait_for('reaction_add', timeout=60.0, check=check)
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
     except asyncio.TimeoutError:
         await confirm_message.delete()
         return False, "Timeout"
