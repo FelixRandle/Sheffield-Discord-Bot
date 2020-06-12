@@ -312,11 +312,10 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
 
-        # If the poll has ended, then the only action
-        # that is still applicable is to delete the poll
+        # New responses after the poll has ended are not accepted
         end_date = int(poll['endDate'])
         if time.time() >= end_date or poll['ended']:
-            return
+            await message.remove_reaction(emoji, user)
 
         if emoji.name == '➕':
             await self.get_new_choice_from_user(poll, message, user)
