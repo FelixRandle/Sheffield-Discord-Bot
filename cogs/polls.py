@@ -45,18 +45,67 @@ class PollsCog(commands.Cog, name="Polls"):
 
             return datetime.timedelta(**values_dict)
 
-    async def add_new_choice(self, poll, message, user):
+    async def check_add_new_choice(self, poll, message, response):
+        # Checks an edited message against a given message
+        def get_message_edit_check(message):
+            def check(_, m):
+                return m.id == message.id
+
+            return check
+
+        # Splits the message into emoji and text
+        values = response.content.split(maxsplit=1)
+
+        error_msg = None
+
+        # Expect split be into 2 parts exactly
+        if len(values) != 2:
+            error_msg = "New choice wasn't given in the correct format."
+
+        if error_msg is None:
+            reaction, text = values
+            if reaction in ('➕', '✖️', '🛑'):
+                error_msg = f"You can't use {reaction} as a choice."
+            elif await db.get_poll_choice(poll['ID'], reaction):
+                error_msg = f"Choice already exists for {reaction}."
+            else:
+                try:
+                    await message.add_reaction(reaction)
+                except discord.errors.HTTPException:
+                    error_msg = f"{reaction} is an unknown emoji."
+
+        if error_msg is not None:
+            error_prompt = await message.channel.send(
+                f"{error_msg} You may edit your original message.")
+            try:
+                check = get_message_edit_check(response)
+
+                _, new_response = await self.bot.wait_for(
+                    'message_edit', check=check, timeout=30.0)
+
+                await error_prompt.delete()
+                await self.check_add_new_choice(poll, message, new_response)
+            except asyncio.TimeoutError:
+                await message.channel.send(
+                    "You didn't edit your message in time."
+                    "React with ➕ to try again.")
+        else:
+            await response.delete()
+            await db.add_poll_choice(int(poll['ID']), reaction, text)
+
+    async def get_new_choice_from_user(self, poll, message, user):
+
+        # Checks that the author of the message
+        # is the one that wants to add a new choice
+        def author_check(m):
+            return m.author == user
+
         prompt_msg = await message.channel.send(
             "Send a message for the choice in the format `<emoji> <text>`, "
             "e.g. :heart: Heart")
 
-        # Checks that the author of the message
-        # is the one that wants to add a new choice
-        def check(m):
-            return m.author == user
-
         try:
-            response = await self.bot.wait_for('message', check=check,
+            response = await self.bot.wait_for('message', check=author_check,
                                                timeout=30.0)
         except asyncio.TimeoutError:
             await message.channel.send("You didn't respond in time. "
@@ -65,33 +114,7 @@ class PollsCog(commands.Cog, name="Polls"):
         finally:
             await prompt_msg.delete()
 
-        # Splits the message into emoji and text
-        values = response.content.split(maxsplit=1)
-
-        # Expect split be into 2 parts exactly
-        if len(values) != 2:
-            await message.channel.send(
-                "New choice wasn't given in the correct format. "
-                "React with ➕ to try again.")
-            return
-
-        reaction, text = values
-
-        if reaction in ('➕', '✖️', '🛑'):
-            await message.channel.send(
-                f"You can't use {reaction} as a choice. "
-                "It is reserved for controlling the poll.")
-            return
-
-        if await db.get_poll_choice(poll['ID'], reaction):
-            await message.channel.send(
-                f"Choice already exists for {reaction}. "
-                "React with ➕ to try again.")
-            return
-
-        await message.add_reaction(reaction)
-
-        await db.add_poll_choice(poll['ID'], reaction, text)
+        await self.check_add_new_choice(poll, message, response)
 
     async def delete_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
@@ -296,7 +319,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         if emoji.name == '➕':
-            await self.add_new_choice(poll, message, user)
+            await self.get_new_choice_from_user(poll, message, user)
         elif emoji.name == '🛑':
             await self.user_end_poll(poll, message, user)
         else:
