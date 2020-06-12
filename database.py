@@ -159,8 +159,10 @@ async def create_tables():
                 FOREIGN KEY (choice)
                     REFERENCES POLL_CHOICES(ID)
                     ON DELETE CASCADE
+            )
             """,
             """
+            CREATE TABLE IF NOT EXISTS
             MESSAGE_LOG (
                 ID INT PRIMARY KEY AUTO_INCREMENT,
                 authorID INT NOT NULL,
