@@ -77,7 +77,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 try:
                     await message.add_reaction(reaction)
                 except discord.errors.HTTPException:
-                    error_msg = f"{reaction} is an unknown emoji."
+                    error_msg = f"'{reaction}' is an unknown emoji."
 
         if error_msg is not None:
             error_prompt = await message.channel.send(
