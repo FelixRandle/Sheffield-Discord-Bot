@@ -378,16 +378,24 @@ async def user_has_channel(discord_id):
         return False
 
 
-async def get_poll(message_id, field="*"):
+async def get_poll_by_id(poll_id, field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLLS
+            WHERE ID = %s
+        """, (poll_id, ))
+
+        return db.cursor.fetchone()
+
+
+async def get_poll_by_message_id(message_id, field="*"):
     with Database() as db:
         db.cursor.execute(f"""
             SELECT {field} FROM POLLS
             WHERE messageID = %s
         """, (message_id, ))
 
-        result = db.cursor.fetchone()
-        if result:
-            return result
+        return db.cursor.fetchone()
 
 
 async def user_create_poll(discord_id, message_id, channel_id,
@@ -406,6 +414,18 @@ async def user_create_poll(discord_id, message_id, channel_id,
             db.connection.commit()
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"
+
+
+async def update_poll_message_id(poll_id, message_id):
+    with Database() as db:
+        try:
+            db.cursor.execute("""
+                UPDATE POLLS SET messageID = %s
+                WHERE ID = %s
+            """, (message_id, poll_id))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "Integrity error"
 
 
 async def get_all_ongoing_polls(field="*"):
@@ -450,11 +470,15 @@ async def get_poll_choice(poll_id, reaction, field="*"):
         db.cursor.execute(f"""
             SELECT {field} FROM POLL_CHOICES
             WHERE poll = %s AND reaction = %s
-        """, (poll_id, reaction.encode('unicode_escape')))
+        """, (poll_id, reaction.encode('unicode-escape')))
 
         result = db.cursor.fetchone()
         if result:
-            return result
+            for key in result:
+                if key in ('reaction', 'text'):
+                    result[key] = result[key].decode('unicode-escape')
+        
+        return result
 
 
 async def add_poll_choice(poll_id, reaction, text):
@@ -465,9 +489,27 @@ async def add_poll_choice(poll_id, reaction, text):
                 (poll, reaction, text)
                 VALUES
                 (%s, %s, %s)
-            """, (poll_id, reaction.encode('unicode_escape'), text))
+            """, (poll_id, reaction.encode('unicode-escape'), 
+                  text.encode('unicode-escape')))
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"
+
+
+async def user_has_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        if choice is None:
+            return
+
+        choice_id = choice['ID']
+        
+        db.cursor.execute("""
+            SELECT ID FROM POLL_RESPONSES
+            WHERE POLL_RESPONSES.user = %s AND POLL_RESPONSES.choice = %s
+        """, (user_id, choice_id))
+
+        return db.cursor.fetchone() is not None
 
 
 async def user_add_response(discord_id, poll_id, reaction):
@@ -503,17 +545,31 @@ async def user_remove_response(discord_id, poll_id, reaction):
         return False, "Response did not exist"
 
 
-async def get_response_count_by_choice(poll_id):
+async def get_poll_choices(poll_id):
     with Database() as db:
         db.cursor.execute("""
-            SELECT POLL_CHOICES.reaction, POLL_CHOICES.text,
-                COUNT(POLL_RESPONSES.ID) AS count
+            SELECT ID, reaction, text
             FROM POLL_CHOICES
-                LEFT JOIN POLL_RESPONSES
-                ON POLL_RESPONSES.choice = POLL_CHOICES.ID
             WHERE POLL_CHOICES.poll = %s
-            GROUP BY reaction
         """, (poll_id, ))
+
+        results = db.cursor.fetchall()
+        if results:
+            for result in results:
+                for k in result:
+                    if k in ('reaction', 'text'):
+                        result[k] = result[k].decode('unicode-escape')
+
+        return results
+
+
+async def get_discord_user_ids_for_choice(choice_id):
+    with Database() as db:
+        db.cursor.execute("""
+            SELECT USERS.discordID
+            FROM USERS, POLL_RESPONSES
+            WHERE USERS.ID = POLL_RESPONSES.user AND POLL_RESPONSES.choice = %s 
+        """, (choice_id, ))
 
         return db.cursor.fetchall()
 
