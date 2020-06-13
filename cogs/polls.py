@@ -174,9 +174,11 @@ class PollsCog(commands.Cog, name="Polls"):
         except discord.errors.NotFound:
             return
 
-        # Remove unnecessary poll controls
-        await message.remove_reaction('➕', self.bot.user)
-        await message.remove_reaction('🛑', self.bot.user)
+        # Removes all reactions but the delete poll reaction
+        for reaction in message.reactions:
+            if str(reaction.emoji) == '✖️':
+                continue
+            await message.remove_reaction(reaction.emoji, self.bot.user)
 
         embed = message.embeds[0]
         embed.description = ("Poll has now ended\n"
