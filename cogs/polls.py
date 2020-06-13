@@ -372,6 +372,9 @@ class PollsCog(commands.Cog, name="Polls"):
         await message.add_reaction('✖️')
         await message.add_reaction('🛑')
 
+        # Deletes the original command message
+        await ctx.message.delete()
+
         await db.user_create_poll(
             ctx.author.id, message.id, message.channel.id,
             ctx.guild.id, title, int(end_date.timestamp()))
