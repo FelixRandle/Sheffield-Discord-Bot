@@ -193,8 +193,7 @@ class PollsCog(commands.Cog, name="Polls"):
             try:
                 # Returns the index of the choice's emoji
                 # in the list of emojis in the message reactions
-                return emojis.index(
-                    choice['reaction'].decode('unicode-escape'))
+                return emojis.index(choice['reaction'])
             except ValueError:
                 # If emoji isn't found, then return the length
                 # of the choices list
@@ -218,10 +217,10 @@ class PollsCog(commands.Cog, name="Polls"):
         embed.clear_fields()
 
         for choice in choices:
-            reaction = choice['reaction'].decode('unicode-escape')
+            reaction = choice['reaction']
             count = int(choice['count'])
             embed.add_field(name=f"{reaction} {count}",
-                            value=choice['text'].decode(), inline=False)
+                            value=choice['text'], inline=False)
 
         # Indicates that results are being updated
         footer_text = datetime.datetime.now().strftime(

@@ -450,11 +450,15 @@ async def get_poll_choice(poll_id, reaction, field="*"):
         db.cursor.execute(f"""
             SELECT {field} FROM POLL_CHOICES
             WHERE poll = %s AND reaction = %s
-        """, (poll_id, reaction.encode('unicode_escape')))
+        """, (poll_id, reaction.encode('unicode-escape')))
 
         result = db.cursor.fetchone()
         if result:
-            return result
+            for key in result:
+                if key in ('reaction', 'text'):
+                    result[key] = result[key].decode('unicode-escape')
+        
+        return result
 
 
 async def add_poll_choice(poll_id, reaction, text):
@@ -465,7 +469,8 @@ async def add_poll_choice(poll_id, reaction, text):
                 (poll, reaction, text)
                 VALUES
                 (%s, %s, %s)
-            """, (poll_id, reaction.encode('unicode_escape'), text))
+            """, (poll_id, reaction.encode('unicode-escape'), 
+                  text.encode('unicode-escape')))
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"
 
@@ -515,7 +520,14 @@ async def get_response_count_by_choice(poll_id):
             GROUP BY reaction
         """, (poll_id, ))
 
-        return db.cursor.fetchall()
+        results = db.cursor.fetchall()
+        if results:
+            for result in results:
+                for k, v in result.items():
+                    if k in ('reaction', 'text'):
+                        result[k] = result[k].decode('unicode-escape')
+
+        return results
 
 
 async def log_message(discord_id, message_id, message, date_sent):
