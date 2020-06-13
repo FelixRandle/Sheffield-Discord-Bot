@@ -148,6 +148,9 @@ class PollsCog(commands.Cog, name="Polls"):
         has_response = await db.user_has_response(
             user_id, poll['ID'], reaction)
 
+        if has_response is None:
+            return
+
         if has_response:
             result, reason = await db.user_remove_response(
                 user_id, poll['ID'], reaction)
