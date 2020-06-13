@@ -202,9 +202,8 @@ class PollsCog(commands.Cog, name="Polls"):
                 # If emoji isn't found, then return the length
                 # of the choices list
                 #
-                # This guarantees that the choice are displayed
-                # at the end of the list (along with the others
-                # that are not found)
+                # This guarantees that the choice are displayed at the end 
+                # of the list (along with the others that are not found)
                 return len(choices)
 
         channel = self.bot.get_channel(int(poll['channelID']))
@@ -215,7 +214,7 @@ class PollsCog(commands.Cog, name="Polls"):
         except discord.errors.NotFound:
             return
 
-        choices = await db.get_response_count_by_choice(poll['ID'])
+        choices = await db.get_poll_choices(poll['ID'])
 
         # Choices are sorted in the order of appearance
         # of the emoji in the message - also the order in
@@ -226,11 +225,23 @@ class PollsCog(commands.Cog, name="Polls"):
         embed = message.embeds[0]
         embed.clear_fields()
 
+        user_limit = 3
+
         for choice in choices:
             reaction = choice['reaction']
-            count = int(choice['count'])
+
+            users = await db.get_discord_user_ids_for_choice(choice['ID'])
+            count = len(users)
+
+            users = ', '.join([
+                f"<@{int(user['discordID'])}>" for user in users[:user_limit]])
+            if count > user_limit:
+                users += f" and {count-user_limit} more"
+
+            field_value = choice['text'] + (f" - {users}" if users else "")
+
             embed.add_field(name=f"{reaction} {count}",
-                            value=choice['text'], inline=False)
+                            value=field_value, inline=False)
 
         # Indicates that results are being updated
         footer_text = (await ut.get_uk_time()).strftime(

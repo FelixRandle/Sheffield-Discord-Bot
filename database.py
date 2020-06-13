@@ -508,26 +508,33 @@ async def user_remove_response(discord_id, poll_id, reaction):
         return False, "Response did not exist"
 
 
-async def get_response_count_by_choice(poll_id):
+async def get_poll_choices(poll_id):
     with Database() as db:
         db.cursor.execute("""
-            SELECT POLL_CHOICES.reaction, POLL_CHOICES.text,
-                COUNT(POLL_RESPONSES.ID) AS count
+            SELECT ID, reaction, text
             FROM POLL_CHOICES
-                LEFT JOIN POLL_RESPONSES
-                ON POLL_RESPONSES.choice = POLL_CHOICES.ID
             WHERE POLL_CHOICES.poll = %s
-            GROUP BY reaction
         """, (poll_id, ))
 
         results = db.cursor.fetchall()
         if results:
             for result in results:
-                for k, v in result.items():
+                for k in result:
                     if k in ('reaction', 'text'):
                         result[k] = result[k].decode('unicode-escape')
 
         return results
+
+
+async def get_discord_user_ids_for_choice(choice_id):
+    with Database() as db:
+        db.cursor.execute("""
+            SELECT USERS.discordID
+            FROM USERS, POLL_RESPONSES
+            WHERE USERS.ID = POLL_RESPONSES.user AND POLL_RESPONSES.choice = %s 
+        """, (choice_id, ))
+
+        return db.cursor.fetchall()
 
 
 async def log_message(discord_id, message_id, message, date_sent):
