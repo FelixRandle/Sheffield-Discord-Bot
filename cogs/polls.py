@@ -204,7 +204,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 # If emoji isn't found, then return the length
                 # of the choices list
                 #
-                # This guarantees that the choice are displayed at the end 
+                # This guarantees that the choice are displayed at the end
                 # of the list (along with the others that are not found)
                 return len(choices)
 
@@ -296,7 +296,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Ignores react if the message doesn't correspond to a poll
         message_id = payload.message_id
-        poll = await db.get_poll(message_id)
+        poll = await db.get_poll_by_message_id(message_id)
         if not poll:
             return
 
@@ -362,6 +362,34 @@ class PollsCog(commands.Cog, name="Polls"):
         await db.user_create_poll(
             ctx.author.id, message.id, message.channel.id,
             ctx.guild.id, title, int(end_date.timestamp()))
+
+    @commands.command(
+        name="summonpoll",
+        help="Moves an existing poll to the bottom of the channel")
+    async def summon_poll(self, ctx, poll_id: int):
+        """
+        Allows a user to bring forward a poll in the conversation,
+        for the benefit of longer-duration polls
+        """
+
+        poll = await db.get_poll_by_id(poll_id)
+        if not poll:
+            await ctx.send(f"Poll with ID {poll_id} could not found.")
+            return
+
+        old_message = await ctx.fetch_message(int(poll['messageID']))
+        embed = old_message.embeds[0]
+        reactions = old_message.reactions
+
+        await old_message.delete()
+
+        new_message = await ctx.send(embed=embed)
+        for reaction in reactions:
+            await new_message.add_reaction(reaction.emoji)
+
+        await ctx.message.delete()
+
+        await db.update_poll_message_id(poll_id, new_message.id)
 
 
 def setup(bot):

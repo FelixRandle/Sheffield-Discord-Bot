@@ -378,16 +378,24 @@ async def user_has_channel(discord_id):
         return False
 
 
-async def get_poll(message_id, field="*"):
+async def get_poll_by_id(poll_id, field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLLS
+            WHERE ID = %s
+        """, (poll_id, ))
+
+        return db.cursor.fetchone()
+
+
+async def get_poll_by_message_id(message_id, field="*"):
     with Database() as db:
         db.cursor.execute(f"""
             SELECT {field} FROM POLLS
             WHERE messageID = %s
         """, (message_id, ))
 
-        result = db.cursor.fetchone()
-        if result:
-            return result
+        return db.cursor.fetchone()
 
 
 async def user_create_poll(discord_id, message_id, channel_id,
@@ -406,6 +414,18 @@ async def user_create_poll(discord_id, message_id, channel_id,
             db.connection.commit()
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"
+
+
+async def update_poll_message_id(poll_id, message_id):
+    with Database() as db:
+        try:
+            db.cursor.execute("""
+                UPDATE POLLS SET messageID = %s
+                WHERE ID = %s
+            """, (message_id, poll_id))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "Integrity error"
 
 
 async def get_all_ongoing_polls(field="*"):
