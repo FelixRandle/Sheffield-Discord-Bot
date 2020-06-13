@@ -325,19 +325,6 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await message.remove_reaction(emoji, user)
 
-    @commands.Cog.listener()
-    async def on_raw_message_delete(self, payload):
-        """
-        Listens to any message deletion events
-        """
-
-        # If the message containing the poll is deleted
-        # then the poll is also deleted
-
-        poll = await db.get_poll(payload.message_id, field='ID')
-        if poll:
-            await db.delete_poll(poll['ID'])
-
     @commands.command(
         name="createpoll",
         help="Creates a poll. You can add choices to it later")
