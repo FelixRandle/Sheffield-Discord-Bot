@@ -204,7 +204,13 @@ class PollsCog(commands.Cog, name="Polls"):
                 return len(choices)
 
         channel = self.bot.get_channel(int(poll['channelID']))
-        message = await channel.fetch_message(int(poll['messageID']))
+
+        # If the message is deleted, then ignore and return
+        try:
+            message = await channel.fetch_message(int(poll['messageID']))
+        except discord.errors.NotFound:
+            return
+
         choices = await db.get_response_count_by_choice(poll['ID'])
 
         # Choices are sorted in the order of appearance
@@ -227,7 +233,11 @@ class PollsCog(commands.Cog, name="Polls"):
             "Results last updated: %d/%M/%Y %H:%M:%S")
         embed.set_footer(text=footer_text)
 
-        await message.edit(embed=embed)
+        # Again, if the message is deleted
+        try:
+            await message.edit(embed=embed)
+        except discord.errors.NotFound:
+            return
 
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
