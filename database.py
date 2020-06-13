@@ -475,6 +475,20 @@ async def add_poll_choice(poll_id, reaction, text):
             return False, "UNIQUE constraint failed"
 
 
+async def user_has_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        choice_id = choice['ID']
+        
+        db.cursor.execute("""
+            SELECT ID FROM POLL_RESPONSES
+            WHERE POLL_RESPONSES.user = %s AND POLL_RESPONSES.choice = %s
+        """, (user_id, choice_id))
+
+        return db.cursor.fetchone()
+
+
 async def user_add_response(discord_id, poll_id, reaction):
     with Database() as db:
         user_id = await get_user_id(discord_id)

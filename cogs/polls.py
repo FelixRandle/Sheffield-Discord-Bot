@@ -143,14 +143,16 @@ class PollsCog(commands.Cog, name="Polls"):
 
         return result
 
-    async def toggle_poll_response(self, poll, user_id,
-                                   reaction, message, is_add=True):
+    async def toggle_poll_response(self, poll, user_id, reaction, message):
 
-        if is_add:
-            result, reason = await db.user_add_response(
+        has_response = await db.user_has_response(
+            user_id, poll['ID'], reaction)
+
+        if has_response:
+            result, reason = await db.user_remove_response(
                 user_id, poll['ID'], reaction)
         else:
-            result, reason = await db.user_remove_response(
+            result, reason = await db.user_add_response(
                 user_id, poll['ID'], reaction)
 
         return result
@@ -282,35 +284,6 @@ class PollsCog(commands.Cog, name="Polls"):
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
-        """
-        Listens for reactions that are removed from poll messages
-        """
-
-        # Ignores removal of any control reactions
-        emoji = payload.emoji
-        if emoji.name in ('➕', '✖️', '🛑'):
-            return
-
-        # If the message that was reacted doesn't correspond
-        # to a poll message, then it can be ignored
-        message_id = payload.message_id
-        poll = await db.get_poll(message_id)
-        if not poll:
-            return
-
-        end_date = int(poll['endDate'])
-        if (await ut.get_utc_time()).timestamp() >= end_date or poll['ended']:
-            return
-
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(message_id)
-        user = self.bot.get_user(payload.user_id)
-
-        await self.toggle_poll_response(
-            poll, user.id, str(emoji), message, False)
-
-    @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """
         Listens for reactions to poll messages
@@ -341,17 +314,16 @@ class PollsCog(commands.Cog, name="Polls"):
         end_date = int(poll['endDate'])
         if (await ut.get_utc_time()).timestamp() >= end_date or poll['ended']:
             await message.remove_reaction(emoji, user)
+            return
 
         if emoji.name == '➕':
             await self.get_new_choice_from_user(poll, message, user)
         elif emoji.name == '🛑':
             await self.user_end_poll(poll, message, user)
         else:
-            await self.toggle_poll_response(
-                poll, user.id, str(emoji), message, True)
+            await self.toggle_poll_response(poll, user.id, str(emoji), message)
 
-        if emoji.name in ('➕', '🛑'):
-            await message.remove_reaction(emoji, user)
+        await message.remove_reaction(emoji, user)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
