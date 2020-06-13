@@ -11,13 +11,13 @@ import asyncio
 import datetime
 import re
 import time
+import traceback
 
 import discord
 from discord.ext import commands, tasks
 
 import database as db
 import utils as ut
-import traceback
 
 # Regex from extracting time from format 00h00m00s
 DURATION_REGEX = re.compile(
@@ -185,7 +185,8 @@ class PollsCog(commands.Cog, name="Polls"):
         #
         # The poll will end the poll on its next iteration
         if result:
-            await db.change_poll_end_date(poll['ID'], int(time.time()))
+            await db.change_poll_end_date(
+                poll['ID'], int((await ut.get_utc_time()).timestamp()))
 
     async def update_response_counts(self, poll):
 
@@ -229,8 +230,8 @@ class PollsCog(commands.Cog, name="Polls"):
                             value=choice['text'], inline=False)
 
         # Indicates that results are being updated
-        footer_text = datetime.datetime.now().strftime(
-            "Results last updated: %d/%M/%Y %H:%M:%S")
+        footer_text = (await ut.get_uk_time()).strftime(
+            "Results last updated: %d/%M/%Y %H:%M:%S %Z")
         embed.set_footer(text=footer_text)
 
         # Again, if the message is deleted
@@ -252,7 +253,7 @@ class PollsCog(commands.Cog, name="Polls"):
             ongoing_polls = await db.get_all_ongoing_polls()
             for poll in ongoing_polls:
                 end_date = poll['endDate']
-                if time.time() >= end_date:
+                if (await ut.get_utc_time()).timestamp() >= end_date:
                     await self.end_poll(poll)
 
                 await self.update_response_counts(poll)
@@ -284,7 +285,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         end_date = int(poll['endDate'])
-        if time.time() >= end_date or poll['ended']:
+        if (await ut.get_utc_time()).timestamp() >= end_date or poll['ended']:
             return
 
         channel = self.bot.get_channel(payload.channel_id)
@@ -321,10 +322,9 @@ class PollsCog(commands.Cog, name="Polls"):
                 await message.remove_reaction(emoji, user)
             return
 
-
         # New responses after the poll has ended are not accepted
         end_date = int(poll['endDate'])
-        if time.time() >= end_date or poll['ended']:
+        if (await ut.get_utc_time()).timestamp() >= end_date or poll['ended']:
             await message.remove_reaction(emoji, user)
 
         if emoji.name == '➕':
@@ -367,9 +367,9 @@ class PollsCog(commands.Cog, name="Polls"):
                            "that is greater than zero")
             return
 
-        end_date = datetime.datetime.now() + duration
-        description = end_date.strftime(
-            "Poll ends: %d/%m/%Y %H:%M:%S\n"
+        end_date = await ut.get_utc_time() + duration
+        description = (await ut.get_uk_time(end_date)).strftime(
+            "Poll ends: %d/%m/%Y %H:%M:%S %Z\n"
             "React with ➕ to add a choice\n"
             "React with ✖️ to delete the poll\n"
             "React with 🛑 to end the poll and show the results")

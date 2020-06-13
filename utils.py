@@ -6,6 +6,9 @@ Utility commands to be used throughout the cogs
 
 import os
 import asyncio
+import datetime
+
+from pytz import timezone
 
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
@@ -31,6 +34,18 @@ async def get_confirmation(channel, user, bot, message):
         if str(reaction.emoji) == u"👍":
             return True, None
         return False, "Rejected"
+
+
+async def get_utc_time() -> datetime.datetime:
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
+async def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
+    tz = timezone('Europe/London')
+    if utc_time is None:
+        return (await get_utc_time()).astimezone(tz)
+
+    return utc_time.astimezone(tz)
 
 
 def log_error(message):
