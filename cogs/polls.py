@@ -137,9 +137,8 @@ class PollsCog(commands.Cog, name="Polls"):
             "All responses and choices will be deleted")
 
         if result:
-            # The message containing the poll is also deleted
+            # The message containing the poll is deleted
             await message.delete()
-            await db.delete_poll(poll['ID'])
 
         return result
 
