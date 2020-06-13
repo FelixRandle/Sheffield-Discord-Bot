@@ -48,6 +48,14 @@ async def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     return utc_time.astimezone(tz)
 
 
+async def is_admin(user):
+    for role in user.roles:
+        if role.name.lower() == "admin":
+            return True
+
+    return False
+
+
 def log_error(message):
     # At some point, I want to perform different operations here between
     # Production and development.

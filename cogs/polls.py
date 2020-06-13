@@ -126,8 +126,9 @@ class PollsCog(commands.Cog, name="Polls"):
         poll_creator_id = poll['creator']
         current_user_id = int(await db.get_user_id(user.id))
 
-        # Only the creator of the poll can delete it
-        if poll_creator_id != current_user_id:
+        # Only the creator of the poll or admins can delete it
+        if (poll_creator_id != current_user_id
+                and not await ut.is_admin(user)):
             return
 
         # Awaits confirmation of the deletion
@@ -181,7 +182,8 @@ class PollsCog(commands.Cog, name="Polls"):
         current_user_id = int(await db.get_user_id(user.id))
 
         # Only the creator of the poll can end the poll
-        if poll_creator_id != current_user_id:
+        if (poll_creator_id != current_user_id
+                and not await ut.is_admin(user)):
             return
 
         result, reason = await ut.get_confirmation(
