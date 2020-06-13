@@ -247,7 +247,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Indicates that results are being updated
         footer_text = (await ut.get_uk_time()).strftime(
-            "Results last updated: %d/%M/%Y %H:%M:%S %Z\n"
+            "Results last updated: %d/%m/%Y %H:%M:%S %Z\n"
             f"Poll ID: {int(poll['ID'])}")
         embed.set_footer(text=footer_text)
 
