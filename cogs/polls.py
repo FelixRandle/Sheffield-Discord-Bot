@@ -38,7 +38,10 @@ class PollsCog(commands.Cog, name="Polls"):
         Uses a regex to extract a duration in the format 00h00m00s
         to a `datetime.timedelta`
         """
-        match = DURATION_REGEX.match(time)
+
+        # Duration string is converted to lowercase
+        # so 10h30m5 is equivalent to 10H30M5S
+        match = DURATION_REGEX.match(time.lower())
         if match:
             values_dict = match.groupdict()
             for key in values_dict:
