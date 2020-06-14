@@ -214,12 +214,11 @@ class PollsCog(commands.Cog, name="Polls"):
                 # in the list of emojis in the message reactions
                 return emojis.index(choice['reaction'])
             except ValueError:
-                # If emoji isn't found, then return the length
-                # of the choices list
+                # If emoji isn't found, then return 0
                 #
                 # This guarantees that the choice are displayed at the end
                 # of the list (along with the others that are not found)
-                return len(choices)
+                return 0
 
         channel = self.bot.get_channel(int(poll['channelID']))
 
@@ -234,7 +233,7 @@ class PollsCog(commands.Cog, name="Polls"):
         # Choices are sorted in the order of appearance
         # of the emoji in the message - also the order in
         # which they are added
-        emojis = [reaction.emoji for reaction in message.reactions]
+        emojis = [str(reaction.emoji) for reaction in message.reactions]
         choices.sort(key=key)
 
         embed = message.embeds[0]
