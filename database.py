@@ -34,7 +34,7 @@ class Database:
             'database': SQL_DB,
             'user': SQL_USER,
             'password': SQL_PASS,
-            'charset': 'utf8',
+            'charset': 'utf8mb4',
             'use_unicode': True,
             'get_warnings': True,
             'autocommit': True,
@@ -113,10 +113,57 @@ async def create_tables():
                 voice INT NOT NULL,
                 owner INT NOT NULL UNIQUE,
                 createdDate INT NOT NULL,
-                
+
                 FOREIGN KEY (owner)
                     REFERENCES USERS(ID)
             )""",
+            """
+            CREATE TABLE IF NOT EXISTS
+            POLLS (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                messageID VARCHAR(255) NOT NULL,
+                channelID VARCHAR(255) NOT NULL,
+                guild INT NOT NULL,
+                creator INT NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                endDate INT NOT NULL,
+                ended BOOLEAN NOT NULL DEFAULT FALSE,
+
+                FOREIGN KEY(creator)
+                    REFERENCES USERS(ID),
+                FOREIGN KEY(guild)
+                    REFERENCES GUILDS(ID)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS
+            POLL_CHOICES (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                poll INT NOT NULL,
+                reaction VARCHAR(255) NOT NULL,
+                text VARCHAR(255) NOT NULL,
+
+                UNIQUE KEY (poll, reaction),
+                FOREIGN KEY (poll)
+                    REFERENCES POLLS(ID)
+                    ON DELETE CASCADE
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS
+            POLL_RESPONSES (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                user INT NOT NULL,
+                choice INT NOT NULL,
+
+                UNIQUE KEY (user, choice),
+                FOREIGN KEY (user)
+                    REFERENCES USERS(ID),
+                FOREIGN KEY (choice)
+                    REFERENCES POLL_CHOICES(ID)
+                    ON DELETE CASCADE
+            )
+            """,
             """
             CREATE TABLE IF NOT EXISTS
             MESSAGE_LOG (
@@ -332,6 +379,189 @@ async def user_has_channel(discord_id):
         if result:
             return result['channelID']
         return False
+
+
+async def get_poll_by_id(poll_id, field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLLS
+            WHERE ID = %s
+        """, (poll_id, ))
+
+        return db.cursor.fetchone()
+
+
+async def get_poll_by_message_id(message_id, field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLLS
+            WHERE messageID = %s
+        """, (message_id, ))
+
+        return db.cursor.fetchone()
+
+
+async def user_create_poll(discord_id, message_id, channel_id,
+                           discord_guild_id, poll_title, end_date: int):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        guild_id = await get_guild_info(discord_guild_id, field="ID")
+        try:
+            db.cursor.execute("""
+                INSERT INTO POLLS
+                (creator, messageID, channelID, guild, title, endDate)
+                VALUES
+                (%s, %s, %s, %s, %s, %s)
+            """, (user_id, message_id, channel_id,
+                  guild_id, poll_title, end_date))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed"
+
+
+async def update_poll_message_info(poll_id, message_id, channel_id):
+    with Database() as db:
+        try:
+            db.cursor.execute("""
+                UPDATE POLLS SET messageID = %s, channelID = %s
+                WHERE ID = %s
+            """, (message_id, channel_id, poll_id))
+            db.connection.commit()
+        except sql.errors.IntegrityError:
+            return False, "Integrity error"
+
+
+async def get_all_ongoing_polls(field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLLS
+            WHERE ended = FALSE
+        """)
+
+        return db.cursor.fetchall()
+
+
+async def change_poll_end_date(poll_id, end_date):
+    with Database() as db:
+        db.cursor.execute("""
+            UPDATE POLLS SET endDate = %s
+            WHERE ID = %s
+        """, (end_date, poll_id))
+
+
+async def end_poll(poll_id):
+    with Database() as db:
+        db.cursor.execute("""
+            UPDATE POLLS SET ended = TRUE
+            WHERE ID = %s
+        """, (poll_id, ))
+
+        return db.cursor.rowcount > 0
+
+
+async def delete_poll(poll_id):
+    with Database() as db:
+        db.cursor.execute("""
+            DELETE FROM POLLS
+            WHERE ID = %s
+        """, (poll_id, ))
+        db.connection.commit()
+
+
+async def get_poll_choice(poll_id, reaction, field="*"):
+    with Database() as db:
+        db.cursor.execute(f"""
+            SELECT {field} FROM POLL_CHOICES
+            WHERE poll = %s AND reaction = %s
+        """, (poll_id, reaction.encode()))
+
+        return db.cursor.fetchone()
+
+
+async def add_poll_choice(poll_id, reaction, text):
+    with Database() as db:
+        try:
+            db.cursor.execute("""
+                INSERT INTO POLL_CHOICES
+                (poll, reaction, text)
+                VALUES
+                (%s, %s, %s)
+            """, (poll_id, reaction.encode(), text.encode()))
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed"
+
+
+async def user_has_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        if choice is None:
+            return
+
+        choice_id = choice['ID']
+        
+        db.cursor.execute("""
+            SELECT ID FROM POLL_RESPONSES
+            WHERE POLL_RESPONSES.user = %s AND POLL_RESPONSES.choice = %s
+        """, (user_id, choice_id))
+
+        return db.cursor.fetchone() is not None
+
+
+async def user_add_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        choice_id = choice['ID']
+        try:
+            db.cursor.execute("""
+                INSERT INTO POLL_RESPONSES
+                (choice, user)
+                VALUES
+                (%s, %s)
+            """, (choice_id, user_id))
+            return True, None
+        except sql.errors.IntegrityError:
+            return False, "UNIQUE constraint failed"
+
+
+async def user_remove_response(discord_id, poll_id, reaction):
+    with Database() as db:
+        user_id = await get_user_id(discord_id)
+        choice = await get_poll_choice(poll_id, reaction, field="ID")
+        choice_id = choice['ID']
+
+        db.cursor.execute("""
+            DELETE FROM POLL_RESPONSES
+            WHERE choice = %s AND user = %s
+        """, (choice_id, user_id))
+
+        if db.cursor.rowcount > 0:
+            return True, None
+        return False, "Response did not exist"
+
+
+async def get_poll_choices(poll_id):
+    with Database() as db:
+        db.cursor.execute("""
+            SELECT ID, reaction, text
+            FROM POLL_CHOICES
+            WHERE POLL_CHOICES.poll = %s
+        """, (poll_id, ))
+
+        results = db.cursor.fetchall()
+        return results
+
+
+async def get_discord_user_ids_for_choice(choice_id):
+    with Database() as db:
+        db.cursor.execute("""
+            SELECT USERS.discordID
+            FROM USERS, POLL_RESPONSES
+            WHERE USERS.ID = POLL_RESPONSES.user AND POLL_RESPONSES.choice = %s 
+        """, (choice_id, ))
+
+        return db.cursor.fetchall()
 
 
 async def log_message(discord_id, message_id, message, date_sent):

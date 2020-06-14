@@ -14,6 +14,7 @@ from discord.ext import commands
 import database as db
 import utils as ut
 
+# TODO: Change ut.get_confirmation calls to match changes to the coroutine
 
 class JamCog(commands.Cog):
     """Create a class that extends Cog to make our functionality in."""

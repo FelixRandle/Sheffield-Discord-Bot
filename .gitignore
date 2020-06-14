@@ -128,3 +128,6 @@ dmypy.json
 .idea/
 # Startup script for Digital Ocean Droplet
 startup.config.js
+
+# VS Code
+.vscode/

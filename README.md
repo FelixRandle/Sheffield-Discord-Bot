@@ -5,18 +5,18 @@
  Felix Randle
  
  Contributors:
- N/A
+ William Lee
  
  ## Requirements
  *discord.py*
  
- *mysql-connector*
+ *mysql-connector-python*
  
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
 
 ```bash
 pip install discord.py
-pip install mysql-connector
+pip install mysql-connector-python
 pip install python-dotenv
 ```
 
