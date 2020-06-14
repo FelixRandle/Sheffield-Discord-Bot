@@ -41,7 +41,7 @@ class BasicCommandsCog(commands.Cog):
         have the Member role, this is case-sensitive.
         """
         for member in ctx.guild.members:
-            await db.add_user(member.id, member.bot, member.name)
+            await db.add_user(member.id, member.bot)
 
         await ctx.send("Added all users to database!")
 

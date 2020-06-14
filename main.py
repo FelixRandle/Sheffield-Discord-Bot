@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 Main file of sheffield uni freshers comp sci discord bot.
 
@@ -32,12 +32,12 @@ if os.path.exists("./cogs"):
             bot.load_extension("cogs." + file[:-3])
             ut.log_info(f"Loaded cog {file[:-3]}")
 
+
 @bot.event
 async def on_ready():
     """Run post-launch setup."""
     ut.log_info(f'{bot.user.name} has successfully connected to Discord!')
 
-    await db.create_tables()
 
 @bot.event
 async def on_guild_join(guild):
@@ -68,7 +68,7 @@ async def on_member_join(member):
         'The Discord Server Admin Team'
     )
 
-    await db.add_user(member.id, member.bot, member.name)
+    await db.add_user(member.id, member.bot)
 
     role_id = await db.get_guild_info(member.guild.id, "registeringID")
 
