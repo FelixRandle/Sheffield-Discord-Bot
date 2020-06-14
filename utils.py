@@ -7,6 +7,7 @@ Utility commands to be used throughout the cogs
 import os
 import asyncio
 import datetime
+import traceback
 
 from pytz import timezone
 
@@ -59,7 +60,7 @@ async def is_admin(user):
 def log_error(error):
     # At some point, I want to perform different operations here between
     # Production and development.
-    raise error
+    raise Exception from error
 
 
 def log_info(message):

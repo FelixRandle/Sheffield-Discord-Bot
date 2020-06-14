@@ -184,9 +184,8 @@ async def get_poll_by_message_id(message_id, field="*"):
 
 
 async def user_create_poll(user_id, message_id, channel_id,
-                           discord_guild_id, poll_title, end_date: int):
+                           guild_id, poll_title, end_date: int):
     with Database() as db:
-        guild_id = await get_guild_info(discord_guild_id, field="ID")
         try:
             db.cursor.execute("""
                 INSERT INTO POLLS
@@ -334,7 +333,7 @@ async def get_poll_choices(poll_id):
 async def get_discord_user_ids_for_choice(choice_id):
     with Database() as db:
         db.cursor.execute("""
-            SELECT USERS.discordID
+            SELECT USERS.userID
             FROM USERS, POLL_RESPONSES
             WHERE USERS.userID = POLL_RESPONSES.user AND POLL_RESPONSES.choice = %s 
         """, (choice_id, ))

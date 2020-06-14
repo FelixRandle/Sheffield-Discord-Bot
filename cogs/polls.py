@@ -246,9 +246,9 @@ class PollsCog(commands.Cog, name="Polls"):
             count = len(users)
 
             users = ', '.join([
-                f"<@{user['discordID']}>" for user in users[:user_limit]])
+                f"<@{user['userID']}>" for user in users[:user_limit]])
             if count > user_limit:
-                users += f" and {count-user_limit} more"
+                users += f" and {count - user_limit} more"
 
             field_value = choice['text'] + (f" - {users}" if users else "")
 
@@ -353,11 +353,11 @@ class PollsCog(commands.Cog, name="Polls"):
 
         end_date = await ut.get_utc_time() + duration
         description = (await ut.get_uk_time(end_date)).strftime(
-            "Poll ends: %d/%m/%Y %H:%M:%S %Z\n"
-            "React with ➕ to add a choice\n"
-            "React with ✖️ to delete the poll\n"
-            "React with 🛑 to end the poll, and finalise the results\n"
-            "React with the emojis shown below to vote for that option")
+            "Poll ends: %d/%m/%Y %H:%M:%S %Z\n") + \
+                      "React with ➕ to add a choice\n" \
+                      "React with ✖️ to delete the poll\n" \
+                      "React with 🛑 to end the poll, and finalise the results\n" \
+                      "React with the emojis shown below to vote for that option"
         embed = discord.Embed(title=title, description=description,
                               color=0x009fe3)
         message = await ctx.send(embed=embed)

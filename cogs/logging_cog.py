@@ -68,7 +68,7 @@ class LoggingCog(commands.Cog):
         # TODO Implement
         pass
 
-    @commands.Cog.listener('on_guild_channel_delete')
+    @commands.Cog.listener('on_guild_channel_update')
     async def on_guild_channel_update(self, before, after):
         # TODO Implement
         pass
