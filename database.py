@@ -51,155 +51,19 @@ class Database:
         self.connection.close()
 
 
-async def create_tables():
-    with Database() as db:
-        query_list = (
-            """
-            CREATE TABLE IF NOT EXISTS
-            USERS (
-                ID INT NOT NULL AUTO_INCREMENT,
-                name VARCHAR(255) NOT NULL,
-                discordID VARCHAR(255) UNIQUE NOT NULL,
-                jamming INT,
-                PRIMARY KEY (ID)
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            JAM_TEAM (
-                ID INT NOT NULL AUTO_INCREMENT,
-                teamName VARCHAR(255) NOT NULL UNIQUE,
-                gitLink VARCHAR(255) NOT NULL UNIQUE,
-                PRIMARY KEY (ID)
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            JAM_TEAM_MEMBER (
-                ID INT NOT NULL AUTO_INCREMENT,
-                teamID INT NOT NULL,
-                userID INT NOT NULL UNIQUE,
-                creator INT NOT NULL DEFAULT 0,
-                PRIMARY KEY (ID)
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            EVENTS (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                title VARCHAR(255) NOT NULL,
-                description VARCHAR(1024) NOT NULL,
-                date DATETIME NOT NULL,
-                creator INT NOT NULL,
-                FOREIGN KEY (creator)
-                    REFERENCES USERS(ID)
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            GUILDS (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                guildID VARCHAR(255) NOT NULL UNIQUE,
-                registeringID VARCHAR(255) UNIQUE,
-                memberID VARCHAR(255) UNIQUE,
-                welcomeMessageID VARCHAR(255) UNIQUE
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            CHANNELS (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                channelID VARCHAR(255) NOT NULL UNIQUE,
-                voice INT NOT NULL,
-                owner INT NOT NULL UNIQUE,
-                createdDate INT NOT NULL,
-
-                FOREIGN KEY (owner)
-                    REFERENCES USERS(ID)
-            )""",
-            """
-            CREATE TABLE IF NOT EXISTS
-            POLLS (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                messageID VARCHAR(255) NOT NULL,
-                channelID VARCHAR(255) NOT NULL,
-                guild INT NOT NULL,
-                creator INT NOT NULL,
-                title VARCHAR(255) NOT NULL,
-                endDate INT NOT NULL,
-                ended BOOLEAN NOT NULL DEFAULT FALSE,
-
-                FOREIGN KEY(creator)
-                    REFERENCES USERS(ID),
-                FOREIGN KEY(guild)
-                    REFERENCES GUILDS(ID)
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            POLL_CHOICES (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                poll INT NOT NULL,
-                reaction VARCHAR(255) NOT NULL,
-                text VARCHAR(255) NOT NULL,
-
-                UNIQUE KEY (poll, reaction),
-                FOREIGN KEY (poll)
-                    REFERENCES POLLS(ID)
-                    ON DELETE CASCADE
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            POLL_RESPONSES (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                user INT NOT NULL,
-                choice INT NOT NULL,
-
-                UNIQUE KEY (user, choice),
-                FOREIGN KEY (user)
-                    REFERENCES USERS(ID),
-                FOREIGN KEY (choice)
-                    REFERENCES POLL_CHOICES(ID)
-                    ON DELETE CASCADE
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS
-            MESSAGE_LOG (
-                ID INT PRIMARY KEY AUTO_INCREMENT,
-                authorID INT NOT NULL,
-                messageID VARCHAR(255) NOT NULL,
-                content VARCHAR(4096),
-                dateSent INT NOT NULL,
-                FOREIGN KEY (authorID)
-                    REFERENCES USERS(ID)
-            )
-            """
-        )
-
-        for query in query_list:
-            try:
-                db.cursor.execute(query)
-            except sql.errors.ProgrammingError:
-                ut.log_error(f"Query \n'{query}'\n raised an error, ensure that the "
-                             "syntax is correct.")
-
-
-async def add_user(discord_id, bot, name):
+async def add_user(discord_id, bot):
     with Database() as db:
         if bot:
             return
         try:
             db.cursor.execute(f"""
                 INSERT INTO USERS (
-                    name, discordID
+                    userID
                 )
                 VALUES (
-                    %s,
                     %s
                 )
-            """, (name, discord_id))
+            """, (discord_id, ))
 
             db.connection.commit()
             return db.cursor.lastrowid
@@ -499,7 +363,7 @@ async def user_has_response(discord_id, poll_id, reaction):
             return
 
         choice_id = choice['ID']
-        
+
         db.cursor.execute("""
             SELECT ID FROM POLL_RESPONSES
             WHERE POLL_RESPONSES.user = %s AND POLL_RESPONSES.choice = %s

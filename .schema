@@ -1,0 +1,78 @@
+CREATE DATABASE `sheffieldcompsci` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `sheffieldcompsci`;
+
+CREATE TABLE `USERS` (
+  `userID` BIGINT UNIQUE NOT NULL,
+  `jamming` int DEFAULT NULL,
+  PRIMARY KEY (`userID`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE `CHANNELS` (
+  `channelID` bigint NOT NULL,
+  `voice` int NOT NULL,
+  `owner` bigint NOT NULL,
+  `createdDate` int NOT NULL,
+  PRIMARY KEY (`channelID`),
+  UNIQUE KEY `owner` (`owner`),
+  CONSTRAINT `CHANNELS_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `USERS` (`userID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE `GUILDS` (
+  `guildID` bigint NOT NULL,
+  `registeringID` bigint DEFAULT NULL,
+  `memberID` bigint DEFAULT NULL,
+  `welcomeMessageID` bigint DEFAULT NULL,
+  PRIMARY KEY (`guildID`),
+  UNIQUE KEY `registeringID` (`registeringID`),
+  UNIQUE KEY `memberID` (`memberID`),
+  UNIQUE KEY `welcomeMessageID` (`welcomeMessageID`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE `MESSAGE_LOG` (
+  `authorID` bigint NOT NULL,
+  `messageID` bigint NOT NULL,
+  `content` varchar(4096) COLLATE utf8mb4_bin DEFAULT NULL,
+  `dateSent` int NOT NULL,
+  PRIMARY KEY (`messageID`),
+  KEY `authorID` (`authorID`),
+  CONSTRAINT `MESSAGE_LOG_ibfk_1` FOREIGN KEY (`authorID`) REFERENCES `USERS` (`userID`)
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE `POLLS` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `messageID` bigint NOT NULL,
+  `channelID` bigint NOT NULL,
+  `guild` bigint NOT NULL,
+  `creator` bigint NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  `endDate` int NOT NULL,
+  `ended` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`),
+  KEY `creator` (`creator`),
+  KEY `guild` (`guild`),
+  CONSTRAINT `POLLS_ibfk_1` FOREIGN KEY (`creator`) REFERENCES `USERS` (`userID`),
+  CONSTRAINT `POLLS_ibfk_2` FOREIGN KEY (`guild`) REFERENCES `GUILDS` (`guildID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE `POLL_CHOICES` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `poll` int NOT NULL,
+  `reaction` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  `text` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `poll` (`poll`,`reaction`),
+  CONSTRAINT `POLL_CHOICES_ibfk_1` FOREIGN KEY (`poll`) REFERENCES `POLLS` (`ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE `POLL_RESPONSES` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `user` bigint NOT NULL,
+  `choice` int NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `user` (`user`,`choice`),
+  KEY `choice` (`choice`),
+  CONSTRAINT `POLL_RESPONSES_ibfk_1` FOREIGN KEY (`user`) REFERENCES `USERS` (`userID`),
+  CONSTRAINT `POLL_RESPONSES_ibfk_2` FOREIGN KEY (`choice`) REFERENCES `POLL_CHOICES` (`ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
