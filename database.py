@@ -26,7 +26,7 @@ class Database:
         # Connect to the database
 
         self.db_config = {
-            'host': 'localhost',
+            'host': '209.97.130.228',
             'port': 3306,
             'database': SQL_DB,
             'user': SQL_USER,
@@ -416,13 +416,13 @@ async def user_create_poll(discord_id, message_id, channel_id,
             return False, "UNIQUE constraint failed"
 
 
-async def update_poll_message_id(poll_id, message_id):
+async def update_poll_message_info(poll_id, message_id, channel_id):
     with Database() as db:
         try:
             db.cursor.execute("""
-                UPDATE POLLS SET messageID = %s
+                UPDATE POLLS SET messageID = %s, channelID = %s
                 WHERE ID = %s
-            """, (message_id, poll_id))
+            """, (message_id, channel_id, poll_id))
             db.connection.commit()
         except sql.errors.IntegrityError:
             return False, "Integrity error"

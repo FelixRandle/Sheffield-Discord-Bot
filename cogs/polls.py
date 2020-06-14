@@ -390,7 +390,8 @@ class PollsCog(commands.Cog, name="Polls"):
             await ctx.send(f"Poll with ID {poll_id} could not found.")
             return
 
-        old_message = await ctx.fetch_message(int(poll['messageID']))
+        old_channel = self.bot.get_channel(int(poll['channelID']))
+        old_message = await old_channel.fetch_message(int(poll['messageID']))
         embed = old_message.embeds[0]
         reactions = old_message.reactions
 
@@ -402,7 +403,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await ctx.message.delete()
 
-        await db.update_poll_message_id(poll_id, new_message.id)
+        await db.update_poll_message_info(poll_id, new_message.id, 
+                                          ctx.channel.id)
 
 
 def setup(bot):
