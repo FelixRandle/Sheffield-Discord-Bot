@@ -71,21 +71,6 @@ async def add_user(discord_id, bot):
             return False
 
 
-async def get_user_id(discord_id):
-    with Database() as db:
-        db.cursor.execute(f"""
-            SELECT ID FROM USERS
-            WHERE discordID = %s
-        """, (discord_id, ))
-
-        result = db.cursor.fetchone()
-        if result:
-            return result['ID']
-
-        result = await add_user(discord_id, False, "Unknown")
-        return result
-
-
 async def add_guild(guild_id, registering_id, member_id):
     with Database() as db:
         try:
@@ -139,73 +124,8 @@ async def set_guild_info(guild_id, field, new_value):
             return False
 
 
-async def set_jamming(user_id, new_value):
+async def user_create_channel(user_id, channel_id, is_voice):
     with Database() as db:
-        db.cursor.execute(f"""
-            UPDATE USERS
-            SET jamming = %s
-            WHERE discordID = %s
-        """, (new_value, user_id))
-
-        db.connection.commit()
-        return True
-
-
-async def get_user_jam_team(discord_id):
-    with Database() as db:
-        user_id = await get_user_id(discord_id)
-        db.cursor.execute(f"""
-            SELECT teamID FROM JAM_TEAM_MEMBER
-            WHERE userID = %s
-        """, (user_id,))
-
-        result = db.cursor.fetchone()
-
-        if result:
-            return result['teamID']
-        return False
-
-
-async def add_user_jam_team(user_id, jam_team, creator="0"):
-    with Database() as db:
-        try:
-            db.cursor.execute(f"""
-                INSERT INTO JAM_TEAM_MEMBER
-                (teamID, userID, creator)
-                VALUES
-                (%s, %s, %s)
-            """, (jam_team, user_id, creator))
-
-            db.connection.commit()
-            return True
-        except sql.errors.IntegrityError:
-            return False
-
-
-async def create_jam_team(discord_id, team_name, git_link):
-    jam_team_id = await get_user_jam_team(discord_id)
-    if jam_team_id:
-        return False, "User is already a member of a team."
-    with Database() as db:
-        try:
-            db.cursor.execute(f"""
-                INSERT INTO JAM_TEAM
-                (teamName, gitLink)
-                VALUES
-                (%s, %s)
-            """, (team_name, git_link))
-
-            jam_team = db.cursor.lastrowid
-            user_id = await get_user_id(discord_id)
-            await add_user_jam_team(user_id, jam_team, creator="1")
-            db.connection.commit()
-        except sql.errors.IntegrityError:
-            return False, "Team name or git link already in use."
-
-
-async def user_create_channel(discord_id, channel_id, is_voice):
-    with Database() as db:
-        user_id = await get_user_id(discord_id)
         try:
             db.cursor.execute(f"""
                 INSERT INTO CHANNELS
@@ -218,9 +138,8 @@ async def user_create_channel(discord_id, channel_id, is_voice):
             return False, "UNIQUE constraint failed..."
 
 
-async def user_delete_channel(discord_id):
+async def user_delete_channel(user_id):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
         try:
             db.cursor.execute(f"""
                 DELETE FROM CHANNELS
@@ -231,9 +150,8 @@ async def user_delete_channel(discord_id):
             return False, "UNIQUE constraint failed..."
 
 
-async def user_has_channel(discord_id):
+async def user_has_channel(user_id):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
         db.cursor.execute(f"""
             SELECT channelID FROM CHANNELS
             WHERE owner = %s
@@ -265,10 +183,9 @@ async def get_poll_by_message_id(message_id, field="*"):
         return db.cursor.fetchone()
 
 
-async def user_create_poll(discord_id, message_id, channel_id,
+async def user_create_poll(user_id, message_id, channel_id,
                            discord_guild_id, poll_title, end_date: int):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
         guild_id = await get_guild_info(discord_guild_id, field="ID")
         try:
             db.cursor.execute("""
@@ -355,9 +272,8 @@ async def add_poll_choice(poll_id, reaction, text):
             return False, "UNIQUE constraint failed"
 
 
-async def user_has_response(discord_id, poll_id, reaction):
+async def user_has_response(user_id, poll_id, reaction):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
         choice = await get_poll_choice(poll_id, reaction, field="ID")
         if choice is None:
             return
@@ -372,9 +288,8 @@ async def user_has_response(discord_id, poll_id, reaction):
         return db.cursor.fetchone() is not None
 
 
-async def user_add_response(discord_id, poll_id, reaction):
+async def user_add_response(user_id, poll_id, reaction):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
         choice = await get_poll_choice(poll_id, reaction, field="ID")
         choice_id = choice['ID']
         try:
@@ -389,9 +304,8 @@ async def user_add_response(discord_id, poll_id, reaction):
             return False, "UNIQUE constraint failed"
 
 
-async def user_remove_response(discord_id, poll_id, reaction):
+async def user_remove_response(user_id, poll_id, reaction):
     with Database() as db:
-        user_id = await get_user_id(discord_id)
         choice = await get_poll_choice(poll_id, reaction, field="ID")
         choice_id = choice['ID']
 
@@ -428,10 +342,9 @@ async def get_discord_user_ids_for_choice(choice_id):
         return db.cursor.fetchall()
 
 
-async def log_message(discord_id, message_id, message, date_sent):
+async def log_message(user_id, message_id, message, date_sent):
     with Database() as db:
         try:
-            user_id = await get_user_id(discord_id)
             db.cursor.execute(f"""
                 INSERT INTO MESSAGE_LOG
                 (authorID, messageID, content, dateSent)

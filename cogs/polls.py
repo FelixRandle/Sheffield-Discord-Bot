@@ -124,10 +124,9 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def user_delete_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
-        current_user_id = int(await db.get_user_id(user.id))
 
         # Only the creator of the poll or admins can delete it
-        if (poll_creator_id != current_user_id
+        if (poll_creator_id != user.id
                 and not await ut.is_admin(user)):
             return
 
@@ -188,10 +187,9 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def user_end_poll(self, poll, message, user):
         poll_creator_id = poll['creator']
-        current_user_id = int(await db.get_user_id(user.id))
 
         # Only the creator of the poll can end the poll
-        if (poll_creator_id != current_user_id
+        if (poll_creator_id != user.id
                 and not await ut.is_admin(user)):
             return
 
@@ -403,7 +401,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await ctx.message.delete()
 
-        await db.update_poll_message_info(poll_id, new_message.id, 
+        await db.update_poll_message_info(poll_id, new_message.id,
                                           ctx.channel.id)
 
 
