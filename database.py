@@ -15,9 +15,12 @@ if __name__ == "__main__":
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
 SQL_DB = os.getenv("SQL_DB")
+SQL_HOST = os.getenv("SQL_HOST")
+SQL_PORT = os.getenv("SQL_PORT")
 
-if SQL_USER is None or SQL_PASS is None or SQL_DB is None:
-    raise Exception("Cannot find required database login information")
+for var in (SQL_USER, SQL_PASS, SQL_DB, SQL_HOST, SQL_PORT):
+    if var is None:
+        raise Exception("Cannot find required database login information")
 
 
 class Database:
@@ -26,8 +29,8 @@ class Database:
         # Connect to the database
 
         self.db_config = {
-            'host': '209.97.130.228',
-            'port': 3306,
+            'host': SQL_HOST,
+            'port': SQL_PORT,
             'database': SQL_DB,
             'user': SQL_USER,
             'password': SQL_PASS,
