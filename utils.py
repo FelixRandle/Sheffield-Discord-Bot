@@ -56,10 +56,10 @@ async def is_admin(user):
     return False
 
 
-def log_error(message):
+def log_error(error):
     # At some point, I want to perform different operations here between
     # Production and development.
-    raise Exception(message)
+    raise error
 
 
 def log_info(message):

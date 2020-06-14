@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """Cog for simple utility functions for the bot."""
 # In this case, discord import is not needed, in some cases it may be.
 # import discord
@@ -9,6 +9,7 @@ from discord.ext import commands
 
 import database as db
 import re
+import utils as ut
 
 # Create a regex for finding id's within messages
 re_message_id = re.compile("\d{18}")
@@ -39,11 +40,10 @@ class BasicCommandsCog(commands.Cog):
         This command adds some help text and also required that the user
         have the Member role, this is case-sensitive.
         """
-        with ctx.typing():
-            for member in ctx.guild.members:
-                await db.add_user(member.id, member.bot, member.name)
+        for member in ctx.guild.members:
+            await db.add_user(member.id, member.bot, member.name)
 
-            await ctx.send("Added all users to database!")
+        await ctx.send("Added all users to database!")
 
     @commands.command(
         name="setregistering",
@@ -56,21 +56,20 @@ class BasicCommandsCog(commands.Cog):
         This command allows admins to update the role first given to users
         when they join the guild.
         """
-        with ctx.typing:
-            role_id = await find_id(role)
-            if role_id is False:
-                await ctx.send("Could not find a valid role. Please tag the role you wish to set.")
-                return
+        role_id = await find_id(role)
+        if role_id is False:
+            await ctx.send("Could not find a valid role. Please tag the role you wish to set.")
+            return
 
-            role = ctx.guild.get_role(role_id)
-            if role is None:
-                await ctx.send("Could not find a valid role. Please ensure you have properly entered the role ID.")
+        role = ctx.guild.get_role(role_id)
+        if role is None:
+            await ctx.send("Could not find a valid role. Please ensure you have properly entered the role ID.")
 
-            result = await db.set_guild_info(ctx.guild.id, "registeringID", role_id)
-            if result is False:
-                await ctx.send("Failed to update role id. Please try again later.")
-            else:
-                await ctx.send(f"Successfully updated member role to {role.name}.")
+        result = await db.set_guild_info(ctx.guild.id, "registeringID", role_id)
+        if result is False:
+            await ctx.send("Failed to update role id. Please try again later.")
+        else:
+            await ctx.send(f"Successfully updated member role to {role.name}.")
 
     @commands.command(
         name="setmember",
@@ -83,21 +82,20 @@ class BasicCommandsCog(commands.Cog):
         This command allows admins to update the role given to users once
         they have 'accepted' the guilds rules.
         """
-        with ctx.typing:
-            role_id = await find_id(role)
-            if role_id is False:
-                await ctx.send("Could not find a valid role. Please tag the role you wish to set.")
-                return
+        role_id = await find_id(role)
+        if role_id is False:
+            await ctx.send("Could not find a valid role. Please tag the role you wish to set.")
+            return
 
-            role = ctx.guild.get_role(role_id)
-            if role is None:
-                await ctx.send("Could not find a valid role. Please ensure you have properly entered the role ID.")
+        role = ctx.guild.get_role(role_id)
+        if role is None:
+            await ctx.send("Could not find a valid role. Please ensure you have properly entered the role ID.")
 
-            result = await db.set_guild_info(ctx.guild.id, "memberID", role_id)
-            if result is False:
-                await ctx.send("Failed to update role id. Please try again later.")
-            else:
-                await ctx.send(f"Successfully updated member role to {role.name}.")
+        result = await db.set_guild_info(ctx.guild.id, "memberID", role_id)
+        if result is False:
+            await ctx.send("Failed to update role id. Please try again later.")
+        else:
+            await ctx.send(f"Successfully updated member role to {role.name}.")
 
     @commands.command(
         name="setwelcomemsg",
@@ -114,22 +112,9 @@ class BasicCommandsCog(commands.Cog):
             await ctx.send("You must include a message.")
             return
 
-        confirm_message = await ctx.send("You are about to set the servers welcome message to\n"
-                                         "```" + content + "```\n"
-                                                           "Please react with a thumbs up to confirm.")
-
-        def check(check_reaction, check_user):
-            return check_user == ctx.author and str(check_reaction.emoji) == u"\u1F44D" \
-                   and check_reaction.message == confirm_message
-
-        try:
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
-        except asyncio.TimeoutError:
-            await confirm_message.delete()
-            await ctx.send('You didn\'t respond in time. '
-                           'Please enter the command again if you wish to change the welcome message')
-        else:
-            await confirm_message.delete()
+        if await ut.get_confirmation(ctx.channel, ctx.author, self.bot, "You are about to set the servers welcome message to\n"
+                                                                        "```" + content + "```\n"
+                                                                                          "Please react with a thumbs up to confirm."):
 
             message = await ctx.send(content)
             await message.add_reaction(u"\u2705")
