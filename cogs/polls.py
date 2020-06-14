@@ -99,7 +99,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 await self.check_add_new_choice(poll, message, new_response)
         else:
             await response.delete()
-            await db.add_poll_choice(int(poll['ID']), reaction, text)
+            await db.add_poll_choice(poll['ID'], reaction, text)
 
     async def get_new_choice_from_user(self, poll, message, user):
 
@@ -163,7 +163,7 @@ class PollsCog(commands.Cog, name="Polls"):
         return result
 
     async def end_poll(self, poll):
-        poll_id = int(poll['ID'])
+        poll_id = poll['ID']
         channel = self.bot.get_channel(int(poll['channelID']))
 
         await db.end_poll(poll_id)
@@ -248,7 +248,7 @@ class PollsCog(commands.Cog, name="Polls"):
             count = len(users)
 
             users = ', '.join([
-                f"<@{int(user['discordID'])}>" for user in users[:user_limit]])
+                f"<@{user['discordID']}>" for user in users[:user_limit]])
             if count > user_limit:
                 users += f" and {count-user_limit} more"
 
@@ -260,7 +260,7 @@ class PollsCog(commands.Cog, name="Polls"):
         # Indicates that results are being updated
         footer_text = (await ut.get_uk_time()).strftime(
             "Results last updated: %d/%m/%Y %H:%M:%S %Z\n"
-            f"Poll ID: {int(poll['ID'])}")
+            f"Poll ID: {poll['ID']}")
         embed.set_footer(text=footer_text)
 
         # Again, if the message is deleted
@@ -323,7 +323,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         # New responses after the poll has ended are not accepted
-        end_date = int(poll['endDate'])
+        end_date = poll['endDate']
         if (await ut.get_utc_time()).timestamp() >= end_date or poll['ended']:
             await message.remove_reaction(emoji, user)
             return

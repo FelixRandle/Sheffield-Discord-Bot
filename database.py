@@ -26,12 +26,12 @@ class Database:
         # Connect to the database
 
         self.db_config = {
-            'host': '209.97.130.228',
+            'host': 'localhost',
             'port': 3306,
             'database': SQL_DB,
             'user': SQL_USER,
             'password': SQL_PASS,
-            'charset': 'utf8',
+            'charset': 'utf8mb4',
             'use_unicode': True,
             'get_warnings': True,
             'autocommit': True,
@@ -470,15 +470,9 @@ async def get_poll_choice(poll_id, reaction, field="*"):
         db.cursor.execute(f"""
             SELECT {field} FROM POLL_CHOICES
             WHERE poll = %s AND reaction = %s
-        """, (poll_id, reaction.encode('unicode-escape')))
+        """, (poll_id, reaction.encode()))
 
-        result = db.cursor.fetchone()
-        if result:
-            for key in result:
-                if key in ('reaction', 'text'):
-                    result[key] = result[key].decode('unicode-escape')
-        
-        return result
+        return db.cursor.fetchone()
 
 
 async def add_poll_choice(poll_id, reaction, text):
@@ -489,8 +483,7 @@ async def add_poll_choice(poll_id, reaction, text):
                 (poll, reaction, text)
                 VALUES
                 (%s, %s, %s)
-            """, (poll_id, reaction.encode('unicode-escape'), 
-                  text.encode('unicode-escape')))
+            """, (poll_id, reaction.encode(), text.encode()))
         except sql.errors.IntegrityError:
             return False, "UNIQUE constraint failed"
 
@@ -554,12 +547,6 @@ async def get_poll_choices(poll_id):
         """, (poll_id, ))
 
         results = db.cursor.fetchall()
-        if results:
-            for result in results:
-                for k in result:
-                    if k in ('reaction', 'text'):
-                        result[k] = result[k].decode('unicode-escape')
-
         return results
 
 
