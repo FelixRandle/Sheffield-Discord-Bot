@@ -104,14 +104,18 @@ async def on_command_error(ctx, error):
         await ctx.send(
             "You do not have the correct permissions for this command."
             "If you believe this is an error, please contact an Admin.")
-    if isinstance(error, commands.errors.MissingRequiredArgument):
+    elif isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send(
             f"Missing argument: {error.param.name}. "
             "Please add in the argument before running the command again."
         )
-    if isinstance(error, commands.errors.UserInputError):
+    elif isinstance(error, commands.errors.UserInputError):
         await ctx.send(
             f"Could not parse user input for the command. Please ensure you have entered all parameters correctly."
+        )
+    elif isinstance(error, commands.errors.CommandNotFound):
+        await ctx.send(
+            f"I don't recognize that command. :thinking:"
         )
     else:
         await ctx.send("Error running command. Please try again later or contact an administrator.")
