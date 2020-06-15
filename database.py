@@ -3,10 +3,9 @@
 """Class to handle all database connections."""
 
 import os
-import mysql.connector as sql
 from time import time
 
-import utils as ut
+import mysql.connector as sql
 
 # Load env if we're just running this file.
 if __name__ == "__main__":
@@ -335,7 +334,8 @@ async def get_discord_user_ids_for_choice(choice_id):
         db.cursor.execute("""
             SELECT USERS.userID
             FROM USERS, POLL_RESPONSES
-            WHERE USERS.userID = POLL_RESPONSES.user AND POLL_RESPONSES.choice = %s 
+            WHERE USERS.userID = POLL_RESPONSES.user AND 
+            POLL_RESPONSES.choice = %s 
         """, (choice_id, ))
 
         return db.cursor.fetchall()
