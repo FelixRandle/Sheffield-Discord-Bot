@@ -58,7 +58,7 @@ class OddsOnCog(commands.Cog):
                 return False
 
         try:
-            message = await self.bot.wait_for('message', timeout=60.0,
+            message = await self.bot.wait_for('message', timeout=100.0,
                                               check=check)
         except asyncio.TimeoutError:
             await confirm_message.delete()
