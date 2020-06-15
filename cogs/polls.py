@@ -291,7 +291,7 @@ class PollsCog(commands.Cog, name="Polls"):
         except discord.errors.NotFound:
             return
 
-    async def create_poll_embed(self, title, end_date: datetime.datetime, 
+    async def create_poll_embed(self, title, end_date: datetime.datetime,
                                 ended, choices=[]):
         if ended:
             description = ("Poll has now ended\n"
@@ -306,7 +306,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         embed = discord.Embed(title=title, description=description,
                               color=0x009fe3)
-        
+
         return embed
 
     @tasks.loop(seconds=1.0)
@@ -444,12 +444,14 @@ class PollsCog(commands.Cog, name="Polls"):
             poll['title'], end_date, poll['ended'])
         new_message = await ctx.send(embed=embed)
 
-        for emoji in ('➕', '✖️', '🛑'):
-            await new_message.add_reaction(emoji)
+        await new_message.add_reaction('✖️')
+        if not poll['ended']:
+            for emoji in ('➕', '🛑'):
+                await new_message.add_reaction(emoji)
 
-        choices = await db.get_poll_choices(poll['ID'])
-        for choice in choices:
-            await new_message.add_reaction(choice['reaction'])
+            choices = await db.get_poll_choices(poll['ID'])
+            for choice in choices:
+                await new_message.add_reaction(choice['reaction'])
 
         await ctx.message.delete()
         await db.update_poll_message_info(poll_id, new_message.id,
