@@ -1,0 +1,6 @@
+[flake8]
+ignore =
+    # Unhelpful messages on hound
+    BLK100,
+    # Line break occurred before a binary operator
+    W503

@@ -10,7 +10,8 @@ import os
 from discord.ext import commands
 from dotenv import load_dotenv
 
-# We must load env variables before importing DB so the SQL information is ready for it.
+# We must load env variables before importing DB so the
+# SQL information is ready for it.
 load_dotenv()
 
 import database as db
@@ -82,24 +83,28 @@ async def on_raw_reaction_add(payload):
 
     expected_id = await db.get_guild_info(payload.guild_id, "welcomeMessageID")
     if payload.message_id == expected_id:
-        message = await payload.member.guild.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        message = await payload.member.guild.get_channel(payload.channel_id)\
+            .fetch_message(payload.message_id)
         await message.remove_reaction(payload.emoji, payload.member)
         if payload.emoji.name == u"\u2705":
-            registering_id = await db.get_guild_info(payload.guild_id, "registeringID")
+            registering_id = await db.get_guild_info(payload.guild_id,
+                                                     "registeringID")
             member_id = await db.get_guild_info(payload.guild_id, "memberID")
 
             await add_role(payload.member, member_id)
             await remove_role(payload.member, registering_id)
 
         elif payload.emoji.name == u"\u274E":
-            await payload.member.guild.kick(payload.member, reason="Rejected T's&C's")
+            await payload.member.guild.kick(payload.member,
+                                            reason="Rejected T's&C's")
 
 
+# Implement errors from
+# https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#exceptions
+# Not all of these need to be put in, but a fair few would be good.
 @bot.event
 async def on_command_error(ctx, error):
     """Handle any command errors that may appear."""
-    # Implement errors from https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#exceptions
-    # Not all of these need to be put in, but a fair few would be good. Some can reuse message.
     if str(error) != "":
         await ctx.send(error)
     elif isinstance(error, commands.errors.CheckFailure):
@@ -113,14 +118,16 @@ async def on_command_error(ctx, error):
         )
     elif isinstance(error, commands.errors.UserInputError):
         await ctx.send(
-            f"I couldn't recognise one or more of your inputs, are you sure they're in the correct format. :thinking:"
+            f"I couldn't recognise one or more of your inputs, "
+            f"are you sure they're in the correct format. :thinking:"
         )
     elif isinstance(error, commands.errors.CommandNotFound):
         await ctx.send(
             f"I don't recognize that command. :thinking:"
         )
     else:
-        await ctx.send("Error running command. Please try again later or contact an administrator.")
+        await ctx.send("Error running command. "
+                       "Please try again later or contact an administrator.")
         ut.log_error(error)
 
 

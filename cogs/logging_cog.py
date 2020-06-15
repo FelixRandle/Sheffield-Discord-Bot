@@ -5,11 +5,8 @@ An example cog to show how things should be done.
 
 Also provides a simple base for starting a new cog.
 """
-# In this case, discord import is not needed, in some cases it may be.
-# import discord
-from discord.ext import commands
-from enum import Enum
 import time
+from discord.ext import commands
 
 import database as db
 
@@ -26,7 +23,8 @@ class LoggingCog(commands.Cog):
         if message.author.bot:
             return
         await db.log_message(message.author.id, message.id,
-                             message.content.encode('unicode-escape'), int(time.time()))
+                             message.content.encode('unicode-escape'),
+                             int(time.time()))
 
     @commands.Cog.listener('on_message_delete')
     async def on_message_delete(self, message):
