@@ -220,7 +220,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         return True
 
-    async def update_response_counts(self, poll):
+    async def update_response_counts(self, poll, *, force_update=False):
 
         def key(choice):
             try:
@@ -276,7 +276,8 @@ class PollsCog(commands.Cog, name="Polls"):
         # If the old fields are equal to the new fields,
         # i.e., if the responses have not changed from the last message,
         # then the message is not updated
-        if await self.fields_equal(old_fields, new_fields):
+        if (await self.fields_equal(old_fields, new_fields) 
+                and not force_update):
             return
 
         # Indicates that results are being updated
@@ -410,7 +411,7 @@ class PollsCog(commands.Cog, name="Polls"):
             ctx.guild.id, title, int(end_date.timestamp()))
 
         poll = await db.get_poll_by_message_id(message.id)
-        await self.update_response_counts(poll)
+        await self.update_response_counts(poll, force_update=True)
 
     @commands.command(
         name="summonpoll",
@@ -458,7 +459,7 @@ class PollsCog(commands.Cog, name="Polls"):
                                           ctx.channel.id)
 
         poll = await db.get_poll_by_id(poll['ID'])
-        await self.update_response_counts(poll)
+        await self.update_response_counts(poll, force_update=True)
 
 
 def setup(bot):
