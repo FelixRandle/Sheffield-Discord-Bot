@@ -413,6 +413,10 @@ class PollsCog(commands.Cog, name="Polls"):
             await ctx.send(f"Poll with ID {poll_id} could not found.")
             return
 
+        if (ctx.author.id != poll['creator'] 
+                and not await ut.is_admin(ctx.user)):
+            await ctx.send("You don't have permission to summon that poll!")
+
         old_channel = self.bot.get_channel(poll['channelID'])
         old_message = await old_channel.fetch_message(poll['messageID'])
         embed = old_message.embeds[0]
