@@ -409,6 +409,9 @@ class PollsCog(commands.Cog, name="Polls"):
             ctx.author.id, message.id, message.channel.id,
             ctx.guild.id, title, int(end_date.timestamp()))
 
+        poll = await db.get_poll_by_message_id(message.id)
+        await self.update_response_counts(poll)
+
     @commands.command(
         name="summonpoll",
         help="Moves an existing poll to the bottom of the channel")
@@ -452,9 +455,8 @@ class PollsCog(commands.Cog, name="Polls"):
         await db.update_poll_message_info(poll_id, new_message.id,
                                           ctx.channel.id)
 
-        if poll['ended']:
-            poll = await db.get_poll_by_id(poll['ID'])
-            await self.update_response_counts(poll)
+        poll = await db.get_poll_by_id(poll['ID'])
+        await self.update_response_counts(poll)
 
 
 def setup(bot):
