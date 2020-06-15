@@ -11,17 +11,6 @@ import database as db
 import re
 import utils as ut
 
-# Create a regex for finding id's within messages
-re_message_id = re.compile("\d{18}")
-
-
-async def find_id(msg):
-    result = re_message_id.search(msg)
-    if result:
-        return int(msg[result.start():result.end()])
-    return False
-
-
 class BasicCommandsCog(commands.Cog):
     """Create a class that extends Cog to make our functionality in."""
 
@@ -112,9 +101,10 @@ class BasicCommandsCog(commands.Cog):
             await ctx.send("You must include a message.")
             return
 
-        if await ut.get_confirmation(ctx.channel, ctx.author, self.bot, "You are about to set the servers welcome message to\n"
-                                                                        "```" + content + "```\n"
-                                                                                          "Please react with a thumbs up to confirm."):
+        if await ut.get_confirmation(ctx.channel, ctx.author, self.bot,
+                                     "You are about to set the servers welcome message to\n"
+                                     f"```{content}```\n"
+                                     "Please react with a thumbs up to confirm."):
 
             message = await ctx.send(content)
             await message.add_reaction(u"\u2705")

@@ -7,12 +7,24 @@ Utility commands to be used throughout the cogs
 import os
 import asyncio
 import datetime
+import re
 import traceback
 
 from pytz import timezone
 
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
+
+
+# Create a regex for finding id's within messages
+re_message_id = re.compile("\d{18}")
+
+
+async def find_id(msg):
+    result = re_message_id.search(msg)
+    if result:
+        return int(msg[result.start():result.end()])
+    return False
 
 
 async def get_confirmation(channel, user, bot, message):
