@@ -111,7 +111,7 @@ async def on_command_error(ctx, error):
         )
     elif isinstance(error, commands.errors.UserInputError):
         await ctx.send(
-            f"Could not parse user input for the command. Please ensure you have entered all parameters correctly."
+            error if str(error) != "" else f"I couldn't recognise one or more of your inputs, are you sure they're in the correct format. :thinking:"
         )
     elif isinstance(error, commands.errors.CommandNotFound):
         await ctx.send(
