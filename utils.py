@@ -30,10 +30,10 @@ async def get_confirmation(channel, user, bot, message):
     await confirm_message.add_reaction(u"👎")
 
     def check(check_reaction, check_user):
-        return (check_user == user) and \
-               check_reaction.message.id == confirm_message.id and \
-               ((str(check_reaction.emoji) == u"👍") or
-                (str(check_reaction.emoji) == u"👎"))
+        return ((check_user == user)
+                and check_reaction.message.id == confirm_message.id
+                and ((str(check_reaction.emoji) == u"👍")
+                     or (str(check_reaction.emoji) == u"👎")))
 
     try:
         reaction, user = await bot.wait_for('reaction_add', timeout=30.0,

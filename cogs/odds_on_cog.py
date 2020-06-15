@@ -51,8 +51,8 @@ class OddsOnCog(commands.Cog):
 
         def check(check_message):
             try:
-                return int(check_message.content) > 1 and \
-                       check_message.author == target_user
+                return (int(check_message.content) > 1
+                        and check_message.author == target_user)
             except ValueError:
                 return False
 
