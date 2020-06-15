@@ -334,8 +334,8 @@ async def get_discord_user_ids_for_choice(choice_id):
         db.cursor.execute("""
             SELECT USERS.userID
             FROM USERS, POLL_RESPONSES
-            WHERE USERS.userID = POLL_RESPONSES.user AND 
-            POLL_RESPONSES.choice = %s 
+            WHERE USERS.userID = POLL_RESPONSES.user AND
+            POLL_RESPONSES.choice = %s
         """, (choice_id, ))
 
         return db.cursor.fetchall()
