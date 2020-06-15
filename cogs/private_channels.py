@@ -10,7 +10,6 @@ import discord
 from discord.ext import commands
 
 import database as db
-import utils as ut
 
 
 class PrivateChannels(commands.Cog):
@@ -24,25 +23,30 @@ class PrivateChannels(commands.Cog):
         name="newChannel",
         help="Creates a new private voice channel for you to use.")
     @commands.has_role("Member")
-    async def new_channel(self, ctx, limit: int = 0, voice: bool = 1):
+    async def new_channel(self, ctx, limit: int = 0):
         """
         Creates a new voice channel.
 
-        This command creates a new voice channel for the user to use with friends.
+        This command creates a new voice channel for the user
+        to use with friends.
         They can specify how many people should be limited to the channel.
         """
-        category = discord.utils.get(ctx.guild.categories, name='Private Channels')
+        category = discord.utils.get(ctx.guild.categories,
+                                     name='Private Channels')
         if category is None:
-            await ctx.send("I couldn't find the required category, please contact an admin.")
+            await ctx.send("I couldn't find the required category, "
+                           "please contact an admin.")
             return
 
         if await db.user_has_channel(ctx.author.id):
-            await ctx.send("You already have a channel! If you believe this is an error then "
+            await ctx.send("You already have a channel! "
+                           "If you believe this is an error then "
                            "please contact an admin.")
         else:
-            channel = await ctx.guild.create_voice_channel(ctx.author.name+"'s Channel",
-                                                           category=category,
-                                                           user_limit=limit)
+            channel = await ctx.guild.create_voice_channel(
+                ctx.author.name + "'s Channel",
+                category=category,
+                user_limit=limit)
 
             await db.user_create_channel(ctx.author.id, channel.id, True)
             await ctx.send("Successfully made you a new channel!")
