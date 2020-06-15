@@ -163,13 +163,13 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def end_poll(self, poll):
         poll_id = poll['ID']
-        channel = self.bot.get_channel(int(poll['channelID']))
+        channel = self.bot.get_channel(poll['channelID'])
 
         await db.end_poll(poll_id)
 
         # If the message has been deleted
         try:
-            message = await channel.fetch_message(int(poll['messageID']))
+            message = await channel.fetch_message(poll['messageID'])
         except discord.errors.NotFound:
             return
 
@@ -235,11 +235,11 @@ class PollsCog(commands.Cog, name="Polls"):
                 # of the list (along with the others that are not found)
                 return 0
 
-        channel = self.bot.get_channel(int(poll['channelID']))
+        channel = self.bot.get_channel(poll['channelID'])
 
         # If the message is deleted, then ignore and return
         try:
-            message = await channel.fetch_message(int(poll['messageID']))
+            message = await channel.fetch_message(poll['messageID'])
         except discord.errors.NotFound:
             return
 
@@ -413,8 +413,8 @@ class PollsCog(commands.Cog, name="Polls"):
             await ctx.send(f"Poll with ID {poll_id} could not found.")
             return
 
-        old_channel = self.bot.get_channel(int(poll['channelID']))
-        old_message = await old_channel.fetch_message(int(poll['messageID']))
+        old_channel = self.bot.get_channel(poll['channelID'])
+        old_message = await old_channel.fetch_message(poll['messageID'])
         embed = old_message.embeds[0]
         reactions = old_message.reactions
 
