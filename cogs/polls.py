@@ -204,6 +204,23 @@ class PollsCog(commands.Cog, name="Polls"):
             await db.change_poll_end_date(
                 poll['ID'], int((await ut.get_utc_time()).timestamp()))
 
+    async def fields_equal(self, old_fields: list, new_fields: list):
+        def key(field):
+            return field.name
+        
+        if len(old_fields) != len(new_fields):
+            return False
+
+        old_fields.sort(key=key)
+        new_fields.sort(key=key)
+
+        for old_field, new_field in zip(old_fields, new_fields):
+            if (old_field.name != new_field.name
+                    or old_field.value != new_field.value):
+                return False
+
+        return True
+
     async def update_response_counts(self, poll):
 
         def key(choice):
@@ -235,10 +252,11 @@ class PollsCog(commands.Cog, name="Polls"):
         choices.sort(key=key)
 
         embed = message.embeds[0]
+        old_fields = embed.fields
+
         embed.clear_fields()
 
         user_limit = 3
-
         for choice in choices:
             reaction = choice['reaction']
 
@@ -254,6 +272,13 @@ class PollsCog(commands.Cog, name="Polls"):
 
             embed.add_field(name=f"{reaction} {count}",
                             value=field_value, inline=False)
+        
+        new_fields = embed.fields
+        # If the old fields are equal to the new fields,
+        # i.e., if the responses have not changed from the last message,
+        # then the message is not updated
+        if await self.fields_equal(old_fields, new_fields):
+            return
 
         # Indicates that results are being updated
         footer_text = (await ut.get_uk_time()).strftime(
