@@ -26,14 +26,13 @@ async def find_id(msg):
 
 async def get_confirmation(channel, user, bot, message):
     confirm_message = await channel.send(message)
-    await confirm_message.add_reaction(u"👍")
-    await confirm_message.add_reaction(u"👎")
+    await confirm_message.add_reaction("👍")
+    await confirm_message.add_reaction("👎")
 
     def check(check_reaction, check_user):
         return ((check_user == user)
                 and check_reaction.message.id == confirm_message.id
-                and ((str(check_reaction.emoji) == u"👍")
-                     or (str(check_reaction.emoji) == u"👎")))
+                and str(check_reaction.emoji) in ("👍", "👎"))
 
     try:
         reaction, user = await bot.wait_for('reaction_add', timeout=30.0,
@@ -43,7 +42,7 @@ async def get_confirmation(channel, user, bot, message):
         return False, "Timeout"
     else:
         await confirm_message.delete()
-        if str(reaction.emoji) == u"👍":
+        if str(reaction.emoji) == "👍":
             return True, None
         return False, "Rejected"
 
