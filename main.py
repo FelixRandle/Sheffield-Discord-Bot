@@ -100,7 +100,9 @@ async def on_command_error(ctx, error):
     """Handle any command errors that may appear."""
     # Implement errors from https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#exceptions
     # Not all of these need to be put in, but a fair few would be good. Some can reuse message.
-    if isinstance(error, commands.errors.CheckFailure):
+    if str(error) != "":
+        await ctx.send(error)
+    elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send(
             "You do not have the correct permissions for this command."
             "If you believe this is an error, please contact an Admin.")
@@ -111,7 +113,7 @@ async def on_command_error(ctx, error):
         )
     elif isinstance(error, commands.errors.UserInputError):
         await ctx.send(
-            error if str(error) != "" else f"I couldn't recognise one or more of your inputs, are you sure they're in the correct format. :thinking:"
+            f"I couldn't recognise one or more of your inputs, are you sure they're in the correct format. :thinking:"
         )
     elif isinstance(error, commands.errors.CommandNotFound):
         await ctx.send(

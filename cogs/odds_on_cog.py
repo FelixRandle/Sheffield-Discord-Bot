@@ -35,7 +35,7 @@ class OddsOnCog(commands.Cog):
         """
         target_user_id = await ut.find_id(role)
         if target_user_id == ctx.author.id:
-            raise commands.errors.UserInputError()
+            raise commands.errors.UserInputError(message="You can't play with yourself here...")
         target_user = self.bot.get_user(target_user_id)
         if target_user is None:
             raise commands.errors.UserInputError(message="I couldn't find the user you tagged.")
@@ -54,25 +54,25 @@ class OddsOnCog(commands.Cog):
         except asyncio.TimeoutError:
             await confirm_message.delete()
             await ctx.send(f"<@{ctx.author.id}> The person you challenged did not respond in time.")
-        else:
-            upper_value = int(message.content)
-            author_value, target_value = await asyncio.gather(
-                self.get_number_in_dm(ctx.author, upper_value),
-                self.get_number_in_dm(target_user, upper_value)
-            )
+            return
+        upper_value = int(message.content)
+        author_value, target_value = await asyncio.gather(
+            self.get_number_in_dm(ctx.author, upper_value),
+            self.get_number_in_dm(target_user, upper_value)
+        )
 
-            if author_value[0] is False:
-                await ctx.send(f"I couldn't complete the game because <@{ctx.author.id}> had the following error:\n"
-                               f"{author_value[1]}")
-            elif target_value[0] is False:
-                await ctx.send(f"I couldn't complete the game because <@{target_user_id}> had the following error:\n"
-                               f"{target_value[1]}")
-            else:
-                await ctx.send(f"And the winner is, "
-                               f"<@{ctx.author.id if author_value[1] == target_value[1] else target_user_id}> "
-                               f":partying_face:\n"
-                               f"<@{ctx.author.id}> chose {author_value[1]}, "
-                               f"<@{target_user_id}> chose {target_value[1]}")
+        if author_value[0] is False:
+            await ctx.send(f"I couldn't complete the game because <@{ctx.author.id}> had the following error:\n"
+                           f"{author_value[1]}")
+        elif target_value[0] is False:
+            await ctx.send(f"I couldn't complete the game because <@{target_user_id}> had the following error:\n"
+                           f"{target_value[1]}")
+        else:
+            await ctx.send(f"And the winner is, "
+                           f"<@{ctx.author.id if author_value[1] == target_value[1] else target_user_id}> "
+                           f":partying_face:\n"
+                           f"<@{ctx.author.id}> chose {author_value[1]}, "
+                           f"<@{target_user_id}> chose {target_value[1]}")
 
     async def get_number_in_dm(self, user, max_value):
         dm_channel = user.dm_channel
@@ -95,9 +95,7 @@ class OddsOnCog(commands.Cog):
             message = await self.bot.wait_for('message', timeout=30.0, check=check)
         except asyncio.TimeoutError:
             return False, "Did not respond in time."
-        else:
-            return True, int(message.content)
-
+        return True, int(message.content)
 
 
 def setup(bot):
