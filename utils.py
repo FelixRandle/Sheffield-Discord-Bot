@@ -4,20 +4,17 @@
 Utility commands to be used throughout the cogs
 """
 
-import os
 import asyncio
 import datetime
+import os
 import re
-import traceback
 
 from pytz import timezone
 
-
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 
-
 # Create a regex for finding id's within messages
-re_message_id = re.compile("\d{18}")
+re_message_id = re.compile(r"\d{18}")
 
 
 async def find_id(msg):
@@ -33,12 +30,14 @@ async def get_confirmation(channel, user, bot, message):
     await confirm_message.add_reaction(u"👎")
 
     def check(check_reaction, check_user):
-        return (check_user == user) \
-            and check_reaction.message.id == confirm_message.id and \
-            ((str(check_reaction.emoji) == u"👍") or (str(check_reaction.emoji) == u"👎"))
+        return (check_user == user) and \
+               check_reaction.message.id == confirm_message.id and \
+               ((str(check_reaction.emoji) == u"👍") or
+                (str(check_reaction.emoji) == u"👎"))
 
     try:
-        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0,
+                                            check=check)
     except asyncio.TimeoutError:
         await confirm_message.delete()
         return False, "Timeout"
@@ -52,7 +51,7 @@ async def get_confirmation(channel, user, bot, message):
 async def get_utc_time(timestamp: int = None) -> datetime.datetime:
     if timestamp is None:
         return datetime.datetime.now(datetime.timezone.utc)
-    
+
     return datetime.datetime.utcfromtimestamp(timestamp)
 
 
