@@ -86,7 +86,7 @@ class OddsOnCog(commands.Cog):
 
         def check(check_message):
             try:
-                return 1 < int(check_message.content) <= max_value \
+                return 1 <= int(check_message.content) <= max_value \
                        and check_message.author == user
             except ValueError:
                 return False
