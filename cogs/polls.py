@@ -134,13 +134,12 @@ class PollsCog(commands.Cog, name="Polls"):
         result, reason = await ut.get_confirmation(
             message.channel, user, self.bot,
             "Are you sure you want to delete the poll? "
-            "All responses and choices will be deleted")
+            "The poll will be deleted from the conversation.\n"
+            "You can use the `summonpoll` command to bring the poll back")
 
         if result:
             # The message containing the poll is deleted
             await message.delete()
-            # Poll is also ended
-            await self.end_poll(poll)
 
         return result
 
@@ -207,7 +206,7 @@ class PollsCog(commands.Cog, name="Polls"):
     async def fields_equal(self, old_fields: list, new_fields: list):
         def key(field):
             return field.name
-        
+
         if len(old_fields) != len(new_fields):
             return False
 
@@ -272,7 +271,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
             embed.add_field(name=f"{reaction} {count}",
                             value=field_value, inline=False)
-        
+
         new_fields = embed.fields
         # If the old fields are equal to the new fields,
         # i.e., if the responses have not changed from the last message,
@@ -291,6 +290,24 @@ class PollsCog(commands.Cog, name="Polls"):
             await message.edit(embed=embed)
         except discord.errors.NotFound:
             return
+
+    async def create_poll_embed(self, title, end_date: datetime.datetime, 
+                                ended, choices=[]):
+        if ended:
+            description = ("Poll has now ended\n"
+                           "React with ✖️ to delete the poll")
+        else:
+            description = (await ut.get_uk_time(end_date)).strftime(
+                "Poll ends: %d/%m/%Y %H:%M:%S %Z\n") + (
+                "React with ➕ to add a choice\n"
+                "React with ✖️ to delete the poll\n"
+                "React with 🛑 to end the poll, and finalise the results\n"
+                "React with the emoji shown below to vote for that option")
+
+        embed = discord.Embed(title=title, description=description,
+                              color=0x009fe3)
+        
+        return embed
 
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
@@ -377,14 +394,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         end_date = await ut.get_utc_time() + duration
-        description = (await ut.get_uk_time(end_date)).strftime(
-            "Poll ends: %d/%m/%Y %H:%M:%S %Z\n") + (
-            "React with ➕ to add a choice\n"
-            "React with ✖️ to delete the poll\n"
-            "React with 🛑 to end the poll, and finalise the results\n"
-            "React with the emoji shown below to vote for that option")
-        embed = discord.Embed(title=title, description=description,
-                              color=0x009fe3)
+        embed = await self.create_poll_embed(title, end_date, False)
         message = await ctx.send(embed=embed)
 
         # Adds control emojis
@@ -413,25 +423,38 @@ class PollsCog(commands.Cog, name="Polls"):
             await ctx.send(f"Poll with ID {poll_id} could not found.")
             return
 
-        if (ctx.author.id != poll['creator'] 
+        if (ctx.author.id != poll['creator']
                 and not await ut.is_admin(ctx.user)):
             await ctx.send("You don't have permission to summon that poll!")
 
         old_channel = self.bot.get_channel(poll['channelID'])
-        old_message = await old_channel.fetch_message(poll['messageID'])
-        embed = old_message.embeds[0]
-        reactions = old_message.reactions
 
-        await old_message.delete()
+        try:
+            old_message = await old_channel.fetch_message(poll['messageID'])
+        except discord.errors.NotFound:
+            pass
+        else:
+            await old_message.delete()
 
+        end_date = await ut.get_utc_time(poll['endDate'])
+        embed = await self.create_poll_embed(
+            poll['title'], end_date, poll['ended'])
         new_message = await ctx.send(embed=embed)
-        for reaction in reactions:
-            await new_message.add_reaction(reaction.emoji)
+
+        for emoji in ('➕', '✖️', '🛑'):
+            await new_message.add_reaction(emoji)
+
+        choices = await db.get_poll_choices(poll['ID'])
+        for choice in choices:
+            await new_message.add_reaction(choice['reaction'])
 
         await ctx.message.delete()
-
         await db.update_poll_message_info(poll_id, new_message.id,
                                           ctx.channel.id)
+
+        if poll['ended']:
+            poll = await db.get_poll_by_id(poll['ID'])
+            await self.update_response_counts(poll)
 
 
 def setup(bot):

@@ -37,8 +37,11 @@ async def get_confirmation(channel, user, bot, message):
         return False, "Rejected"
 
 
-async def get_utc_time() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)
+async def get_utc_time(timestamp: int = None) -> datetime.datetime:
+    if timestamp is None:
+        return datetime.datetime.now(datetime.timezone.utc)
+    
+    return datetime.datetime.utcfromtimestamp(timestamp)
 
 
 async def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
