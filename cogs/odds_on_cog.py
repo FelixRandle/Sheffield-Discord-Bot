@@ -24,12 +24,14 @@ class OddsOnCog(commands.Cog):
         name="oddson",
         help="Let's you play Odds On against other members")
     @commands.has_role("Member")
-    async def ping(self, ctx, role, *, wager: str):
+    async def odds_on(self, ctx, role, *, wager: str):
         """
-        Create a simple ping pong command.
+        Challenge a user to odds on
 
-        This command adds some help text and also required that the user
-        have the Member role, this is case-sensitive.
+        Challenge a specific user to a wager,
+        that user then specifies the odds and
+        both users then pick a number between 1
+        and the chosen upper limit.
         """
         target_user_id = await ut.find_id(role)
         if target_user_id == ctx.author.id:
@@ -71,7 +73,6 @@ class OddsOnCog(commands.Cog):
                                f":partying_face:\n"
                                f"<@{ctx.author.id}> chose {author_value[1]}, "
                                f"<@{target_user_id}> chose {target_value[1]}")
-
 
     async def get_number_in_dm(self, user, max_value):
         dm_channel = user.dm_channel
