@@ -12,7 +12,6 @@ class CreateGuildsTable(Migration):
             table.big_integer('registeringId').unique()
             table.big_integer('memberId').unqiue()
             table.big_integer('welcomeMessageId').unique()
-            table.timestamps()
 
     def down(self):
         """
