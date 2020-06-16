@@ -59,7 +59,7 @@ async def on_member_join(member):
     await member.create_dm()
     await member.dm_channel.send(
         f'Hey {member.name}, welcome to the (unofficial) University of '
-        f'Sheffield Computer Science Discord!\n'
+        'Sheffield Computer Science Discord!\n'
         'We like to know who we\'re talking to, so please change your '
         'nickname on the server to include your real name in some way.\n'
         'Apart from that, have fun on the server, get to know people and '
