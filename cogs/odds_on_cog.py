@@ -25,7 +25,7 @@ class OddsOnCog(commands.Cog):
         name="oddsOn",
         help="Let's you play Odds On against other members")
     @commands.has_role("Member")
-    async def odds_on(self, ctx, role):
+    async def odds_on(self, ctx, role, *, wager: str):
         """
         Challenge a user to odds on
 
@@ -45,9 +45,10 @@ class OddsOnCog(commands.Cog):
 
         confirm_message = await ctx.send(
             f"<@{target_user_id}>, <@{ctx.author.id}> "
-            f"has challenged you in odds on.\n"
-            f"Reply to this message with a number (e.g. 7) "
-            f"to set the odds or ignore it.")
+            "has challenged you in odds on.\n"
+            "Reply to this message with a number (e.g. 7) "
+            "to set the odds or ignore it. (Number must"
+            "be greater than 1)")
 
         def check(check_message):
             try:
@@ -57,13 +58,13 @@ class OddsOnCog(commands.Cog):
                 return False
 
         try:
-            message = await self.bot.wait_for('message', timeout=30.0,
+            message = await self.bot.wait_for('message', timeout=100.0,
                                               check=check)
         except asyncio.TimeoutError:
             await confirm_message.delete()
             await ctx.send(
                 f"<@{ctx.author.id}> "
-                f"The person you challenged did not respond in time.")
+                "The person you challenged did not respond in time.")
             return
         upper_value = int(message.content)
         author_value, target_value = await asyncio.gather(
@@ -74,21 +75,21 @@ class OddsOnCog(commands.Cog):
         if author_value[0] is False:
             await ctx.send(
                 f"I couldn't complete the game because <@{ctx.author.id}> "
-                f"had the following error:\n"
+                "had the following error:\n"
                 f"{author_value[1]}")
         elif target_value[0] is False:
             await ctx.send(
                 f"I couldn't complete the game because <@{target_user_id}> "
-                f"had the following error:\n"
+                "had the following error:\n"
                 f"{target_value[1]}")
         else:
-            winner = ctx.author.id if author_value[1] == target_value[1] else \
-                target_user_id
-            await ctx.send(f"And the winner is, "
-                           f"<@{winner}> "
-                           f":partying_face:\n"
-                           f"<@{ctx.author.id}> chose {author_value[1]}, "
-                           f"<@{target_user_id}> chose {target_value[1]}")
+            winning_statement = (f"<@{target_user_id}> must {wager}"
+                                 if author_value[1] == target_value[1]
+                                 else f"<@{target_user_id}> doesn't have to "
+                                      "do anything.")
+            await ctx.send(f"<@{ctx.author.id}> chose {author_value[1]}, "
+                           f"<@{target_user_id}> chose {target_value[1]}"
+                           f"<@{winning_statement}>")
 
     async def get_number_in_dm(self, user, max_value):
         dm_channel = user.dm_channel
