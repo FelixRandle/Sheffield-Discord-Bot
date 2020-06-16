@@ -123,12 +123,12 @@ async def on_command_error(ctx, error):
         )
     elif isinstance(error, commands.errors.UserInputError):
         await ctx.send(
-            f"I couldn't recognise one or more of your inputs, "
-            f"are you sure they're in the correct format. :thinking:"
+            "I couldn't recognise one or more of your inputs, "
+            "are you sure they're in the correct format. :thinking:"
         )
     elif isinstance(error, commands.errors.CommandNotFound):
         await ctx.send(
-            f"I don't recognize that command. :thinking:"
+            "I don't recognize that command. :thinking:"
         )
     else:
         await ctx.send("Error running command. "

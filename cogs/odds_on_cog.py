@@ -45,10 +45,10 @@ class OddsOnCog(commands.Cog):
 
         confirm_message = await ctx.send(
             f"<@{target_user_id}>, <@{ctx.author.id}> "
-            f"has challenged you in odds on.\n"
-            f"Reply to this message with a number (e.g. 7) "
-            f"to set the odds or ignore it. (Number must"
-            f"be greater than 1)")
+            "has challenged you in odds on.\n"
+            "Reply to this message with a number (e.g. 7) "
+            "to set the odds or ignore it. (Number must"
+            "be greater than 1)")
 
         def check(check_message):
             try:
@@ -64,7 +64,7 @@ class OddsOnCog(commands.Cog):
             await confirm_message.delete()
             await ctx.send(
                 f"<@{ctx.author.id}> "
-                f"The person you challenged did not respond in time.")
+                "The person you challenged did not respond in time.")
             return
         upper_value = int(message.content)
         author_value, target_value = await asyncio.gather(
@@ -75,18 +75,18 @@ class OddsOnCog(commands.Cog):
         if author_value[0] is False:
             await ctx.send(
                 f"I couldn't complete the game because <@{ctx.author.id}> "
-                f"had the following error:\n"
+                "had the following error:\n"
                 f"{author_value[1]}")
         elif target_value[0] is False:
             await ctx.send(
                 f"I couldn't complete the game because <@{target_user_id}> "
-                f"had the following error:\n"
+                "had the following error:\n"
                 f"{target_value[1]}")
         else:
             winning_statement = (f"<@{target_user_id}> must {wager}"
                                  if author_value[1] == target_value[1]
                                  else f"<@{target_user_id}> doesn't have to "
-                                      f"do anything.")
+                                      "do anything.")
             await ctx.send(f"<@{ctx.author.id}> chose {author_value[1]}, "
                            f"<@{target_user_id}> chose {target_value[1]}"
                            f"<@{winning_statement}>")
