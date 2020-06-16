@@ -83,8 +83,10 @@ class OddsOnCog(commands.Cog):
                 f"had the following error:\n"
                 f"{target_value[1]}")
         else:
-            winning_statement = (f"<@{target_user_id}> must {wager}" if author_value[1] == target_value[1]
-                                 else f"<@{target_user_id}> doesn't have to do anything.")
+            winning_statement = (f"<@{target_user_id}> must {wager}"
+                                 if author_value[1] == target_value[1]
+                                 else f"<@{target_user_id}> doesn't have to "
+                                      f"do anything.")
             await ctx.send(f"<@{ctx.author.id}> chose {author_value[1]}, "
                            f"<@{target_user_id}> chose {target_value[1]}"
                            f"<@{winning_statement}>")
