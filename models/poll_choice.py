@@ -1,7 +1,8 @@
 from orator import Model
-from orator.orm import belongs_to
+from orator.orm import belongs_to, belongs_to_many
 
 from .poll import Poll
+from .user import User
 
 
 class PollChoice(Model):
@@ -9,3 +10,7 @@ class PollChoice(Model):
     @belongs_to('poll')
     def poll(self):
         return Poll
+
+    @belongs_to_many('poll_responses', 'choice', 'user')
+    def users(self):
+        return User
