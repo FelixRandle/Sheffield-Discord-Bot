@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Class to handle all database connections."""
 
-from orator import DatabaseManager
+from orator import DatabaseManager, Model
 from orator.migrations import Migrator, DatabaseMigrationRepository
 
 import os
@@ -47,3 +47,6 @@ if not migrator.repository_exists():
     repository.create_repository()
 
 migrator.rollback('./migrations') if rollback else migrator.run('./migrations')
+
+# Tells models to use db to resolve the connection to the DB
+Model.set_connection_resolver(db)
