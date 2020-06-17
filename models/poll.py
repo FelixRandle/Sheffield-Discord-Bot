@@ -7,7 +7,7 @@ from .poll_choice import PollChoice
 
 class Poll(Model):
 
-    @belongs_to('creatorId')
+    @belongs_to('creator_id')
     def creator(self):
         return User
 

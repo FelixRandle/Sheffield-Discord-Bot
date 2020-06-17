@@ -20,6 +20,6 @@ class User(Model):
     def messages(self):
         return Message
 
-    @has_many('creatorId')
+    @has_many('creator_id')
     def polls(self):
         return Poll

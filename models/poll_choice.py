@@ -7,7 +7,7 @@ from .user import User
 
 class PollChoice(Model):
 
-    @belongs_to('poll')
+    @belongs_to('poll_id')
     def poll(self):
         return Poll
 
