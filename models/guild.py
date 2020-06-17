@@ -6,6 +6,6 @@ from .user import User
 
 class Guild(Model):
 
-    @has_many('guildId')
+    @has_many
     def users(self):
         return User

@@ -9,9 +9,6 @@ from .poll import Poll
 
 class User(Model):
 
-    __primary_key__ = 'userId'
-
-    @belongs_to('guildId')
     def guild(self):
         return Guild
 
