@@ -14,7 +14,7 @@ from pytz import timezone
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 
 # Create a regex for finding id's within messages
-re_message_id = re.compile(r"\d{16}")
+re_message_id = re.compile(r"\d{18}")
 
 
 async def find_id(msg):

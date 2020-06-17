@@ -34,7 +34,11 @@ class OddsOnCog(commands.Cog):
         both users then pick a number between 1
         and the chosen upper limit.
         """
-        target_user_id = await ut.find_id(role)
+        if len(ctx.message.mentions) == 0:
+            raise commands.errors.UserInputError(
+                message="Please tag a user"
+            )
+        target_user_id = ctx.message.mentions[0].id
         if target_user_id == ctx.author.id:
             raise commands.errors.UserInputError(
                 message="You can't play with yourself here...")
