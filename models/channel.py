@@ -3,6 +3,7 @@ from orator.orm import belongs_to
 
 from .user import User
 
+
 class Channel(Model):
 
     __primary_key__ = 'channelId'

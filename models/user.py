@@ -5,6 +5,7 @@ from .channel import Channel
 from .guild import Guild
 from .message import Message
 
+
 class User(Model):
 
     __primary_key__ = 'userId'
