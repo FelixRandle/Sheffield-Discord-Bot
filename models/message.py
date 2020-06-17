@@ -6,8 +6,6 @@ from .user import User
 
 class Message(Model):
 
-    __primary_key__ = 'messageId'
-
-    @belongs_to('authorId')
+    @belongs_to('author_id')
     def author(self):
         return User

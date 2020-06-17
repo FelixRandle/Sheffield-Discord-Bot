@@ -16,7 +16,7 @@ class User(Model):
     def channels(self):
         return Channel
 
-    @has_many('authorId')
+    @has_many('author_id')
     def messages(self):
         return Message
 
