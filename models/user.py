@@ -12,7 +12,7 @@ class User(Model):
     def guild(self):
         return Guild
 
-    @has_many('creator')
+    @has_many('creator_id')
     def channels(self):
         return Channel
 

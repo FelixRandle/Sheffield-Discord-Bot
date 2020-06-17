@@ -6,8 +6,6 @@ from .user import User
 
 class Channel(Model):
 
-    __primary_key__ = 'channelId'
-
-    @belongs_to('creator')
+    @belongs_to('creator_id')
     def creator(self):
         return User
