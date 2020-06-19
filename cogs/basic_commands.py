@@ -4,8 +4,8 @@
 
 from discord.ext import commands
 
-import database as db
 import utils as ut
+from models import User, Guild
 
 
 class BasicCommandsCog(commands.Cog):
@@ -27,7 +27,8 @@ class BasicCommandsCog(commands.Cog):
         have the Member role, this is case-sensitive.
         """
         for member in ctx.guild.members:
-            await db.add_user(member.id, member.bot)
+            if not member.bot:
+                User.first_or_create(id=member.id, guild_id=ctx.guild.id)
 
         await ctx.send("Added all users to database!")
 
@@ -46,15 +47,20 @@ class BasicCommandsCog(commands.Cog):
         if not ctx.message.role_mentions:
             await ctx.send("Could not find a valid role. Please ensure you "
                            "have properly entered the role ID.")
+            return
+
+        guild = Guild.find(ctx.guild.id)
+        if guild is None:
+            await ctx.send("Failed to update role ID: guild was not found")
+            return
 
         role = ctx.message.role_mentions[0]
 
-        result = await db.set_guild_info(ctx.guild.id, "registeringID",
-                                         role.id)
-        if result is False:
-            await ctx.send("Failed to update role id. Please try again later.")
-        else:
-            await ctx.send(f"Successfully updated member role to {role.name}.")
+        guild.registering_id = role.id
+        guild.save()
+
+        await ctx.send(
+            f"Successfully updated registering role to {role.name}.")
 
     @commands.command(
         name="setMember",
@@ -71,14 +77,19 @@ class BasicCommandsCog(commands.Cog):
         if not ctx.message.role_mentions:
             await ctx.send("Could not find a valid role. Please ensure you "
                            "have properly entered the role ID.")
+            return
+
+        guild = Guild.find(ctx.guild.id)
+        if guild is None:
+            await ctx.send("Failed to update role ID: guild was not found")
+            return
 
         role = ctx.message.role_mentions[0]
 
-        result = await db.set_guild_info(ctx.guild.id, "memberID", roll.id)
-        if result is False:
-            await ctx.send("Failed to update role id. Please try again later.")
-        else:
-            await ctx.send(f"Successfully updated member role to {role.name}.")
+        guild.member_id = role.id
+        guild.save()
+
+        await ctx.send(f"Successfully updated member role to {role.name}.")
 
     @commands.command(
         name="setWelcomeMsg",
@@ -105,8 +116,10 @@ class BasicCommandsCog(commands.Cog):
             await message.add_reaction(u"\u2705")
             await message.add_reaction(u"\u274E")
 
-            await db.set_guild_info(ctx.guild.id, "welcomeMessageID",
-                                    message.id)
+            guild = Guild.find(ctx.guild.id)
+            guild.welcome_message_id = message.id
+
+            guild.save()
 
     @commands.command(
         name="echo",
