@@ -7,8 +7,9 @@ Also provides a simple base for starting a new cog.
 """
 import time
 from discord.ext import commands
+from discord.utils import snowflake_time
 
-import database as db
+from models import Message
 
 
 class LoggingCog(commands.Cog):
@@ -22,9 +23,9 @@ class LoggingCog(commands.Cog):
     async def log_message_add(self, message):
         if message.author.bot:
             return
-        await db.log_message(message.author.id, message.id,
-                             message.content.encode('unicode-escape'),
-                             int(time.time()))
+
+        Message.create(id=message.id, author_id=message.author.id,
+                       content=message.content)
 
     @commands.Cog.listener('on_message_delete')
     async def on_message_delete(self, message):
