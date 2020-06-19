@@ -3,5 +3,5 @@ from orator import Model
 
 class BaseModel(Model):
 
-    __fillable__ = ['*']
+    __unguarded__ = True
     __timestamps__ = False
