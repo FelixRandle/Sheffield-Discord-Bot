@@ -1,21 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Class to handle all database connections."""
+"""
+Class to handle all database connections.
 
-from orator import DatabaseManager, Model
-from orator.migrations import Migrator, DatabaseMigrationRepository
+This file can be passed as the config file to the Orator CLI, e.g.
+`orator migrate -c database.py`
+"""
 
 import os
 import sys
 
-rollback = False
+from dotenv import load_dotenv
+from orator import DatabaseManager
 
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    load_dotenv()
-    if len(sys.argv) > 1 and sys.argv[1] in ("-r","-rollback"):
-        rollback = True
-
+load_dotenv()
 
 SQL_USER = os.getenv("SQL_USER")
 SQL_PASS = os.getenv("SQL_PASS")
@@ -27,7 +25,7 @@ for var in (SQL_USER, SQL_PASS, SQL_DB, SQL_HOST, SQL_PORT):
     if var is None:
         raise Exception("Cannot find required database login information")
 
-config = {
+DATABASES = {
     'mysql': {
         'driver': 'mysql',
         'host': SQL_HOST,
@@ -38,15 +36,4 @@ config = {
     }
 }
 
-db = DatabaseManager(config)
-
-repository = DatabaseMigrationRepository(db, 'migrations')
-migrator = Migrator(repository, db)
-
-if not migrator.repository_exists():
-    repository.create_repository()
-
-migrator.rollback('./migrations') if rollback else migrator.run('./migrations')
-
-# Tells models to use db to resolve the connection to the DB
-Model.set_connection_resolver(db)
+db = DatabaseManager(DATABASES)
