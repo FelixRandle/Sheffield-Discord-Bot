@@ -1,8 +1,9 @@
-from orator import Model
 from orator.orm import belongs_to
 
+from .base import BaseModel
 
-class Message(Model):
+
+class Message(BaseModel):
 
     @belongs_to('author_id')
     def author(self):

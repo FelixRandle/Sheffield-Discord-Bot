@@ -1,8 +1,9 @@
-from orator import Model
 from orator.orm import has_many
 
+from .base import BaseModel
 
-class Guild(Model):
+
+class Guild(BaseModel):
 
     @has_many
     def users(self):

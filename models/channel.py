@@ -1,8 +1,9 @@
-from orator import Model
 from orator.orm import belongs_to
 
+from .base import BaseModel
 
-class Channel(Model):
+
+class Channel(BaseModel):
 
     @belongs_to('creator_id')
     def creator(self):

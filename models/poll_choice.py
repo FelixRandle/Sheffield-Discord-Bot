@@ -1,8 +1,9 @@
-from orator import Model
 from orator.orm import belongs_to, belongs_to_many
 
+from .base import BaseModel
 
-class PollChoice(Model):
+
+class PollChoice(BaseModel):
 
     @belongs_to('poll_id')
     def poll(self):

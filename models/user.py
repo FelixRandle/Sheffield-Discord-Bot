@@ -1,8 +1,9 @@
-from orator import Model
 from orator.orm import belongs_to, has_many
 
+from .base import BaseModel
 
-class User(Model):
+
+class User(BaseModel):
 
     def guild(self):
         from .guild import Guild
