@@ -32,7 +32,8 @@ DATABASES = {
         'database': SQL_DB,
         'user': SQL_USER,
         'password': SQL_PASS,
-        'prefix': ''
+        'charset': 'utf8mb4',
+        'prefix': '',
     }
 }
 
