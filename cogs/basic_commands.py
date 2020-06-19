@@ -43,13 +43,14 @@ class BasicCommandsCog(commands.Cog):
         when they join the guild.
         """
 
-        role = ctx.guild.get_role(role_id)
-        if role is None:
+        if not ctx.message.role_mentions:
             await ctx.send("Could not find a valid role. Please ensure you "
                            "have properly entered the role ID.")
 
+        role = ctx.message.role_mentions[0]
+
         result = await db.set_guild_info(ctx.guild.id, "registeringID",
-                                         role_id)
+                                         role.id)
         if result is False:
             await ctx.send("Failed to update role id. Please try again later.")
         else:
@@ -67,12 +68,13 @@ class BasicCommandsCog(commands.Cog):
         they have 'accepted' the guilds rules.
         """
 
-        role = ctx.guild.get_role(role_id)
-        if role is None:
+        if not ctx.message.role_mentions:
             await ctx.send("Could not find a valid role. Please ensure you "
                            "have properly entered the role ID.")
 
-        result = await db.set_guild_info(ctx.guild.id, "memberID", role_id)
+        role = ctx.message.role_mentions[0]
+
+        result = await db.set_guild_info(ctx.guild.id, "memberID", roll.id)
         if result is False:
             await ctx.send("Failed to update role id. Please try again later.")
         else:
