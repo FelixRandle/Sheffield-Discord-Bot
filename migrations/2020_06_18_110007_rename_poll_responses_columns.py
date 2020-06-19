@@ -1,20 +1,24 @@
 from orator.migrations import Migration
 
 
-class RenamePollResponseColumns(Migration):
+class RenamePollResponsesColumns(Migration):
 
     def up(self):
         """
         Run the migrations.
         """
-        with self.schema.table('poll_responses') as table:
-            table.rename_column('choice', 'choice_id')
-            table.rename_column('user', 'user_id')
+        with self.db as db:
+            db.statement(
+                'ALTER TABLE poll_responses RENAME COLUMN choice TO choice_id')
+            db.statement(
+                'ALTER TABLE poll_responses RENAME COLUMN user TO user_id')
 
     def down(self):
         """
         Revert the migrations.
         """
-        with self.schema.table('poll_responses') as table:
-            table.rename_column('choice_id', 'choice')
-            table.rename_column('user_id', 'user')
+        with self.db as db:
+            db.statement(
+                'ALTER TABLE poll_responses RENAME COLUMN choice_id TO choice')
+            db.statement(
+                'ALTER TABLE poll_responses RENAME COLUMN user_id TO user')
