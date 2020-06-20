@@ -430,10 +430,13 @@ class PollsCog(commands.Cog, name="Polls"):
             poll.title, poll.end_date, poll.ended)
         new_message = await ctx.send(embed=embed)
 
-        await new_message.add_reaction('✖️')
         if not poll.ended:
-            for emoji in ('➕', '🛑'):
-                await new_message.add_reaction(emoji)
+            await new_message.add_reaction('➕')
+
+        await new_message.add_reaction('✖️')
+
+        if not poll.ended:
+            await new_message.add_reaction('🛑')
 
             for choice in poll.choices:
                 await new_message.add_reaction(choice.reaction)
