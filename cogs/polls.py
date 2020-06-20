@@ -422,13 +422,12 @@ class PollsCog(commands.Cog, name="Polls"):
 
         try:
             old_message = await old_channel.fetch_message(poll.message_id)
+            await old_message.delete()
         except discord.errors.NotFound:
             pass
-        else:
-            await old_message.delete()
 
-        end_date = poll.end_date
-        embed = await self.create_poll_embed(poll.title, end_date, poll.ended)
+        embed = await self.create_poll_embed(
+            poll.title, poll.end_date, poll.ended)
         new_message = await ctx.send(embed=embed)
 
         await new_message.add_reaction('✖️')
