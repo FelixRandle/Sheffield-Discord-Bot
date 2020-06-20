@@ -10,7 +10,7 @@ class PollChoice(BaseModel):
         from .poll import Poll
         return Poll
 
-    @belongs_to_many('poll_responses', 'choice', 'user')
+    @belongs_to_many('poll_responses', 'choice_id', 'user_id')
     def users(self):
         from .user import User
         return User
