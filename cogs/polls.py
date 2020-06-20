@@ -362,8 +362,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 await message.remove_reaction(emoji, user)
             except discord.errors.NotFound:
                 pass
-            finally:
-                return
+            return
 
         if emoji.name == '➕':
             await self.get_new_choice_from_user(poll, message, user)
