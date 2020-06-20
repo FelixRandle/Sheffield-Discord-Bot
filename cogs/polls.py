@@ -415,7 +415,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         if (ctx.author.id != poll.creator_id
-                and not await ut.is_admin(ctx.user)):
+                and not await ut.is_admin(ctx.author)):
             await ctx.send("You don't have permission to summon that poll!")
 
         old_channel = self.bot.get_channel(poll.channel_id)
