@@ -439,8 +439,10 @@ class PollsCog(commands.Cog, name="Polls"):
                 await new_message.add_reaction(choice.reaction)
 
         await ctx.message.delete()
+
         poll.message_id = new_message.id
         poll.channel_id = ctx.channel.id
+        poll.save()
 
         await self.update_response_counts(poll, force_update=True)
 
