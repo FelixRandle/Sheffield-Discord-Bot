@@ -7,7 +7,6 @@ Also provides a simple base for starting a new cog.
 """
 import time
 from discord.ext import commands
-from discord.utils import snowflake_time
 
 from models import Message
 

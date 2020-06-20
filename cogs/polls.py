@@ -17,7 +17,7 @@ import discord
 from discord.ext import commands, tasks
 
 import utils as ut
-from models import User, Guild, Poll, PollChoice
+from models import User, Poll, PollChoice
 
 # Regex from extracting time from format 00h00m00s
 DURATION_REGEX = re.compile(
@@ -103,7 +103,7 @@ class PollsCog(commands.Cog, name="Polls"):
             new_choice = PollChoice(reaction=reaction, text=text)
             poll.choices().save(new_choice)
 
-    async def get_new_choice_from_user(self, poll, message, 
+    async def get_new_choice_from_user(self, poll, message,
                                        user: discord.User):
 
         # Checks that the author of the message

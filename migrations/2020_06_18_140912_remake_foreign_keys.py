@@ -15,7 +15,7 @@ class RemakeForeignKeys(Migration):
 
         with self.schema.table('messages') as table:
             table.foreign('author_id').references('id').on('users')
-        
+
         with self.schema.table('polls') as table:
             table.foreign('creator_id').references('id').on('users')
 
@@ -38,7 +38,7 @@ class RemakeForeignKeys(Migration):
 
         with self.schema.table('messages') as table:
             table.drop_foreign('messages_author_id_foreign')
-        
+
         with self.schema.table('polls') as table:
             table.drop_foreign('polls_creator_id_foreign')
 

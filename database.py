@@ -8,7 +8,6 @@ This file can be passed as the config file to the Orator CLI, e.g.
 """
 
 import os
-import sys
 
 from dotenv import load_dotenv
 from orator import DatabaseManager
