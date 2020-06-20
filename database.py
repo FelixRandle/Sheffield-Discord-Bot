@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Class to handle all database connections.
+Module for database connection configuration
 
 This file can be passed as the config file to the Orator CLI, e.g.
 `orator migrate -c database.py`

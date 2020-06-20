@@ -34,7 +34,7 @@ if os.path.exists("./cogs"):
             bot.load_extension("cogs." + file[:-3])
             ut.log_info(f"Loaded cog {file[:-3]}")
 
-# Tells Orator model which database to use
+# Tells Orator models which database to use
 Model.set_connection_resolver(db)
 
 @bot.event
