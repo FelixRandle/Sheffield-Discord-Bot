@@ -49,12 +49,15 @@ async def get_confirmation(channel, user, bot, message):
 
 async def get_utc_time(timestamp: int = None) -> datetime.datetime:
     if timestamp is None:
-        return datetime.datetime.now(datetime.timezone.utc)
+        return datetime.datetime.utcnow()
 
     return datetime.datetime.utcfromtimestamp(timestamp)
 
 
 async def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
+    # Converts a naive datetime to an aware datetime in UTC
+    utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
+
     tz = timezone('Europe/London')
     if utc_time is None:
         return (await get_utc_time()).astimezone(tz)

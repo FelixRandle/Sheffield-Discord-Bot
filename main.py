@@ -7,23 +7,24 @@ Authored by:
 Felix Randle
 """
 import os
+
 from discord.ext import commands
 from dotenv import load_dotenv
+from orator import Model
 
-# We must load env variables before importing DB so the
-# SQL information is ready for it.
-load_dotenv()
-
-import database as db
 import utils as ut
+from database import db
+from models import Guild, User
 
+# We must load env variables in order to retrieve the bot token
+load_dotenv()
 
 # Load our login details from environment variables and check they are set
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if BOT_TOKEN is None:
     raise Exception("Cannot find required bot token.")
 
-# Set our bot's prefix to ! this must be typed before any command
+# Set our bot's prefix to $. This must be typed before any command
 bot = commands.Bot(command_prefix="$", case_insensitive=True)
 
 # Load all of our cogs
@@ -33,6 +34,8 @@ if os.path.exists("./cogs"):
             bot.load_extension("cogs." + file[:-3])
             ut.log_info(f"Loaded cog {file[:-3]}")
 
+# Tells Orator models which database to use
+Model.set_connection_resolver(db)
 
 @bot.event
 async def on_ready():
@@ -50,12 +53,15 @@ async def on_guild_join(guild):
         if role.name.lower() == "member":
             member_id = role.id
 
-    await db.add_guild(guild.id, registering_id, member_id)
-
+    Guild.first_or_create(
+        id=guild.id, registering_id=registering_id, member_id=member_id)
 
 @bot.event
 async def on_member_join(member):
     """Send user a welcome message."""
+    if member.bot:
+        return
+
     await member.create_dm()
     await member.dm_channel.send(
         f'Hey {member.name}, welcome to the (unofficial) University of '
@@ -73,11 +79,11 @@ async def on_member_join(member):
         'If you would like your logged messages to be'
         'removed for any reason, please contact <@247428233086238720>.'
     )
+    guild = Guild.find(member.guild.id)
 
-    await db.add_user(member.id, member.bot)
+    User.first_or_create(id=member.id, guild_id=guild.id)
 
-    role_id = await db.get_guild_info(member.guild.id, "registeringID")
-
+    role_id = guild.registering_id
     await add_role(member, role_id)
 
 
@@ -86,15 +92,15 @@ async def on_raw_reaction_add(payload):
     if payload.member.bot:
         return
 
-    expected_id = await db.get_guild_info(payload.guild_id, "welcomeMessageID")
+    guild = Guild.find(payload.guild_id)
+    expected_id = guild.welcome_message_id
     if payload.message_id == expected_id:
         message = await payload.member.guild.get_channel(payload.channel_id)\
             .fetch_message(payload.message_id)
         await message.remove_reaction(payload.emoji, payload.member)
         if payload.emoji.name == u"\u2705":
-            registering_id = await db.get_guild_info(payload.guild_id,
-                                                     "registeringID")
-            member_id = await db.get_guild_info(payload.guild_id, "memberID")
+            registering_id = guild.registering_id
+            member_id = guild.member_id
 
             await add_role(payload.member, member_id)
             await remove_role(payload.member, registering_id)
@@ -138,14 +144,12 @@ async def on_command_error(ctx, error):
 
 async def add_role(member, role_id):
     role = member.guild.get_role(role_id)
-
     if role:
         await member.add_roles(role)
 
 
 async def remove_role(member, role_id):
     role = member.guild.get_role(role_id)
-
     if role:
         await member.remove_roles(role)
 

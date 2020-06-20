@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 An example cog to show how things should be done.
 
@@ -10,6 +10,7 @@ import discord
 from discord.ext import commands
 
 import database as db
+from models import Channel
 
 
 class PrivateChannels(commands.Cog):
@@ -38,7 +39,7 @@ class PrivateChannels(commands.Cog):
                            "please contact an admin.")
             return
 
-        if await db.user_has_channel(ctx.author.id):
+        if Channel.where('creator_id', ctx.author.id).first():
             await ctx.send("You already have a channel! "
                            "If you believe this is an error then "
                            "please contact an admin.")
@@ -48,7 +49,8 @@ class PrivateChannels(commands.Cog):
                 category=category,
                 user_limit=limit)
 
-            await db.user_create_channel(ctx.author.id, channel.id, True)
+            Channel.create(id=channel.id, creator_id=ctx.author.id, voice=True)
+
             await ctx.send("Successfully made you a new channel!")
 
     @commands.command(
@@ -56,12 +58,12 @@ class PrivateChannels(commands.Cog):
         help="Deletes your channel if you have one.")
     @commands.has_role("Member")
     async def delete_channel(self, ctx):
-        channel_id = await db.user_has_channel(ctx.author.id)
-        if not channel_id:
+        channel = Channel.where('creator_id', ctx.author.id).first()
+        if not channel:
             await ctx.send("You do not have a channel to delete!")
         else:
-            await db.user_delete_channel(ctx.author.id)
-            voice_channel = ctx.guild.get_channel(int(channel_id))
+            channel.delete()
+            voice_channel = ctx.guild.get_channel(channel.id)
             await voice_channel.delete()
             await ctx.send("Successfully deleted your channel")
 
