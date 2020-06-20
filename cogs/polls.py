@@ -103,7 +103,8 @@ class PollsCog(commands.Cog, name="Polls"):
             new_choice = PollChoice(reaction=reaction, text=text)
             poll.choices().save(new_choice)
 
-    async def get_new_choice_from_user(self, poll, message, user):
+    async def get_new_choice_from_user(self, poll, message, 
+                                       user: discord.User):
 
         # Checks that the author of the message
         # is the one that wants to add a new choice
@@ -124,7 +125,7 @@ class PollsCog(commands.Cog, name="Polls"):
         finally:
             await prompt_msg.delete()
 
-    async def user_delete_poll(self, poll, message, user):
+    async def user_delete_poll(self, poll, message, user: discord.User):
         # Only the creator of the poll or admins can delete it
         if (poll.creator_id != user.id
                 and not await ut.is_admin(user)):
@@ -143,7 +144,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
         return result
 
-    async def toggle_poll_response(self, user, choice, message):
+    async def toggle_poll_response(self, choice, message, user: discord.User):
+        user = User.find(user.id)
         response = choice.users().where('user_id', user.id).first()
 
         if response:
@@ -175,7 +177,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await message.edit(embed=embed)
 
-    async def user_end_poll(self, poll, message, user):
+    async def user_end_poll(self, poll, message, user: discord.User):
         # Only the creator of the poll can end the poll
         if (poll.creator_id != user.id
                 and not await ut.is_admin(user)):
@@ -359,8 +361,7 @@ class PollsCog(commands.Cog, name="Polls"):
             await self.user_end_poll(poll, message, user)
         else:
             choice = poll.choices().where('reaction', str(emoji)).first()
-            user = User.find(user.id)
-            await self.toggle_poll_response(user, choice, message)
+            await self.toggle_poll_response(choice, message, user)
 
         await message.remove_reaction(emoji, user)
 
