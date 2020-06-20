@@ -175,7 +175,10 @@ class PollsCog(commands.Cog, name="Polls"):
         embed.description = ("Poll has now ended\n"
                              "React with ✖️ to delete the poll")
 
-        await message.edit(embed=embed)
+        try:
+            await message.edit(embed=embed)
+        except discord.errors.NotFound:
+            pass
 
     async def user_end_poll(self, poll, message, user: discord.User):
         # Only the creator of the poll can end the poll
@@ -340,9 +343,12 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(message_id)
-        user = payload.member
+        try:
+            message = await channel.fetch_message(message_id)
+        except discord.errors.NotFound:
+            return
 
+        user = payload.member
         if emoji.name == '✖️':
             deleted = await self.user_delete_poll(poll, message, user)
             if not deleted:
@@ -352,7 +358,10 @@ class PollsCog(commands.Cog, name="Polls"):
         # New responses after the poll has ended are not accepted
         end_date = poll.end_date
         if (await ut.get_utc_time()) >= end_date or poll.ended:
-            await message.remove_reaction(emoji, user)
+            try:
+                await message.remove_reaction(emoji, user)
+            except discord.errors.NotFound:
+                pass
             return
 
         if emoji.name == '➕':
@@ -363,7 +372,10 @@ class PollsCog(commands.Cog, name="Polls"):
             choice = poll.choices().where('reaction', str(emoji)).first()
             await self.toggle_poll_response(choice, message, user)
 
-        await message.remove_reaction(emoji, user)
+        try:
+            await message.remove_reaction(emoji, user)
+        except discord.errors.NotFound:
+            pass
 
     @commands.command(
         name="createpoll",
@@ -430,10 +442,13 @@ class PollsCog(commands.Cog, name="Polls"):
             poll.title, poll.end_date, poll.ended)
         new_message = await ctx.send(embed=embed)
 
-        await new_message.add_reaction('✖️')
         if not poll.ended:
-            for emoji in ('➕', '🛑'):
-                await new_message.add_reaction(emoji)
+            await new_message.add_reaction('➕')
+
+        await new_message.add_reaction('✖️')
+
+        if not poll.ended:
+            await new_message.add_reaction('🛑')
 
             for choice in poll.choices:
                 await new_message.add_reaction(choice.reaction)
