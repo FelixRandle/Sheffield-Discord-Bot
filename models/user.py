@@ -4,7 +4,8 @@ from .base import BaseModel
 
 
 class User(BaseModel):
-
+    
+    @belongs_to('guild_id')
     def guild(self):
         from .guild import Guild
         return Guild
