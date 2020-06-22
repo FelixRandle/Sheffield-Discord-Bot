@@ -322,17 +322,27 @@ class PollsCog(commands.Cog, name="Polls"):
             await channel.send("You don't have any polls yet!")
             return False
 
+        description = (
+            "Showing all the polls"
+            if ut.is_admin(user) else "Showing your polls") \
+            + (" on this server\n"
+               f"React with:\n"
+               f"{FIRST_PAGE_EMOJI} to go to the first page\n"
+               f"{PREVIOUS_PAGE_EMOJI} to go to the previous page\n"
+               f"{CLEAR_POLLS_EMOJI} to clear these results\n"
+               f"{NEXT_PAGE_EMOJI} to go to the next page\n"
+               f"{LAST_PAGE_EMOJI} to go to the last page")
+
         embed = discord.Embed(title="Polls", color=POLL_COLOR,
-                              description=("Showing all the polls"
-                              if ut.is_admin(user) else "Showing your polls")
-                              + " on this server")
+                              description=description)
+
         for poll in polls:
             field_value = (
-                (f"by <@!{poll.creator_id}>\n" if ut.is_admin(user) else "")
-                + f"Poll ID: {poll.id}. "
+                (f"by <@!{poll.creator_id}> - " if ut.is_admin(user) else "")
                 + ("Poll has ended" if poll.ended
                    else ut.get_uk_time(poll.end_date).strftime(
-                       "Poll ends: %d/%m/%Y %H:%M:%S %Z\n")))
+                       "Poll ends: %d/%m/%Y %H:%M:%S %Z"))
+                + f"\nPoll ID: {poll.id}.")
 
             embed.add_field(
                 name=f"{poll.title}", value=field_value, inline=False)
