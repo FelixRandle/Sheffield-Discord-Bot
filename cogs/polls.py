@@ -129,8 +129,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def user_delete_poll(self, poll, message, user: discord.User):
         # Only the creator of the poll or admins can delete it
-        if (poll.creator_id != user.id
-                and not await ut.is_admin(user)):
+        if poll.creator_id != user.id and not ut.is_admin(user):
             return
 
         # Awaits confirmation of the deletion
@@ -184,8 +183,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def user_end_poll(self, poll, message, user: discord.User):
         # Only the creator of the poll can end the poll
-        if (poll.creator_id != user.id
-                and not await ut.is_admin(user)):
+        if poll.creator_id != user.id and not ut.is_admin(user):
             return
 
         result, reason = await ut.get_confirmation(
@@ -196,7 +194,7 @@ class PollsCog(commands.Cog, name="Polls"):
         #
         # The poll will end the poll on its next iteration
         if result:
-            poll.end_date = await ut.get_utc_time()
+            poll.end_date = ut.get_utc_time()
             poll.save()
 
     async def update_response_counts(self, poll):
@@ -241,7 +239,7 @@ class PollsCog(commands.Cog, name="Polls"):
             embed.add_field(name=f"{choice.reaction} {count}",
                             value=field_value, inline=False)
 
-        embed.timestamp = await ut.get_utc_time()
+        embed.timestamp = ut.get_utc_time()
         embed.set_footer(text=f"Poll ID: {poll.id}")
 
         # Again, if the message is deleted
@@ -256,7 +254,7 @@ class PollsCog(commands.Cog, name="Polls"):
             description = ("Poll has now ended\n"
                            "React with ✖️ to delete the poll")
         else:
-            description = (await ut.get_uk_time(end_date)).strftime(
+            description = ut.get_uk_time(end_date).strftime(
                 "Poll ends: %d/%m/%Y %H:%M:%S %Z\n") + (
                 "React with ➕ to add a choice\n"
                 "React with ✖️ to delete the poll\n"
@@ -280,7 +278,7 @@ class PollsCog(commands.Cog, name="Polls"):
         try:
             ongoing_polls = Poll.where('ended', False).get()
             for poll in ongoing_polls:
-                if await ut.get_utc_time() >= poll.end_date:
+                if ut.get_utc_time() >= poll.end_date:
                     await self.end_poll(poll)
         except Exception:
             traceback.print_exc()
@@ -322,7 +320,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # New responses after the poll has ended are not accepted
         end_date = poll.end_date
-        if (await ut.get_utc_time()) >= end_date or poll.ended:
+        if ut.get_utc_time() >= end_date or poll.ended:
             try:
                 await message.remove_reaction(emoji, user)
             except discord.errors.NotFound:
@@ -361,7 +359,7 @@ class PollsCog(commands.Cog, name="Polls"):
                            "that is greater than zero")
             return
 
-        end_date = await ut.get_utc_time() + duration
+        end_date = ut.get_utc_time() + duration
         embed = await self.create_poll_embed(title, end_date, False)
         message = await ctx.send(embed=embed)
 
@@ -394,8 +392,7 @@ class PollsCog(commands.Cog, name="Polls"):
             await ctx.send(f"Poll with ID {poll_id} could not found.")
             return
 
-        if (ctx.author.id != poll.creator_id
-                and not await ut.is_admin(ctx.author)):
+        if ctx.author.id != poll.creator_id and not ut.is_admin(ctx.author):
             await ctx.send("You don't have permission to summon that poll!")
 
         old_channel = self.bot.get_channel(poll.channel_id)

@@ -47,25 +47,25 @@ async def get_confirmation(channel, user, bot, message):
         return False, "Rejected"
 
 
-async def get_utc_time(timestamp: int = None) -> datetime.datetime:
+def get_utc_time(timestamp: int = None) -> datetime.datetime:
     if timestamp is None:
         return datetime.datetime.utcnow()
 
     return datetime.datetime.utcfromtimestamp(timestamp)
 
 
-async def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
+def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     # Converts a naive datetime to an aware datetime in UTC
     utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
 
     tz = timezone('Europe/London')
     if utc_time is None:
-        return (await get_utc_time()).astimezone(tz)
+        return get_utc_time().astimezone(tz)
 
     return utc_time.astimezone(tz)
 
 
-async def is_admin(user):
+def is_admin(user):
     for role in user.roles:
         if role.name.lower() == "admin":
             return True
