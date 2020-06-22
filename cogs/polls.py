@@ -39,6 +39,9 @@ CONTROL_EMOJI = (
 # Color of poll embed
 POLL_COLOR = 0x009fe3
 
+# Number of polls per page
+POLLS_PER_PAGE = 10
+
 
 class PollsCog(commands.Cog, name="Polls"):
     """Class for polls cog"""
@@ -284,6 +287,34 @@ class PollsCog(commands.Cog, name="Polls"):
 
         return embed
 
+    async def user_show_polls(self, user: discord.User, channel,
+                              *, message=None, page=1):
+        if ut.is_admin(user):
+            polls = Poll.paginate(POLLS_PER_PAGE, page)
+        else:
+            polls = Poll.where('creator_id', user.id) \
+                .paginate(POLLS_PER_PAGE, page)
+
+        embed = discord.Embed(title="Your Polls", color=POLL_COLOR)
+        for poll in polls:
+            field_value = (
+                f"Poll ID: {poll.id}. This poll "
+                + ("has ended" if poll.ended else "is ongoing"))
+
+            embed.add_field(
+                name=f"{poll.title}", value=field_value, inline=False)
+
+        first_poll = polls.per_page * (polls.current_page - 1) + 1
+        last_poll = first_poll + polls.count() - 1
+        total = polls.total
+
+        embed.set_footer(text=f"Showing polls {first_poll} - {last_poll} "
+                              f"of {total}\n"
+                              f"Page {page} of {polls.last_page}")
+
+        if message is None:
+            message = await channel.send(embed=embed)
+
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
         """
@@ -441,12 +472,12 @@ class PollsCog(commands.Cog, name="Polls"):
         poll.save()
 
         await self.update_response_counts(poll)
-    
+
     @commands.command(
         name="showpolls",
         help="Shows polls that you have control over")
     async def show_polls(self, ctx):
-        pass
+        await self.user_show_polls(ctx.author, ctx.channel)
 
 
 def setup(bot):
