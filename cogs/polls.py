@@ -360,6 +360,30 @@ class PollsCog(commands.Cog, name="Polls"):
             except discord.errors.NotFound:
                 pass
 
+        try:
+            reaction, _ = await self.bot.wait_for(
+                'reaction_add', check=check, timeout=60.0)
+        except asyncio.TimeoutError:
+            await message.delete()
+            return
+
+        emoji = reaction.emoji
+        if emoji == CLEAR_POLLS_EMOJI:
+            await message.delete()
+            return
+
+        if emoji == FIRST_PAGE_EMOJI:
+            page = 1
+        elif emoji == PREVIOUS_PAGE_EMOJI:
+            page -= 1
+        elif emoji == NEXT_PAGE_EMOJI:
+            page += 1
+        elif emoji == LAST_PAGE_EMOJI:
+            page = polls.last_page
+
+        await reaction.remove(user)
+        await self.user_show_polls(user, channel, message=message, page=page)
+
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
         """
