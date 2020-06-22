@@ -316,6 +316,10 @@ class PollsCog(commands.Cog, name="Polls"):
             polls = Poll.where('creator_id', user.id) \
                 .paginate(POLLS_PER_PAGE, page)
 
+        if not polls.total:
+            await channel.send("You don't have any polls yet!")
+            return False
+
         embed = discord.Embed(title="Your Polls", color=POLL_COLOR)
         for poll in polls:
             field_value = (
@@ -345,12 +349,12 @@ class PollsCog(commands.Cog, name="Polls"):
                 'reaction_add', check=check, timeout=60.0)
         except asyncio.TimeoutError:
             await message.delete()
-            return
+            return True
 
         emoji = reaction.emoji
         if emoji == CLEAR_POLLS_EMOJI:
             await message.delete()
-            return
+            return True
 
         if emoji == FIRST_PAGE_EMOJI:
             page = 1
@@ -363,6 +367,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
         await reaction.remove(user)
         await self.user_show_polls(user, channel, message=message, page=page)
+
+        return True
 
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
@@ -526,8 +532,9 @@ class PollsCog(commands.Cog, name="Polls"):
         name="showpolls",
         help="Shows polls that you have control over")
     async def show_polls(self, ctx):
-        await ctx.message.delete()
-        await self.user_show_polls(ctx.author, ctx.channel)
+        result = await self.user_show_polls(ctx.author, ctx.channel)
+        if result:
+            await ctx.message.delete()
 
 
 def setup(bot):
