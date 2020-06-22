@@ -40,7 +40,7 @@ POLL_CONTROL_EMOJI = (
 POLL_COLOR = 0x009fe3
 
 # Number of polls per page
-POLLS_PER_PAGE = 10
+POLLS_PER_PAGE = 5
 
 # Emoji for showing polls
 FIRST_PAGE_EMOJI = '⏮'
