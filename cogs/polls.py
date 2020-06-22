@@ -58,6 +58,7 @@ SHOW_POLLS_EMOJI = (
     LAST_PAGE_EMOJI,
 )
 
+
 class PollsCog(commands.Cog, name="Polls"):
     """Class for polls cog"""
 
@@ -334,31 +335,10 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if message is None:
             message = await channel.send(embed=embed)
+            for emoji in SHOW_POLLS_EMOJI:
+                await message.add_reaction(emoji)
         else:
             await message.edit(embed=embed)
-
-        if page != 1:
-            await message.add_reaction(FIRST_PAGE_EMOJI)
-            await message.add_reaction(PREVIOUS_PAGE_EMOJI)
-        else:
-            try:
-                await message.remove_reaction(FIRST_PAGE_EMOJI, self.bot.user)
-                await message.remove_reaction(
-                    PREVIOUS_PAGE_EMOJI, self.bot.user)
-            except discord.errors.NotFound:
-                pass
-
-        await message.add_reaction(CLEAR_POLLS_EMOJI)
-
-        if page != polls.last_page:
-            await message.add_reaction(NEXT_PAGE_EMOJI)
-            await message.add_reaction(LAST_PAGE_EMOJI)
-        else:
-            try:
-                await message.remove_reaction(NEXT_PAGE_EMOJI, self.bot.user)
-                await message.remove_reaction(LAST_PAGE_EMOJI, self.bot.user)
-            except discord.errors.NotFound:
-                pass
 
         try:
             reaction, _ = await self.bot.wait_for(
@@ -375,9 +355,9 @@ class PollsCog(commands.Cog, name="Polls"):
         if emoji == FIRST_PAGE_EMOJI:
             page = 1
         elif emoji == PREVIOUS_PAGE_EMOJI:
-            page -= 1
+            page = (page - 2) % polls.last_page + 1
         elif emoji == NEXT_PAGE_EMOJI:
-            page += 1
+            page = page % polls.last_page + 1
         elif emoji == LAST_PAGE_EMOJI:
             page = polls.last_page
 
