@@ -310,21 +310,25 @@ class PollsCog(commands.Cog, name="Polls"):
             return (str(reaction.emoji) in SHOW_POLLS_EMOJI
                     and check_user == user)
 
-        if ut.is_admin(user):
-            polls = Poll.paginate(POLLS_PER_PAGE, page)
-        else:
-            polls = Poll.where('creator_id', user.id) \
-                .paginate(POLLS_PER_PAGE, page)
+        query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
+            .where('users.guild_id', channel.guild.id)
+
+        if not ut.is_admin(user):
+            query = query.where('users.id', user.id)
+
+        polls = query.paginate(POLLS_PER_PAGE, page)
 
         if not polls.total:
             await channel.send("You don't have any polls yet!")
             return False
 
-        embed = discord.Embed(title="Your Polls", color=POLL_COLOR)
+        embed = discord.Embed(title="Polls", color=POLL_COLOR,
+                              description="These are all the polls"
+                              if ut.is_admin(user) else "These are your polls")
         for poll in polls:
             field_value = (
-                f"by <@!{poll.creator_id}>\n"
-                f"Poll ID: {poll.id}. "
+                (f"by <@!{poll.creator_id}>\n" if ut.is_admin(user) else "")
+                + f"Poll ID: {poll.id}. "
                 + ("Poll has ended" if poll.ended
                    else ut.get_uk_time(poll.end_date).strftime(
                        "Poll ends: %d/%m/%Y %H:%M:%S %Z\n")))
