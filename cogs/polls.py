@@ -30,7 +30,7 @@ DELETE_POLL_EMOJI = '✖️'
 END_POLL_EMOJI = '🛑'
 
 # Tuple of control emoji for convenience
-CONTROL_EMOJI = (
+POLL_CONTROL_EMOJI = (
     ADD_CHOICE_EMOJI,
     DELETE_POLL_EMOJI,
     END_POLL_EMOJI
@@ -42,6 +42,21 @@ POLL_COLOR = 0x009fe3
 # Number of polls per page
 POLLS_PER_PAGE = 10
 
+# Emoji for showing polls
+FIRST_PAGE_EMOJI = '⏮'
+PREVIOUS_PAGE_EMOJI = '⏪'
+CLEAR_EMOJI = '⏹️'
+NEXT_PAGE_EMOJI = '⏩'
+LAST_PAGE_EMOJI = '⏭️'
+
+# Tuple of emoji for convenience
+SHOW_POLLS_EMOJI = (
+    FIRST_PAGE_EMOJI,
+    PREVIOUS_PAGE_EMOJI,
+    CLEAR_EMOJI,
+    NEXT_PAGE_EMOJI,
+    LAST_PAGE_EMOJI,
+)
 
 class PollsCog(commands.Cog, name="Polls"):
     """Class for polls cog"""
@@ -90,7 +105,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if error_msg is None:
             reaction, text = values
-            if reaction in CONTROL_EMOJI:
+            if reaction in POLL_CONTROL_EMOJI:
                 error_msg = f"You can't use {reaction} as a choice."
             elif poll.choices().where('reaction', reaction).first():
                 error_msg = f"Choice already exists for {reaction}."
@@ -314,6 +329,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if message is None:
             message = await channel.send(embed=embed)
+            for emoji in SHOW_POLLS_EMOJI:
+                await message.add_reaction(emoji)
 
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
@@ -389,7 +406,7 @@ class PollsCog(commands.Cog, name="Polls"):
         except discord.errors.NotFound:
             pass
 
-        if emoji.name not in CONTROL_EMOJI:
+        if emoji.name not in POLL_CONTROL_EMOJI:
             await self.update_response_counts(poll)
 
     @commands.command(
@@ -413,7 +430,7 @@ class PollsCog(commands.Cog, name="Polls"):
         message = await ctx.send(embed=embed)
 
         # Adds control emojis
-        for emoji in CONTROL_EMOJI:
+        for emoji in POLL_CONTROL_EMOJI:
             await message.add_reaction(emoji)
 
         # Deletes the original command message
