@@ -45,7 +45,7 @@ POLLS_PER_PAGE = 10
 # Emoji for showing polls
 FIRST_PAGE_EMOJI = '⏮'
 PREVIOUS_PAGE_EMOJI = '⏪'
-CLEAR_EMOJI = '⏹️'
+CLEAR_POLLS_EMOJI = '⏹️'
 NEXT_PAGE_EMOJI = '⏩'
 LAST_PAGE_EMOJI = '⏭️'
 
@@ -53,7 +53,7 @@ LAST_PAGE_EMOJI = '⏭️'
 SHOW_POLLS_EMOJI = (
     FIRST_PAGE_EMOJI,
     PREVIOUS_PAGE_EMOJI,
-    CLEAR_EMOJI,
+    CLEAR_POLLS_EMOJI,
     NEXT_PAGE_EMOJI,
     LAST_PAGE_EMOJI,
 )
@@ -304,6 +304,11 @@ class PollsCog(commands.Cog, name="Polls"):
 
     async def user_show_polls(self, user: discord.User, channel,
                               *, message=None, page=1):
+
+        def check(reaction, check_user):
+            return (str(reaction.emoji) in SHOW_POLLS_EMOJI
+                    and check_user == user)
+
         if ut.is_admin(user):
             polls = Poll.paginate(POLLS_PER_PAGE, page)
         else:
@@ -329,13 +334,31 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if message is None:
             message = await channel.send(embed=embed)
-            if page != 1:
-                await message.add_reaction(FIRST_PAGE_EMOJI)
-                await message.add_reaction(PREVIOUS_PAGE_EMOJI)
-            await message.add_reaction(CLEAR_EMOJI)
-            if page != polls.last_page:
-                await message.add_reaction(NEXT_PAGE_EMOJI)
-                await message.add_reaction(LAST_PAGE_EMOJI)
+        else:
+            await message.edit(embed=embed)
+
+        if page != 1:
+            await message.add_reaction(FIRST_PAGE_EMOJI)
+            await message.add_reaction(PREVIOUS_PAGE_EMOJI)
+        else:
+            try:
+                await message.remove_reaction(FIRST_PAGE_EMOJI, self.bot.user)
+                await message.remove_reaction(
+                    PREVIOUS_PAGE_EMOJI, self.bot.user)
+            except discord.errors.NotFound:
+                pass
+
+        await message.add_reaction(CLEAR_POLLS_EMOJI)
+
+        if page != polls.last_page:
+            await message.add_reaction(NEXT_PAGE_EMOJI)
+            await message.add_reaction(LAST_PAGE_EMOJI)
+        else:
+            try:
+                await message.remove_reaction(NEXT_PAGE_EMOJI, self.bot.user)
+                await message.remove_reaction(LAST_PAGE_EMOJI, self.bot.user)
+            except discord.errors.NotFound:
+                pass
 
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
