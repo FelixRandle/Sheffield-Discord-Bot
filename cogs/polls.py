@@ -202,7 +202,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Removes all reactions but the delete poll reaction
         for reaction in message.reactions:
-            if str(reaction.emoji) == END_POLL_EMOJI:
+            if str(reaction.emoji) == DELETE_POLL_EMOJI:
                 continue
             await message.remove_reaction(reaction.emoji, self.bot.user)
 
