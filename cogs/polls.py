@@ -319,7 +319,7 @@ class PollsCog(commands.Cog, name="Polls"):
             embed.add_field(
                 name=f"{poll.title}", value=field_value, inline=False)
 
-        first_poll = polls.per_page * (polls.current_page - 1) + 1
+        first_poll = polls.per_page * (page - 1) + 1
         last_poll = first_poll + polls.count() - 1
         total = polls.total
 
@@ -329,8 +329,13 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if message is None:
             message = await channel.send(embed=embed)
-            for emoji in SHOW_POLLS_EMOJI:
-                await message.add_reaction(emoji)
+            if page != 1:
+                await message.add_reaction(FIRST_PAGE_EMOJI)
+                await message.add_reaction(PREVIOUS_PAGE_EMOJI)
+            await message.add_reaction(CLEAR_EMOJI)
+            if page != polls.last_page:
+                await message.add_reaction(NEXT_PAGE_EMOJI)
+                await message.add_reaction(LAST_PAGE_EMOJI)
 
     @tasks.loop(seconds=1.0)
     async def poll_daemon(self):
