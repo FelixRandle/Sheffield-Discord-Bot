@@ -343,7 +343,7 @@ class PollsCog(commands.Cog, name="Polls"):
                 + ("Poll has ended" if poll.ended
                    else ut.get_uk_time(poll.end_date).strftime(
                        "Poll ends: %d/%m/%Y %H:%M:%S %Z"))
-                + f"\nPoll ID: {poll.id}.")
+                + f"\nPoll ID: {poll.id}")
 
             embed.add_field(
                 name=f"{poll.title}", value=field_value, inline=False)
@@ -352,9 +352,9 @@ class PollsCog(commands.Cog, name="Polls"):
         last_poll = first_poll + polls.count() - 1
         total = polls.total
 
-        embed.set_footer(text=f"Showing polls {first_poll} - {last_poll} "
-                              f"of {total}\n"
-                              f"Page {page} of {polls.last_page}")
+        embed.set_footer(
+            text=f"Showing polls {first_poll} - {last_poll} of {total}\n"
+                 f"Page {page} of {polls.last_page}")
 
         if message is None:
             message = await channel.send(embed=embed)
