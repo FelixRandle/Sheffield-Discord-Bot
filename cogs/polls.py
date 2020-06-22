@@ -308,7 +308,8 @@ class PollsCog(commands.Cog, name="Polls"):
 
         def check(reaction, check_user):
             return (str(reaction.emoji) in SHOW_POLLS_EMOJI
-                    and check_user == user)
+                    and check_user == user
+                    and reaction.message.id == message.id)
 
         query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
             .where('users.guild_id', channel.guild.id)
