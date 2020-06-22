@@ -24,6 +24,21 @@ DURATION_REGEX = re.compile(
     r"((?P<days>\d+?)d)?((?P<hours>\d+?)h)?"
     r"((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?")
 
+# Emoji for controlling polls
+ADD_CHOICE_EMOJI = '➕'
+DELETE_POLL_EMOJI = '✖️'
+END_POLL_EMOJI = '🛑'
+
+# Tuple of control emoji for convenience
+CONTROL_EMOJI = (
+    ADD_CHOICE_EMOJI,
+    DELETE_POLL_EMOJI,
+    END_POLL_EMOJI
+)
+
+# Color of poll embed
+POLL_COLOR = 0x009fe3
+
 
 class PollsCog(commands.Cog, name="Polls"):
     """Class for polls cog"""
@@ -72,7 +87,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         if error_msg is None:
             reaction, text = values
-            if reaction in ('➕', '✖️', '🛑'):
+            if reaction in CONTROL_EMOJI:
                 error_msg = f"You can't use {reaction} as a choice."
             elif poll.choices().where('reaction', reaction).first():
                 error_msg = f"Choice already exists for {reaction}."
@@ -168,13 +183,14 @@ class PollsCog(commands.Cog, name="Polls"):
 
         # Removes all reactions but the delete poll reaction
         for reaction in message.reactions:
-            if str(reaction.emoji) == '✖️':
+            if str(reaction.emoji) == END_POLL_EMOJI:
                 continue
             await message.remove_reaction(reaction.emoji, self.bot.user)
 
         embed = message.embeds[0]
-        embed.description = ("Poll has now ended\n"
-                             "React with ✖️ to delete the poll")
+        embed.description = (
+            "Poll has now ended\n"
+            f"React with {DELETE_POLL_EMOJI} to delete the poll")
 
         try:
             await message.edit(embed=embed)
@@ -251,18 +267,20 @@ class PollsCog(commands.Cog, name="Polls"):
     async def create_poll_embed(self, title, end_date: datetime.datetime,
                                 ended, choices=[]):
         if ended:
-            description = ("Poll has now ended\n"
-                           "React with ✖️ to delete the poll")
+            description = (
+                "Poll has now ended\n"
+                f"React with {DELETE_POLL_EMOJI} to delete the poll")
         else:
             description = ut.get_uk_time(end_date).strftime(
                 "Poll ends: %d/%m/%Y %H:%M:%S %Z\n") + (
-                "React with ➕ to add a choice\n"
-                "React with ✖️ to delete the poll\n"
-                "React with 🛑 to end the poll, and finalise the results\n"
+                f"React with {ADD_CHOICE_EMOJI} to add a choice\n"
+                f"React with {DELETE_POLL_EMOJI} to delete the poll\n"
+                f"React with {END_POLL_EMOJI} to end the poll, "
+                "and finalise the results\n"
                 "React with the emoji shown below to vote for that option")
 
         embed = discord.Embed(title=title, description=description,
-                              color=0x009fe3)
+                              color=POLL_COLOR)
 
         return embed
 
@@ -312,7 +330,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
         user = payload.member
         emoji = payload.emoji
-        if emoji.name == '✖️':
+        if emoji.name == DELETE_POLL_EMOJI:
             deleted = await self.user_delete_poll(poll, message, user)
             if not deleted:
                 await message.remove_reaction(emoji, user)
@@ -327,9 +345,9 @@ class PollsCog(commands.Cog, name="Polls"):
                 pass
             return
 
-        if emoji.name == '➕':
+        if emoji.name == ADD_CHOICE_EMOJI:
             await self.get_new_choice_from_user(poll, message, user)
-        elif emoji.name == '🛑':
+        elif emoji.name == END_POLL_EMOJI:
             await self.user_end_poll(poll, message, user)
         else:
             choice = poll.choices().where('reaction', str(emoji)).first()
@@ -340,7 +358,7 @@ class PollsCog(commands.Cog, name="Polls"):
         except discord.errors.NotFound:
             pass
 
-        if emoji.name not in ('➕', '✖️', '🛑'):
+        if emoji.name not in CONTROL_EMOJI:
             await self.update_response_counts(poll)
 
     @commands.command(
@@ -364,9 +382,8 @@ class PollsCog(commands.Cog, name="Polls"):
         message = await ctx.send(embed=embed)
 
         # Adds control emojis
-        await message.add_reaction('➕')
-        await message.add_reaction('✖️')
-        await message.add_reaction('🛑')
+        for emoji in CONTROL_EMOJI:
+            await message.add_reaction(emoji)
 
         # Deletes the original command message
         await ctx.message.delete()
@@ -408,13 +425,12 @@ class PollsCog(commands.Cog, name="Polls"):
         new_message = await ctx.send(embed=embed)
 
         if not poll.ended:
-            await new_message.add_reaction('➕')
+            await new_message.add_reaction(ADD_CHOICE_EMOJI)
 
-        await new_message.add_reaction('✖️')
+        await new_message.add_reaction(DELETE_POLL_EMOJI)
 
         if not poll.ended:
-            await new_message.add_reaction('🛑')
-
+            await new_message.add_reaction(END_POLL_EMOJI)
             for choice in poll.choices:
                 await new_message.add_reaction(choice.reaction)
 
