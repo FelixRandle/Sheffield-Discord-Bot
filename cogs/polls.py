@@ -323,8 +323,9 @@ class PollsCog(commands.Cog, name="Polls"):
             return False
 
         embed = discord.Embed(title="Polls", color=POLL_COLOR,
-                              description="These are all the polls"
-                              if ut.is_admin(user) else "These are your polls")
+                              description=("Showing all the polls"
+                              if ut.is_admin(user) else "Showing your polls")
+                              + " on this server")
         for poll in polls:
             field_value = (
                 (f"by <@!{poll.creator_id}>\n" if ut.is_admin(user) else "")
