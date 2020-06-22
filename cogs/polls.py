@@ -477,6 +477,7 @@ class PollsCog(commands.Cog, name="Polls"):
         name="showpolls",
         help="Shows polls that you have control over")
     async def show_polls(self, ctx):
+        await ctx.message.delete()
         await self.user_show_polls(ctx.author, ctx.channel)
 
 
