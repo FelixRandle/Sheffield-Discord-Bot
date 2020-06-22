@@ -323,8 +323,11 @@ class PollsCog(commands.Cog, name="Polls"):
         embed = discord.Embed(title="Your Polls", color=POLL_COLOR)
         for poll in polls:
             field_value = (
-                f"Poll ID: {poll.id}. This poll "
-                + ("has ended" if poll.ended else "is ongoing"))
+                f"by <@!{poll.creator_id}>\n"
+                f"Poll ID: {poll.id}. "
+                + ("Poll has ended" if poll.ended
+                   else ut.get_uk_time(poll.end_date).strftime(
+                       "Poll ends: %d/%m/%Y %H:%M:%S %Z\n")))
 
             embed.add_field(
                 name=f"{poll.title}", value=field_value, inline=False)
