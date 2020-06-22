@@ -103,6 +103,8 @@ class PollsCog(commands.Cog, name="Polls"):
             new_choice = PollChoice(reaction=reaction, text=text)
             poll.choices().save(new_choice)
 
+            await self.update_response_counts(poll)
+
     async def get_new_choice_from_user(self, poll, message,
                                        user: discord.User):
 
@@ -197,35 +199,13 @@ class PollsCog(commands.Cog, name="Polls"):
             poll.end_date = await ut.get_utc_time()
             poll.save()
 
-    async def fields_equal(self, old_fields: list, new_fields: list):
-        def key(field):
-            return field.name
-
-        if len(old_fields) != len(new_fields):
-            return False
-
-        old_fields.sort(key=key)
-        new_fields.sort(key=key)
-
-        for old_field, new_field in zip(old_fields, new_fields):
-            if (old_field.name != new_field.name
-                    or old_field.value != new_field.value):
-                return False
-
-        return True
-
-    async def update_response_counts(self, poll, *, force_update=False):
+    async def update_response_counts(self, poll):
 
         def key(choice):
             try:
-                # Returns the index of the choice's emoji
-                # in the list of emojis in the message reactions
                 return emojis.index(choice.reaction)
             except ValueError:
                 # If emoji isn't found, then return 0
-                #
-                # This guarantees that the choice are displayed at the end
-                # of the list (along with the others that are not found)
                 return 0
 
         channel = self.bot.get_channel(poll.channel_id)
@@ -241,15 +221,11 @@ class PollsCog(commands.Cog, name="Polls"):
         choices = list(poll.choices().get())
 
         # Choices are sorted in the order of appearance
-        # of the emoji in the message - also the order in
-        # which they are added
-
+        # of the emoji in the message - also the order in which they are added
         emojis = [str(reaction.emoji) for reaction in message.reactions]
         choices.sort(key=key)
 
         embed = message.embeds[0]
-        old_fields = embed.fields
-
         embed.clear_fields()
 
         user_limit = 3
@@ -264,14 +240,6 @@ class PollsCog(commands.Cog, name="Polls"):
             field_value = choice.text + (f" - {users}" if users else "")
             embed.add_field(name=f"{choice.reaction} {count}",
                             value=field_value, inline=False)
-
-        new_fields = embed.fields
-        # If the old fields are equal to the new fields,
-        # i.e., if the responses have not changed from the last message,
-        # then the message is not updated
-        if (await self.fields_equal(old_fields, new_fields)
-                and not force_update):
-            return
 
         embed.timestamp = await ut.get_utc_time()
         embed.set_footer(text=f"Poll ID: {poll.id}")
@@ -314,15 +282,12 @@ class PollsCog(commands.Cog, name="Polls"):
             for poll in ongoing_polls:
                 if await ut.get_utc_time() >= poll.end_date:
                     await self.end_poll(poll)
-
-                await self.update_response_counts(poll)
         except Exception:
             traceback.print_exc()
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
-        # Waits until the bot is ready
-        # before starting the task loop
+        # Waits until the bot is ready before starting the task loop
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
@@ -377,6 +342,9 @@ class PollsCog(commands.Cog, name="Polls"):
         except discord.errors.NotFound:
             pass
 
+        if emoji.name not in ('➕', '✖️', '🛑'):
+            await self.update_response_counts(poll)
+
     @commands.command(
         name="createpoll",
         help="Creates a poll. You can add choices to it later")
@@ -410,7 +378,7 @@ class PollsCog(commands.Cog, name="Polls"):
             message_id=message.id, channel_id=message.channel.id,
             end_date=end_date)
 
-        await self.update_response_counts(poll, force_update=True)
+        await self.update_response_counts(poll)
 
     @commands.command(
         name="summonpoll",
@@ -421,7 +389,7 @@ class PollsCog(commands.Cog, name="Polls"):
         for the benefit of longer-duration polls
         """
 
-        poll = Poll.with_('choices').find(poll_id)
+        poll = Poll.find(poll_id)
         if not poll:
             await ctx.send(f"Poll with ID {poll_id} could not found.")
             return
@@ -459,7 +427,7 @@ class PollsCog(commands.Cog, name="Polls"):
         poll.channel_id = ctx.channel.id
         poll.save()
 
-        await self.update_response_counts(poll, force_update=True)
+        await self.update_response_counts(poll)
 
 
 def setup(bot):
