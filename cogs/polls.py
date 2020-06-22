@@ -288,14 +288,13 @@ class PollsCog(commands.Cog, name="Polls"):
         # Waits until the bot is ready before starting the task loop
         await self.bot.wait_until_ready()
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    @commands.Cog.listener('on_raw_reaction_add')
+    async def on_poll_react(self, payload):
         """
         Listens for reactions to poll messages
         """
 
         # Ignores if any bots reacts
-        emoji = payload.emoji
         if payload.member.bot:
             return
 
@@ -312,6 +311,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
         user = payload.member
+        emoji = payload.emoji
         if emoji.name == '✖️':
             deleted = await self.user_delete_poll(poll, message, user)
             if not deleted:
@@ -425,6 +425,12 @@ class PollsCog(commands.Cog, name="Polls"):
         poll.save()
 
         await self.update_response_counts(poll)
+    
+    @commands.command(
+        name="showpolls",
+        help="Shows polls that you have control over")
+    async def show_polls(self, ctx):
+        pass
 
 
 def setup(bot):
