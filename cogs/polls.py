@@ -542,45 +542,30 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @commands.command(
         name="showpolls",
-        help="Shows polls that you have control over")
-    async def show_polls(self, ctx):
+        help="Shows polls that you have control over\n\n"
+             "You can optionally specify a title to search for")
+    async def show_polls(self, ctx, *, title=None):
         async def query_getter(user):
             query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
                 .where('users.guild_id', user.guild.id)
 
-            if not ut.is_admin(user):
-                query = query.where('users.id', user.id)
-
-            return query
-
-        result = await self.display_poll_search(
-            query_getter, ctx.author, ctx.channel,
-            desc="Showing all polls" if ut.is_admin(ctx.author)
-                 else "Showing your polls")
-
-        if result:
-            await ctx.message.delete()
-
-    @commands.command(
-        name="searchpolls",
-        help="Searches for polls that you have control over"
-    )
-    async def search_polls(self, ctx, *, title):
-        async def query_getter(user):
-            query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
-                .where('users.guild_id', user.guild.id) \
-                .where('polls.title', 'like', f'%{title}%')
+            if title:
+                query = query.where('polls.title', 'like', f'%{title}%')
 
             if not ut.is_admin(user):
                 query = query.where('users.id', user.id)
 
             return query
 
-        desc = f"Showing results for '{title}' "
-        if ut.is_admin(ctx.author):
-            desc += " in all polls"
+        if title:
+            desc = f"Showing results for '{title}' "
+            if ut.is_admin(ctx.author):
+                desc += " in all polls"
+            else:
+                desc += " in your polls"
         else:
-            desc += " in your polls"
+            desc = ("Showing all polls" if ut.is_admin(ctx.author)
+                    else "Showing all of your polls")
 
         result = await self.display_poll_search(
             query_getter, ctx.author, ctx.channel, desc=desc)
