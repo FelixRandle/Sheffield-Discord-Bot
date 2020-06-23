@@ -303,36 +303,28 @@ class PollsCog(commands.Cog, name="Polls"):
 
         return embed
 
-    async def user_show_polls(self, user: discord.User, channel,
-                              *, message=None, page=1):
+    async def display_poll_search(self, query_getter, user: discord.User,
+                                  channel, *, desc, message=None, page=1):
 
         def check(reaction, check_user):
             return (str(reaction.emoji) in SHOW_POLLS_EMOJI
                     and check_user == user
                     and reaction.message.id == message.id)
 
-        query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
-            .where('users.guild_id', channel.guild.id)
-
-        if not ut.is_admin(user):
-            query = query.where('users.id', user.id)
-
+        query = await query_getter(user)
         polls = query.paginate(POLLS_PER_PAGE, page)
 
         if not polls.total:
-            await channel.send("You don't have any polls yet!")
+            await channel.send("No polls were found!")
             return False
 
-        description = (
-            "Showing all the polls"
-            if ut.is_admin(user) else "Showing your polls") \
-            + (" on this server\n"
-               f"React with:\n"
-               f"{FIRST_PAGE_EMOJI} to go to the first page\n"
-               f"{PREVIOUS_PAGE_EMOJI} to go to the previous page\n"
-               f"{CLEAR_POLLS_EMOJI} to clear these results\n"
-               f"{NEXT_PAGE_EMOJI} to go to the next page\n"
-               f"{LAST_PAGE_EMOJI} to go to the last page")
+        description = (desc + " on this server\n"
+                       f"React with:\n"
+                       f"{FIRST_PAGE_EMOJI} to go to the first page\n"
+                       f"{PREVIOUS_PAGE_EMOJI} to go to the previous page\n"
+                       f"{CLEAR_POLLS_EMOJI} to clear these results\n"
+                       f"{NEXT_PAGE_EMOJI} to go to the next page\n"
+                       f"{LAST_PAGE_EMOJI} to go to the last page")
 
         embed = discord.Embed(title="Polls", color=POLL_COLOR,
                               description=description)
@@ -385,7 +377,8 @@ class PollsCog(commands.Cog, name="Polls"):
             page = polls.last_page
 
         await reaction.remove(user)
-        await self.user_show_polls(user, channel, message=message, page=page)
+        await self.display_poll_search(
+            query_getter, user, channel, desc=desc, message=message, page=page)
 
         return True
 
@@ -551,7 +544,20 @@ class PollsCog(commands.Cog, name="Polls"):
         name="showpolls",
         help="Shows polls that you have control over")
     async def show_polls(self, ctx):
-        result = await self.user_show_polls(ctx.author, ctx.channel)
+        async def query_getter(user):
+            query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
+                .where('users.guild_id', user.guild.id)
+
+            if not ut.is_admin(user):
+                query = query.where('users.id', user.id)
+
+            return query
+
+        result = await self.display_poll_search(
+            query_getter, ctx.author, ctx.channel,
+            desc="Showing all polls" if ut.is_admin(ctx.author)
+                 else "Showing your polls")
+
         if result:
             await ctx.message.delete()
 
