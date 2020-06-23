@@ -577,15 +577,13 @@ class PollsCog(commands.Cog, name="Polls"):
             return query
 
         desc = f"Showing results for '{title}' "
-
         if ut.is_admin(ctx.author):
-            desc += " in all polls" 
+            desc += " in all polls"
         else:
             desc += " in your polls"
 
         result = await self.display_poll_search(
-            query_getter, ctx.author, ctx.channel,
-            desc=desc)
+            query_getter, ctx.author, ctx.channel, desc=desc)
 
         if result:
             await ctx.message.delete()
