@@ -576,7 +576,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
             return query
 
-        desc = f"Showing results for f{search_query} "
+        desc = f"Showing results for '{search_query}' "
 
         if ut.is_admin(ctx.author):
             desc += " in all polls" 
