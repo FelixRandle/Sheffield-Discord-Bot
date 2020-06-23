@@ -8,25 +8,29 @@
  William Lee
  
  ## Requirements
- *discord.py*
+*discord.py==1.3.3*
+*pytz==2020.1*
+*orator==0.9.9*
+*python-dotenv==0.13.0*
+*mysqlclient==1.4.6*
+
  
- *mysql-connector-python*
- 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
+Recommended method of installing
 
 ```bash
-pip install discord.py
-pip install mysql-connector-python
-pip install python-dotenv
+pip install -r requirements.txt
 ```
 
-## Running The Program
+## Requirements
 
-After installing the requirements listed above, you will need to add
-some environment variables to store sensitive data (SQL password, Bot token etc...)
+Python 3.6 or higher
+MySQL 8.0 or higher Database
+Discord Bot Token
 
-Can also be included in a .env file
+## Running the program
 
+To run the bot, first create a .env file with all required information.
+Then run main.py
 
 ## Contributing
 Pull requests are welcome. 
