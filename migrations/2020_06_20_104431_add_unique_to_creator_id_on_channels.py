@@ -15,4 +15,6 @@ class AddUniqueToCreatorIdOnChannels(Migration):
         Revert the migrations.
         """
         with self.schema.table('channels') as table:
+            table.drop_foreign('channels_creator_id_foreign')
             table.drop_unique('channels_creator_id_unique')
+            table.foreign('creator_id').references('id').on('users')
