@@ -495,7 +495,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @commands.command(
         name="summonpoll",
-        help="Moves an existing poll to the bottom of the channel")
+        help="Summons a poll forward in, or back into, the channel")
     async def summon_poll(self, ctx, poll_id: int):
         """
         Allows a user to bring forward a poll in the conversation,
