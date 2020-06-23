@@ -565,7 +565,7 @@ class PollsCog(commands.Cog, name="Polls"):
         name="searchpolls",
         help="Search for polls that you have control over"
     )
-    async def show_polls(self, ctx, *, title):
+    async def search_polls(self, ctx, *, title):
         async def query_getter(user):
             query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
                 .where('users.guild_id', user.guild.id) \
