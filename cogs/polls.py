@@ -563,7 +563,7 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @commands.command(
         name="searchpolls",
-        help="Search for polls that you have control over"
+        help="Searches for polls that you have control over"
     )
     async def search_polls(self, ctx, *, title):
         async def query_getter(user):
