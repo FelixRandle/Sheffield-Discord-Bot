@@ -561,6 +561,35 @@ class PollsCog(commands.Cog, name="Polls"):
         if result:
             await ctx.message.delete()
 
+    @commands.command(
+        name="searchpolls",
+        help="Search for polls that you have control over"
+    )
+    async def show_polls(self, ctx, *, search_query):
+        async def query_getter(user):
+            query = Poll.join('users', 'polls.creator_id', '=', 'users.id') \
+                .where('users.guild_id', user.guild.id) \
+                .where('polls.title', 'like', f'%{search_query}%')
+
+            if not ut.is_admin(user):
+                query = query.where('users.id', user.id)
+
+            return query
+
+        desc = f"Showing results for f{search_query} "
+
+        if ut.is_admin(ctx.author):
+            desc += " in all polls" 
+        else:
+            desc += " in your polls"
+
+        result = await self.display_poll_search(
+            query_getter, ctx.author, ctx.channel,
+            desc=desc)
+
+        if result:
+            await ctx.message.delete()
+
 
 def setup(bot):
     """
