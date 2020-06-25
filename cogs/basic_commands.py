@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Cog for simple utility functions for the bot."""
-
+import discord
 from discord.ext import commands
 
 import utils as ut
@@ -149,6 +149,63 @@ class BasicCommandsCog(commands.Cog):
         Clears an extra one to remove the commands message.
         """
         await ctx.channel.purge(limit=message_count + 1)
+
+    @commands.command(
+        name="whois",
+        help="Gives you information about a specific user")
+    @commands.has_role("Member")
+    async def who_is(self, ctx):
+        if len(ctx.message.mentions) == 0:
+            raise commands.errors.UserInputError(
+                message="Please tag a user"
+            )
+
+        user = ctx.message.mentions[0]
+
+        join_date = ut.get_uk_time(user.joined_at).strftime(
+            "%Y/%m/%d %H:%M:%S")
+
+        user_roles = " ".join(role.mention if role.name != "@everyone" else ""
+                              for role in user.roles)
+
+        embed = (discord.Embed(title=f"{user}", description=f"{user.mention}",
+                               color=discord.Color.blurple())
+                 .set_thumbnail(url=user.avatar_url)
+                 .add_field(name="Joined At", value=join_date)
+                 .add_field(name="Assigned Roles",
+                            value=user_roles, inline=False)
+                 .set_footer(text=f"User ID: {user.id}"))
+
+        await ctx.send(embed=embed)
+
+    @commands.command(
+        name="serverinfo",
+        help="Gives you information about the current server")
+    @commands.has_role("Member")
+    async def server_info(self, ctx):
+
+        guild_roles = " ".join(role.mention if role.name != "@everyone" else ""
+                               for role in ctx.guild.roles)
+
+        created_at = ut.get_uk_time(ctx.guild.created_at).strftime(
+            "%Y/%m/%d %H:%M:%S")
+
+        embed = (discord.Embed(title=f"{ctx.guild.name}",
+                               color=discord.Color.blurple())
+                 .set_thumbnail(url=str(ctx.guild.icon_url))
+                 .add_field(name="Owner", value=ctx.guild.owner.mention)
+                 .add_field(name="Created at", value=created_at)
+                 .add_field(name="Region", value=ctx.guild.region)
+                 .add_field(name="Member Count", value=ctx.guild.member_count)
+                 .add_field(name="Text Channel Count",
+                            value=len(ctx.guild.text_channels))
+                 .add_field(name="Voice Channel Count",
+                            value=len(ctx.guild.voice_channels))
+                 .add_field(name="Available Roles", value=guild_roles,
+                            inline=False)
+                 .set_footer(text=f"Guild ID: {ctx.guild.id}"))
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
