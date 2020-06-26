@@ -161,7 +161,7 @@ class BasicCommandsCog(commands.Cog):
         user = ctx.message.mentions[0]
 
         join_date = ut.get_uk_time(user.joined_at).strftime(
-            "%Y/%m/%d %H:%M:%S")
+            "%Y-%m-%d %H:%M:%S")
 
         user_roles = " ".join(role.mention if role.name != "@everyone" else ""
                               for role in user.roles)
@@ -185,7 +185,7 @@ class BasicCommandsCog(commands.Cog):
                                for role in ctx.guild.roles)
 
         created_at = ut.get_uk_time(ctx.guild.created_at).strftime(
-            "%Y/%m/%d %H:%M:%S")
+            "%Y-%m-%d %H:%M:%S")
 
         embed = (discord.Embed(title=f"{ctx.guild.name}",
                                color=discord.Color.blurple())
