@@ -155,10 +155,8 @@ class BasicCommandsCog(commands.Cog):
         help="Gives you information about a specific user")
     @commands.has_role("Member")
     async def who_is(self, ctx):
-        if len(ctx.message.mentions) == 0:
-            raise commands.errors.UserInputError(
-                message="Please tag a user"
-            )
+        if not len(ctx.message.mentions):
+            raise commands.errors.UserInputError(message="Please tag a user")
 
         user = ctx.message.mentions[0]
 
@@ -183,7 +181,6 @@ class BasicCommandsCog(commands.Cog):
         help="Gives you information about the current server")
     @commands.has_role("Member")
     async def server_info(self, ctx):
-
         guild_roles = " ".join(role.mention if role.name != "@everyone" else ""
                                for role in ctx.guild.roles)
 
