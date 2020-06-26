@@ -10,6 +10,7 @@ from models import User, Guild
 
 class BasicCommandsCog(commands.Cog):
     """Create a class that extends Cog to make our functionality in."""
+    _user_info = []
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
@@ -174,7 +175,16 @@ class BasicCommandsCog(commands.Cog):
                             value=user_roles, inline=False)
                  .set_footer(text=f"User ID: {user.id}"))
 
+        for name, value_getter, inline in self._user_info:
+            embed.add_field(name=name, value=value_getter(user), inline=inline)
+
         await ctx.send(embed=embed)
+
+    @staticmethod
+    def add_user_info(name, value_getter, inline=False):
+        BasicCommandsCog._user_info.append(
+            (name, value_getter, inline)
+        )
 
     @commands.command(
         name="serverinfo",

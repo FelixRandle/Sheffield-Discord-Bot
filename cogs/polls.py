@@ -17,6 +17,7 @@ import discord
 from discord.ext import commands, tasks
 
 import utils as ut
+from cogs.basic_commands import BasicCommandsCog
 from models import User, Poll, PollChoice
 
 # Regex from extracting time from format 00h00m00s
@@ -66,6 +67,11 @@ class PollsCog(commands.Cog, name="Polls"):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
         self.poll_daemon.start()
+        BasicCommandsCog.add_user_info("Polls", self.get_user_poll_count, True)
+
+    @staticmethod
+    def get_user_poll_count(user):
+        return User.find(user.id).polls.count()
 
     async def parse_time_as_delta(self, time: str):
         """
