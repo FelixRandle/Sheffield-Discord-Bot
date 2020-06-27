@@ -156,7 +156,7 @@ class BasicCommandsCog(commands.Cog):
         help="Gives you information about a specific user")
     @commands.has_role("Member")
     async def who_is(self, ctx):
-        if not len(ctx.message.mentions):
+        if not ctx.message.mentions:
             raise commands.errors.UserInputError(message="Please tag a user")
 
         user = ctx.message.mentions[0]
