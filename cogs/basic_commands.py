@@ -11,6 +11,7 @@ from models import User, Guild
 class BasicCommandsCog(commands.Cog):
     """Create a class that extends Cog to make our functionality in."""
     _user_info = []
+    _server_info = []
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
@@ -180,9 +181,9 @@ class BasicCommandsCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @staticmethod
-    def add_user_info(name, value_getter, inline=False):
-        BasicCommandsCog._user_info.append(
+    @classmethod
+    def add_user_info(cls, name, value_getter, inline=False):
+        cls._user_info.append(
             (name, value_getter, inline)
         )
 
@@ -191,28 +192,39 @@ class BasicCommandsCog(commands.Cog):
         help="Gives you information about the current server")
     @commands.has_role("Member")
     async def server_info(self, ctx):
+        guild = ctx.guild
         guild_roles = " ".join(role.mention if role.name != "@everyone" else ""
-                               for role in ctx.guild.roles)
+                               for role in guild.roles)
 
-        created_at = ut.get_uk_time(ctx.guild.created_at).strftime(
+        created_at = ut.get_uk_time(guild.created_at).strftime(
             "%Y-%m-%d %H:%M:%S")
 
-        embed = (discord.Embed(title=f"{ctx.guild.name}",
+        embed = (discord.Embed(title=f"{guild.name}",
                                color=discord.Color.blurple())
-                 .set_thumbnail(url=str(ctx.guild.icon_url))
-                 .add_field(name="Owner", value=ctx.guild.owner.mention)
+                 .set_thumbnail(url=str(guild.icon_url))
+                 .add_field(name="Owner", value=guild.owner.mention)
                  .add_field(name="Created at", value=created_at)
-                 .add_field(name="Region", value=ctx.guild.region)
-                 .add_field(name="Member Count", value=ctx.guild.member_count)
+                 .add_field(name="Region", value=guild.region)
+                 .add_field(name="Member Count", value=guild.member_count)
                  .add_field(name="Text Channel Count",
-                            value=len(ctx.guild.text_channels))
+                            value=len(guild.text_channels))
                  .add_field(name="Voice Channel Count",
-                            value=len(ctx.guild.voice_channels))
+                            value=len(guild.voice_channels))
                  .add_field(name="Available Roles", value=guild_roles,
                             inline=False)
-                 .set_footer(text=f"Guild ID: {ctx.guild.id}"))
+                 .set_footer(text=f"Guild ID: {guild.id}"))
+
+        for name, value_getter, inline in self._server_info:
+            embed.add_field(name=name, value=value_getter(guild),
+                            inline=inline)
 
         await ctx.send(embed=embed)
+
+    @classmethod
+    def add_server_info(cls, name, value_getter, inline=False):
+        cls._server_info.append(
+            (name, value_getter, inline)
+        )
 
 
 def setup(bot):
