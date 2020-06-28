@@ -71,7 +71,10 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @staticmethod
     def get_user_poll_count(user):
-        return User.find(user.id).polls.count()
+        try:
+            return User.find(user.id).polls.count()
+        except AttributeError:
+            return 0
 
     async def parse_time_as_delta(self, time: str):
         """
