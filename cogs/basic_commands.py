@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Cog for simple utility functions for the bot."""
-
+import discord
 from discord.ext import commands
 
 import utils as ut
@@ -10,6 +10,8 @@ from models import User, Guild
 
 class BasicCommandsCog(commands.Cog):
     """Create a class that extends Cog to make our functionality in."""
+    _user_info = []
+    _server_info = []
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
@@ -149,6 +151,80 @@ class BasicCommandsCog(commands.Cog):
         Clears an extra one to remove the commands message.
         """
         await ctx.channel.purge(limit=message_count + 1)
+
+    @commands.command(
+        name="whois",
+        help="Gives you information about a specific user")
+    @commands.has_role("Member")
+    async def who_is(self, ctx):
+        if not ctx.message.mentions:
+            raise commands.errors.UserInputError(message="Please tag a user")
+
+        user = ctx.message.mentions[0]
+
+        join_date = ut.get_uk_time(user.joined_at).strftime(
+            "%Y-%m-%d %H:%M:%S")
+
+        user_roles = " ".join(role.mention if role.name != "@everyone" else ""
+                              for role in user.roles)
+
+        embed = (discord.Embed(title=f"{user}", description=f"{user.mention}",
+                               color=discord.Color.blurple())
+                 .set_thumbnail(url=user.avatar_url)
+                 .add_field(name="Joined At", value=join_date)
+                 .add_field(name="Assigned Roles",
+                            value=user_roles, inline=False)
+                 .set_footer(text=f"User ID: {user.id}"))
+
+        for name, value_getter, inline in self._user_info:
+            embed.add_field(name=name, value=value_getter(user), inline=inline)
+
+        await ctx.send(embed=embed)
+
+    @classmethod
+    def add_user_info(cls, name, value_getter, inline=False):
+        cls._user_info.append(
+            (name, value_getter, inline)
+        )
+
+    @commands.command(
+        name="serverinfo",
+        help="Gives you information about the current server")
+    @commands.has_role("Member")
+    async def server_info(self, ctx):
+        guild = ctx.guild
+        guild_roles = " ".join(role.mention if role.name != "@everyone" else ""
+                               for role in guild.roles)
+
+        created_at = ut.get_uk_time(guild.created_at).strftime(
+            "%Y-%m-%d %H:%M:%S")
+
+        embed = (discord.Embed(title=f"{guild.name}",
+                               color=discord.Color.blurple())
+                 .set_thumbnail(url=str(guild.icon_url))
+                 .add_field(name="Owner", value=guild.owner.mention)
+                 .add_field(name="Created at", value=created_at)
+                 .add_field(name="Region", value=guild.region)
+                 .add_field(name="Member Count", value=guild.member_count)
+                 .add_field(name="Text Channel Count",
+                            value=len(guild.text_channels))
+                 .add_field(name="Voice Channel Count",
+                            value=len(guild.voice_channels))
+                 .add_field(name="Available Roles", value=guild_roles,
+                            inline=False)
+                 .set_footer(text=f"Guild ID: {guild.id}"))
+
+        for name, value_getter, inline in self._server_info:
+            embed.add_field(name=name, value=value_getter(guild),
+                            inline=inline)
+
+        await ctx.send(embed=embed)
+
+    @classmethod
+    def add_server_info(cls, name, value_getter, inline=False):
+        cls._server_info.append(
+            (name, value_getter, inline)
+        )
 
 
 def setup(bot):
