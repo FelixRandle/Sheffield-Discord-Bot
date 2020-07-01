@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" 
+"""
 The Urban Dictionary cog written by Ben Ridings,
 You can randomly search a word or search a specific word
 """
 import json
 
 import aiohttp
-import discord
 from discord.ext import commands
 
 # Constantы
@@ -22,7 +21,8 @@ class UrbanDictionaryCog(commands.Cog):
     # Search a word the user types in
     async def search_query(self, querystring):
         async with aiohttp.ClientSession() as session:
-            data = await self.fetch(session, BASEURL + f'define?term={querystring}')
+            data = await self.fetch(
+                session, BASEURL + f'define?term={querystring}')
             return data
 
     # Fetch the URL
@@ -47,7 +47,8 @@ class UrbanDictionaryCog(commands.Cog):
         definitions_list = json.loads(response_text)['list']
         definition = definitions_list[0]
 
-        await ctx.send("Definition of {word}: {definition}".format(**definition))
+        await ctx.send(
+            "Definition of {word}: {definition}".format(**definition))
         await ctx.send("Example of {word}: {example}".format(**definition))
 
 
