@@ -397,21 +397,25 @@ class PollsCog(commands.Cog, name="Polls"):
         Task loop that update response counts
         and ends polls that need to be ended
         """
-
-        # try-except can be replaced with a coroutine
-        # wrapped with discord.ext.tasks.Loop.error on release of 1.4
-        try:
-            ongoing_polls = Poll.where('ended', False).get()
-            for poll in ongoing_polls:
-                if ut.get_utc_time() >= poll.end_date:
-                    await self.end_poll(poll)
-        except Exception:
-            traceback.print_exc()
+        ongoing_polls = Poll.where('ended', False).get()
+        for poll in ongoing_polls:
+            if ut.get_utc_time() >= poll.end_date:
+                await self.end_poll(poll)
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
+        # Adds a callback for when the task has ended to raise errors
+        # Can be replaced with coro decorated with @poll_daemon.after_loop
+        # on release of discord.py 1.4.0
+        self.poll_daemon.get_task() \
+            .add_done_callback(self.after_poll_daemon_end)
         # Waits until the bot is ready before starting the task loop
         await self.bot.wait_until_ready()
+
+    def after_poll_daemon_end(self, fut):
+        error = fut.exception()
+        if error:
+            traceback.print_exception(type(error), error, error.__traceback__)
 
     @commands.Cog.listener('on_raw_reaction_add')
     async def on_poll_react(self, payload):
