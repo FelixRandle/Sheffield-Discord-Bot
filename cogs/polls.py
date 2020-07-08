@@ -10,7 +10,6 @@ Author: William Lee
 import asyncio
 import datetime
 import re
-import time
 import traceback
 
 import discord
@@ -313,19 +312,12 @@ class PollsCog(commands.Cog, name="Polls"):
         return embed
 
     async def display_poll_search(self, query_getter, user: discord.User,
-                                  channel, *, desc, message=None, page=1):
+                                  channel, *, desc, page=1):
 
         def check(reaction, check_user):
             return (str(reaction.emoji) in SHOW_POLLS_EMOJI
                     and check_user == user
                     and reaction.message.id == message.id)
-
-        query = await query_getter(user)
-        polls = query.paginate(POLLS_PER_PAGE, page)
-
-        if not polls.total:
-            await channel.send("No polls were found!")
-            return False
 
         description = (desc + " on this server\n"
                        f"React with:\n"
@@ -338,56 +330,64 @@ class PollsCog(commands.Cog, name="Polls"):
         embed = discord.Embed(title="Polls", color=POLL_COLOR,
                               description=description)
 
-        for poll in polls:
-            field_value = (
-                (f"by <@!{poll.creator_id}> - " if ut.is_admin(user) else "")
-                + ("Poll has ended" if poll.ended
-                   else ut.get_uk_time(poll.end_date).strftime(
-                       "Poll ends: %d/%m/%Y %H:%M:%S %Z"))
-                + f"\nPoll ID: {poll.id}")
+        showing = True
+        message = None
+        while showing:
+            query = await query_getter(user)
+            polls = query.paginate(POLLS_PER_PAGE, page)
 
-            embed.add_field(
-                name=f"{poll.title}", value=field_value, inline=False)
+            if not polls.total:
+                await channel.send("No polls were found!")
+                return False
 
-        first_poll = polls.per_page * (page - 1) + 1
-        last_poll = first_poll + polls.count() - 1
-        total = polls.total
+            for poll in polls:
+                field_value = (f"by <@!{poll.creator_id}> - "
+                               if ut.is_admin(user) else "")
+                field_value += ("Poll has ended" if poll.ended
+                                else ut.get_uk_time(poll.end_date).strftime(
+                                    "Poll ends: %d/%m/%Y %H:%M:%S %Z"))
+                field_value += f"\nPoll ID: {poll.id}"
 
-        embed.set_footer(
-            text=f"Showing polls {first_poll} - {last_poll} of {total}\n"
-                 f"Page {page} of {polls.last_page}")
+                embed.add_field(
+                    name=f"{poll.title}", value=field_value, inline=False)
 
-        if message is None:
-            message = await channel.send(embed=embed)
-            for emoji in SHOW_POLLS_EMOJI:
-                await message.add_reaction(emoji)
-        else:
-            await message.edit(embed=embed)
+            first_poll = polls.per_page * (page - 1) + 1
+            last_poll = first_poll + polls.count() - 1
+            total = polls.total
 
-        try:
-            reaction, _ = await self.bot.wait_for(
-                'reaction_add', check=check, timeout=60.0)
-        except asyncio.TimeoutError:
-            await message.delete()
-            return True
+            embed.set_footer(
+                text=f"Showing polls {first_poll} - {last_poll} of {total}\n"
+                f"Page {page} of {polls.last_page}")
 
-        emoji = reaction.emoji
-        if emoji == CLEAR_POLLS_EMOJI:
-            await message.delete()
-            return True
+            if message is None:
+                message = await channel.send(embed=embed)
+                for emoji in SHOW_POLLS_EMOJI:
+                    await message.add_reaction(emoji)
+            else:
+                await message.edit(embed=embed)
 
-        if emoji == FIRST_PAGE_EMOJI:
-            page = 1
-        elif emoji == PREVIOUS_PAGE_EMOJI:
-            page = (page - 2) % polls.last_page + 1
-        elif emoji == NEXT_PAGE_EMOJI:
-            page = page % polls.last_page + 1
-        elif emoji == LAST_PAGE_EMOJI:
-            page = polls.last_page
+            try:
+                reaction, _ = await self.bot.wait_for(
+                    'reaction_add', check=check, timeout=60.0)
+            except asyncio.TimeoutError:
+                await message.delete()
+                break
 
-        await reaction.remove(user)
-        await self.display_poll_search(
-            query_getter, user, channel, desc=desc, message=message, page=page)
+            emoji = reaction.emoji
+            if emoji == CLEAR_POLLS_EMOJI:
+                await message.delete()
+                break
+
+            if emoji == FIRST_PAGE_EMOJI:
+                page = 1
+            elif emoji == PREVIOUS_PAGE_EMOJI:
+                page = (page - 2) % polls.last_page + 1
+            elif emoji == NEXT_PAGE_EMOJI:
+                page = page % polls.last_page + 1
+            elif emoji == LAST_PAGE_EMOJI:
+                page = polls.last_page
+
+            await reaction.remove(user)
 
         return True
 
@@ -397,21 +397,25 @@ class PollsCog(commands.Cog, name="Polls"):
         Task loop that update response counts
         and ends polls that need to be ended
         """
-
-        # try-except can be replaced with a coroutine
-        # wrapped with discord.ext.tasks.Loop.error on release of 1.4
-        try:
-            ongoing_polls = Poll.where('ended', False).get()
-            for poll in ongoing_polls:
-                if ut.get_utc_time() >= poll.end_date:
-                    await self.end_poll(poll)
-        except Exception:
-            traceback.print_exc()
+        ongoing_polls = Poll.where('ended', False).get()
+        for poll in ongoing_polls:
+            if ut.get_utc_time() >= poll.end_date:
+                await self.end_poll(poll)
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
+        # Adds a callback for when the task has ended to raise errors
+        # Can be replaced with coro decorated with @poll_daemon.after_loop
+        # on release of discord.py 1.4.0
+        self.poll_daemon.get_task() \
+            .add_done_callback(self.after_poll_daemon_end)
         # Waits until the bot is ready before starting the task loop
         await self.bot.wait_until_ready()
+
+    def after_poll_daemon_end(self, fut):
+        error = fut.exception()
+        if error:
+            traceback.print_exception(type(error), error, error.__traceback__)
 
     @commands.Cog.listener('on_raw_reaction_add')
     async def on_poll_react(self, payload):
