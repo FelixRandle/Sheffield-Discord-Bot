@@ -17,6 +17,13 @@ ROLE_ASSIGNMENT_MESSAGE = (
     "If you misclick, just react again with the correct year to be reassigned"
 )
 
+EMOJI_TO_ROLES = {
+    "1️⃣": "First Year",
+    "2️⃣": "Second Year",
+    "3️⃣": "Third Year",
+    "4️⃣": "Fourth Year",
+}
+
 
 class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
 
@@ -35,6 +42,10 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         """
         guild = Guild.find(ctx.guild.id)
         message = await ctx.send(ROLE_ASSIGNMENT_MESSAGE)
+
+        for emoji in EMOJI_TO_ROLES:
+            await message.add_reaction(emoji)
+
         guild.role_assignment_msg_id = message.id
         guild.save()
 
