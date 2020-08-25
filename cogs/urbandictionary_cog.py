@@ -22,11 +22,11 @@ class UrbanDictionaryCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def create_embed(self,definitions, ctx):
+    async def create_embed(self, definitions, ctx):
         def check_reaction(reaction, user):
             return (str(reaction.emoji) == NEXT_DEFINITION
-            and reaction.message.id == message.id
-            and user.id != bot.user.id)
+                and reaction.message.id == message.id
+                and user.id != bot.user.id)
 
         counter = 0
         display = True
@@ -82,12 +82,14 @@ class UrbanDictionaryCog(commands.Cog):
     @commands.command(name='ud')
     async def search_dictionary(self, ctx, *, query=None):
         if query is None:
-            definition_list = json.loads(await self.search_random_word())['list']
+            definition_list = json.loads(
+                await self.search_random_word())['list']
 
         else:
             # Gets the typed in query and parses it
             querystring = query
-            definition_list = json.loads(await self.search_query(querystring))['list']
+            definition_list = json.loads(
+                await self.search_query(querystring))['list']
 
         await self.create_embed(definition_list, ctx)
 
