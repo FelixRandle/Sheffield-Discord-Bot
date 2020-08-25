@@ -49,8 +49,7 @@ class UrbanDictionaryCog(commands.Cog):
                 # add emoji to message
                 await message.add_reaction(NEXT_DEFINITION)
             else:
-                await message.edit(embed=embed)
-            
+                await message.edit(embed=embed)      
             try:
                 reaction, user = await self.bot.wait_for(
                     'reaction_add', check=check_reaction, timeout=60.0)
@@ -93,6 +92,6 @@ class UrbanDictionaryCog(commands.Cog):
 
         await self.create_embed(definition_list, ctx)
 
+
 def setup(bot):
     bot.add_cog(UrbanDictionaryCog(bot))
-
