@@ -4,9 +4,11 @@
 The Urban Dictionary cog written by Ben Ridings,
 You can randomly search a word or search a specific word
 """
+import asyncio
 import json
 
 import aiohttp
+import discord
 from discord.ext import commands
 
 # Constant
@@ -80,14 +82,14 @@ class UrbanDictionaryCog(commands.Cog):
     @commands.command(name='ud')
     async def search_dictionary(self, ctx, *, query=None):
         if query is None:
-            definition_list = json.loads(await search_random_word())['list']
+            definition_list = json.loads(await self.search_random_word())['list']
 
         else:
             # Gets the typed in query and parses it
             querystring = query
-            definition_list = json.loads(await search_query(querystring))['list']
+            definition_list = json.loads(await self.search_query(querystring))['list']
 
-        await create_embed(definition_list, ctx)
+        await self.create_embed(definition_list, ctx)
 
 def setup(bot):
     bot.add_cog(UrbanDictionaryCog(bot))
