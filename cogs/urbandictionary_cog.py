@@ -25,8 +25,8 @@ class UrbanDictionaryCog(commands.Cog):
     async def create_embed(self, definitions, ctx):
         def check_reaction(reaction, user):
             return (str(reaction.emoji) == NEXT_DEFINITION
-                and reaction.message.id == message.id
-                and user.id != bot.user.id)
+                    and reaction.message.id == message.id
+                    and user.id != self.bot.user.id)
 
         counter = 0
         display = True
@@ -52,7 +52,7 @@ class UrbanDictionaryCog(commands.Cog):
                 await message.edit(embed=embed)
             
             try:
-                reaction, user = await bot.wait_for(
+                reaction, user = await self.bot.wait_for(
                     'reaction_add', check=check_reaction, timeout=60.0)
                 counter = (counter + 1) % len(definitions)
             except asyncio.TimeoutError:
@@ -61,7 +61,7 @@ class UrbanDictionaryCog(commands.Cog):
             await reaction.remove(user)
 
     # Search a word the user types in
-    async def search_query(self, ctx,*, querystring):
+    async def search_query(self, ctx, *, querystring):
         async with aiohttp.ClientSession() as session:
             data = await self.fetch(
                 session, BASEURL + f'define?term={querystring}')
@@ -95,3 +95,4 @@ class UrbanDictionaryCog(commands.Cog):
 
 def setup(bot):
     bot.add_cog(UrbanDictionaryCog(bot))
+
