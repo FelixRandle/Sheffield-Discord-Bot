@@ -49,6 +49,38 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         guild.role_assignment_msg_id = message.id
         guild.save()
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        # Member is bot, or the emoji is not relevant
+        if payload.member.bot or str(payload.emoji) not in EMOJI_TO_ROLES:
+            return
+        # Get the corresponding role name for the emoji
+        role_name = EMOJI_TO_ROLES[str(payload.emoji)]
+        # Get member's existing roles
+        member_role_names = [str(role) for role in payload.member.roles]
+        if role_name in member_role_names:
+            return  # Return if the member is already assigned the correct role
+        # Fetch the available roles from the server
+        roles = await payload.member.guild.fetch_roles()
+        # Year roles
+        year_roles = [
+            role for role in roles
+            if str(role) in EMOJI_TO_ROLES.values()
+        ]
+        # Year role to be assigned
+        for role in roles:
+            if str(role) == role_name:
+                assigned_year_role = role
+                break
+        else:  # End of for loop means role was not found
+            await payload.channel.send(
+                f"Role {role_name!r} does not exist. "
+                "Please report this issue to an admin.")
+        # Removes existing year roles
+        await payload.member.remove_roles(*year_roles)
+        # Adds the required year role
+        await payload.member.add_roles(assigned_year_role)
+
 
 def setup(bot):
     """
