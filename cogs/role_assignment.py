@@ -10,11 +10,14 @@ from discord.ext import commands
 from models import Guild
 
 ROLE_ASSIGNMENT_MESSAGE = (
-    "Hi everyone!\n"
+    "Hi everyone!\n\n"
     "To make it easier for everyone to see who's in which year, "
     "and make sure you get stuff targeted for your year group,\n"
     "please react below with your year to assign yourself your year's role.\n"
-    "If you misclick, just react again with the correct year to be reassigned"
+    "If you misclick, just react again "
+    "with the correct year to be reassigned\n\n"
+    "Thanks,\n"
+    "The Admin Team"
 )
 
 EMOJI_TO_ROLES = {
