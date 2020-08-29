@@ -25,6 +25,7 @@ EMOJI_TO_ROLES = {
     "2️⃣": "Second Year",
     "3️⃣": "Third Year",
     "4️⃣": "Fourth Year",
+    "🇵": "Postgraduate",
 }
 
 
