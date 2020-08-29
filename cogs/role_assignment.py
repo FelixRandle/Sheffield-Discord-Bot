@@ -14,6 +14,7 @@ ROLE_ASSIGNMENT_MESSAGE = (
     "To make it easier for everyone to see who's in which year, "
     "and make sure you get stuff targeted for your year group,\n"
     "please react below with your year to assign yourself your year's role.\n"
+    "**If you've already done this, then you do not need to do this again**.\n"
     "If you misclick, just react again "
     "with the correct year to be reassigned\n\n"
     "Thanks,\n"
@@ -25,6 +26,7 @@ EMOJI_TO_ROLES = {
     "2️⃣": "Second Year",
     "3️⃣": "Third Year",
     "4️⃣": "Fourth Year",
+    "🇵": "Postgraduate",
 }
 
 
