@@ -78,9 +78,11 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
                 assigned_year_role = role
                 break
         else:  # End of for loop means role was not found
-            await payload.channel.send(
+            channel = await self.bot.fetch_channel(payload.channel_id)
+            await channel.send(
                 f"Role {role_name!r} does not exist. "
                 "Please report this issue to an admin.")
+            return
         # Removes existing year roles
         await payload.member.remove_roles(*year_roles)
         # Adds the required year role
