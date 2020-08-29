@@ -11,7 +11,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-# Constant
+# Constants
 BASEURL = 'https://api.urbandictionary.com/v0/'
 NEXT_DEFINITION = '➡️'
 EMBED_COLOUR = 0xcf1e25
@@ -40,16 +40,16 @@ class UrbanDictionaryCog(commands.Cog):
 
             embed = discord.Embed(title="Defining...", color=EMBED_COLOUR)
 
-            embed.add_field(name='Word', value= word)
-            embed.add_field(name="Definition", value= definition)
-            embed.add_field(name='Example', value= example)
+            embed.add_field(name='Word', value=word)
+            embed.add_field(name="Definition", value=definition)
+            embed.add_field(name='Example', value=example)
 
             if message is None:
                 message = await ctx.send(embed=embed)
                 # add emoji to message
                 await message.add_reaction(NEXT_DEFINITION)
             else:
-                await message.edit(embed=embed)      
+                await message.edit(embed=embed)
             try:
                 reaction, user = await self.bot.wait_for(
                     'reaction_add', check=check_reaction, timeout=60.0)
