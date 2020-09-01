@@ -78,7 +78,9 @@ class UrbanDictionaryCog(commands.Cog):
             return data
 
     # Parse the searched word and display here
-    @commands.command(name='ud')
+    @commands.command(name='ud',
+                      help='use $ud <term> to search for a word.' +
+                      'You can also use $ud to search for a random word')
     async def search_dictionary(self, ctx, *, query=None):
         if query is None:
             definition_list = json.loads(
