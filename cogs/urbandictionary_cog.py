@@ -90,7 +90,7 @@ class UrbanDictionaryCog(commands.Cog):
             # Gets the typed in query and parses it
             querystring = query
             definition_list = json.loads(
-                await self.search_query(querystring))['list']
+                await self.search_query(ctx, querystring))['list']
 
         await self.create_embed(definition_list, ctx)
 
