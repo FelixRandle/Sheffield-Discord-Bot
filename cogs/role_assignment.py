@@ -27,7 +27,17 @@ EMOJI_TO_ROLES = {
     "3️⃣": "Third Year",
     "4️⃣": "Fourth Year",
     "🇵": "Postgraduate",
+    "🎮": "Gamers",
 }
+
+# Mutually exclusive roles
+MUTEX_ROLES = [
+    "First Year",
+    "Second Year",
+    "Third Year",
+    "Fourth Year",
+    "Postgraduate",
+]
 
 
 class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
