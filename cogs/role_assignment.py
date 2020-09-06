@@ -9,22 +9,6 @@ from discord.ext import commands
 
 from models import Guild
 
-ROLE_ASSIGNMENT_MESSAGE = (
-    "Hi everyone!\n\n"
-    "To make it easier for everyone to see who's in which year, "
-    "and make sure you get stuff targeted for your year group,\n"
-    "please react below with your year to assign yourself your year's role.\n"
-    "**If you've already done this, then you do not need to do this again**.\n"
-    "If you misclick, just react again "
-    "with the correct year to be reassigned\n"
-    "Also, we have a Gamers role, so if you're interested "
-    "in playing games with others on the server on a regular basis, "
-    "then be sure to assign yourself the role "
-    "so you can be pinged when people are playing!\n\n"
-    "Thanks,\n"
-    "The Admin Team"
-)
-
 EMOJI_TO_ROLES = {
     "1️⃣": "First Year",
     "2️⃣": "Second Year",
@@ -33,6 +17,15 @@ EMOJI_TO_ROLES = {
     "🇵": "Postgraduate",
     "🎮": "Gamers",
 }
+
+ROLE_ASSIGNMENT_MESSAGE = (
+    "Hi everyone!\n\n"
+    "Please assign yourself with the correct role for your year, "
+    "and you're interested in playing games on a regular basis, "
+    "then please assign your the Gamers roles.\n\n"
+    "Thanks,\n"
+    "The Admin Team\n\n"
+) + "\n".join(f"{emoji} {role}" for emoji, role in EMOJI_TO_ROLES.items())
 
 # Mutually exclusive roles
 MUTEX_ROLES = [
