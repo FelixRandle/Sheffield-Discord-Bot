@@ -16,7 +16,11 @@ ROLE_ASSIGNMENT_MESSAGE = (
     "please react below with your year to assign yourself your year's role.\n"
     "**If you've already done this, then you do not need to do this again**.\n"
     "If you misclick, just react again "
-    "with the correct year to be reassigned\n\n"
+    "with the correct year to be reassigned\n"
+    "Also, we have a Gamers role, so if you're interested "
+    "in playing games with others on the server on a regular basis, "
+    "then be sure to assign yourself the role "
+    "so you can be pinged when people are playing!\n\n"
     "Thanks,\n"
     "The Admin Team"
 )
@@ -77,24 +81,22 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             return  # Return if the member is already assigned the correct role
         # Fetch the available roles from the server
         roles = await payload.member.guild.fetch_roles()
-        # Year roles
-        year_roles = [
-            role for role in roles
-            if str(role) in EMOJI_TO_ROLES.values()
-        ]
-        # Year role to be assigned
+        # Get roles that are mutually exclusive
+        mutex_roles = [role for role in roles if str(role) in MUTEX_ROLES]
+        # Role to be assigned
         for role in roles:
             if str(role) == role_name:
-                assigned_year_role = role
+                role_to_be_assigned = role
                 break
         else:  # End of for loop means role was not found
             await payload.channel.send(
                 f"Role {role_name!r} does not exist. "
                 "Please report this issue to an admin.")
-        # Removes existing year roles
-        await payload.member.remove_roles(*year_roles)
-        # Adds the required year role
-        await payload.member.add_roles(assigned_year_role)
+        # Removes existing mutually exclusive roles
+        if role_to_be_assigned in mutex_roles:
+            await payload.member.remove_roles(*mutex_roles)
+        # Adds the required role
+        await payload.member.add_roles(role_to_be_assigned)
 
 
 def setup(bot):
