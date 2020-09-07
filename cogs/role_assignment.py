@@ -22,8 +22,8 @@ EMOJI_TO_ROLES = {
 ROLE_ASSIGNMENT_MESSAGE = (
     "Hi everyone!\n\n"
     "Please assign yourself with the correct role for your year, "
-    "and you're interested in playing games on a regular basis, "
-    "then please assign your the Gamers roles.\n\n"
+    "and if you're interested in playing games on a regular basis, "
+    "then please assign your the Gamers roles to be pinged for games.\n\n"
     "Thanks,\n"
     "The Admin Team\n\n"
 ) + "\n".join(f"{emoji} {role}" for emoji, role in EMOJI_TO_ROLES.items())
