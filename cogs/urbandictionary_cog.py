@@ -60,7 +60,7 @@ class UrbanDictionaryCog(commands.Cog):
             await reaction.remove(user)
 
     # Search a word the user types in
-    async def search_query(self, querystring, *):
+    async def search_query(self, querystring):
         async with aiohttp.ClientSession() as session:
             data = await self.fetch(
                 session, BASEURL + f'define?term={querystring}')
