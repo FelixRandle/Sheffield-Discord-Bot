@@ -65,6 +65,27 @@ def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     return utc_time.astimezone(tz)
 
 
+class RemoveReaction:
+    """
+    A context manager that removes a reaction on exit.
+
+    This is intended to be used with the `on_raw_reaction_add` event
+    within a cog.
+    """
+
+    def __init__(self, cog, payload):
+        self.cog = cog
+        self.payload = payload
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        channel = await self.cog.bot.fetch_channel(self.payload.channel_id)
+        message = await channel.fetch_message(self.payload.message_id)
+        await message.remove_reaction(self.payload.emoji, self.payload.member)
+
+
 def is_admin(user):
     for role in user.roles:
         if role.name.lower() == "admin":
