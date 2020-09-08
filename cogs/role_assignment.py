@@ -64,8 +64,11 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
 
     @commands.Cog.listener('on_raw_reaction_add')
     async def on_raw_reaction_add(self, payload):
-        # Member is bot, or the emoji is not relevant
-        if payload.member.bot or str(payload.emoji) not in EMOJI_TO_ROLES:
+        # Member is bot, or the emoji is not relevant,
+        # or the message reacted to is not the role assignment message
+        guild = Guild.find(payload.guild_id)
+        if (payload.member.bot or str(payload.emoji) not in EMOJI_TO_ROLES
+                or payload.message_id != guild.role_assignment_msg_id):
             return
         async with ut.RemoveReaction(self, payload):
             # Get the corresponding role name for the emoji
