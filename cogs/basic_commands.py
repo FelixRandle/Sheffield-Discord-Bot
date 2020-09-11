@@ -160,24 +160,41 @@ class BasicCommandsCog(commands.Cog):
         if not ctx.message.mentions:
             raise commands.errors.UserInputError(message="Please tag a user")
 
-        user = ctx.message.mentions[0]
+        discord_user = ctx.message.mentions[0]
 
-        join_date = ut.get_uk_time(user.joined_at).strftime(
+        if discord_user.bot:
+            return await ctx.send("I can't help you with information "
+                                  "about bots.")
+
+        user = User.find(discord_user.id)
+
+        if user is None:
+            return await ctx.send("I couldn't find that user in my database, "
+                                  "that's not supposed to happen...")
+
+        join_date = ut.get_uk_time(discord_user.joined_at).strftime(
             "%Y-%m-%d %H:%M:%S")
 
         user_roles = " ".join(role.mention if role.name != "@everyone" else ""
-                              for role in user.roles)
+                              for role in discord_user.roles)
 
-        embed = (discord.Embed(title=f"{user}", description=f"{user.mention}",
+        user = User.find(discord_user.id)
+
+        message_count = user.messages.count()
+
+        embed = (discord.Embed(title=f"{discord_user}",
+                               description=f"{discord_user.mention}",
                                color=discord.Color.blurple())
-                 .set_thumbnail(url=user.avatar_url)
+                 .set_thumbnail(url=discord_user.avatar_url)
                  .add_field(name="Joined At", value=join_date)
                  .add_field(name="Assigned Roles",
                             value=user_roles, inline=False)
-                 .set_footer(text=f"User ID: {user.id}"))
+                 .add_field(name="Message Count", value=message_count)
+                 .set_footer(text=f"User ID: {discord_user.id}"))
 
         for name, value_getter, inline in self._user_info:
-            embed.add_field(name=name, value=value_getter(user), inline=inline)
+            embed.add_field(name=name, value=value_getter(discord_user),
+                            inline=inline)
 
         await ctx.send(embed=embed)
 

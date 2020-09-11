@@ -37,10 +37,16 @@ if os.path.exists("./cogs"):
 # Tells Orator models which database to use
 Model.set_connection_resolver(db)
 
+
 @bot.event
 async def on_ready():
     """Run post-launch setup."""
     ut.log_info(f'{bot.user.name} has successfully connected to Discord!')
+
+    # Ensure all guilds are in the DB (In case we joined one while not running)
+
+    for guild in bot.guilds:
+        Guild.first_or_create(id=guild.id)
 
 
 @bot.event
@@ -55,6 +61,7 @@ async def on_guild_join(guild):
 
     Guild.first_or_create(
         id=guild.id, registering_id=registering_id, member_id=member_id)
+
 
 @bot.event
 async def on_member_join(member):

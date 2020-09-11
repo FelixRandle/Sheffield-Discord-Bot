@@ -6,9 +6,14 @@ An example cog to show how things should be done.
 Also provides a simple base for starting a new cog.
 """
 import time
-from discord.ext import commands
+import traceback
+from discord.ext import commands, tasks
 
+from cogs.basic_commands import BasicCommandsCog
 from models import Message
+from models.voice import Voice
+
+VOICE_CHECK_FREQUENCY = 10.0
 
 
 class LoggingCog(commands.Cog):
@@ -17,6 +22,22 @@ class LoggingCog(commands.Cog):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
+
+        self.voice_channel_check.start()
+
+        BasicCommandsCog.add_user_info("Voice Time", self.get_user_voice_time, True)
+
+    @staticmethod
+    def get_user_voice_time(user):
+        try:
+            time = Voice.where('user_id', user.id) \
+                .where('guild_id', user.guild.id).first().time
+            secs = time % 60
+            mins = time // 60 % 60
+            hrs = time // 60 // 60
+            return f"{hrs} Hours {mins} Minutes {secs} Seconds"
+        except AttributeError:
+            return "No Voice Time"
 
     @commands.Cog.listener('on_message')
     async def log_message_add(self, message):
@@ -105,6 +126,23 @@ class LoggingCog(commands.Cog):
     async def on_invite_delete(self, invite):
         # TODO Implement
         pass
+
+    @tasks.loop(seconds=VOICE_CHECK_FREQUENCY)
+    async def voice_channel_check(self):
+        """
+        Task loop that updates the time users have spent
+        in voice chat.
+        """
+
+        for guild in self.bot.guilds:
+            for channel in guild.voice_channels:
+                for member in channel.members:
+                    Voice.first_or_create(user_id=member.id,
+                                          guild_id=guild.id)
+
+                    Voice.where('user_id', member.id)\
+                        .where('guild_id', guild.id)\
+                        .increment('time', VOICE_CHECK_FREQUENCY)
 
 
 def setup(bot):
