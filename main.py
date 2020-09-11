@@ -80,7 +80,7 @@ async def on_member_join(member):
             'If you would like your logged messages to be'
             'removed for any reason, please contact <@247428233086238720>.'
         )
-    except:
+    except Exception:
         pass
     guild = Guild.find(member.guild.id)
 
