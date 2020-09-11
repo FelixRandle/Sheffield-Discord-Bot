@@ -62,23 +62,26 @@ async def on_member_join(member):
     if member.bot:
         return
 
-    await member.create_dm()
-    await member.dm_channel.send(
-        f'Hey {member.name}, welcome to the (unofficial) University of '
-        'Sheffield Computer Science Discord!\n'
-        'We like to know who we\'re talking to, so please change your '
-        'nickname on the server to include your real name in some way.\n'
-        'Apart from that, have fun on the server, get to know people and '
-        'feel free to ask any questions about the course that you may have, '
-        'we\'re all here to help each other!\n'
-        'Many thanks,\n'
-        'The Discord Server Admin Team\n\n'
-        'As a note, all messages that you send on the server are logged.\n'
-        'This is to help us in the case of messages that contain'
-        'offensive content and need to be reported.\n'
-        'If you would like your logged messages to be'
-        'removed for any reason, please contact <@247428233086238720>.'
-    )
+    try:  # Avoid throwing errors on users with friend-only DMs.
+        await member.create_dm()
+        await member.dm_channel.send(
+            f'Hey {member.name}, welcome to the (unofficial) University of '
+            'Sheffield Computer Science Discord!\n'
+            'We like to know who we\'re talking to, so please change your '
+            'nickname on the server to include your real name in some way.\n'
+            'Apart from that, have fun on the server, get to know people and '
+            'feel free to ask any questions about the course that you may have, '
+            'we\'re all here to help each other!\n'
+            'Many thanks,\n'
+            'The Discord Server Admin Team\n\n'
+            'As a note, all messages that you send on the server are logged.\n'
+            'This is to help us in the case of messages that contain'
+            'offensive content and need to be reported.\n'
+            'If you would like your logged messages to be'
+            'removed for any reason, please contact <@247428233086238720>.'
+        )
+    except:
+        pass
     guild = Guild.find(member.guild.id)
 
     User.first_or_create(id=member.id, guild_id=guild.id)
