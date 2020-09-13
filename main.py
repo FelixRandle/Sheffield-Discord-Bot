@@ -11,6 +11,7 @@ import os
 from discord.ext import commands
 from dotenv import load_dotenv
 from orator import Model
+import discord
 
 import utils as ut
 from database import db
@@ -80,7 +81,7 @@ async def on_member_join(member):
             'If you would like your logged messages to be'
             'removed for any reason, please contact <@247428233086238720>.'
         )
-    except Exception:
+    except discord.Forbidden:
         pass
     guild = Guild.find(member.guild.id)
 
