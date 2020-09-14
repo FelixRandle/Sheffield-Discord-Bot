@@ -29,11 +29,24 @@ if BOT_TOKEN is None:
 bot = commands.Bot(command_prefix="$", case_insensitive=True)
 
 # Load all of our cogs
-if os.path.exists("./cogs"):
-    for file in os.listdir("./cogs"):
-        if file.endswith(".py"):
-            bot.load_extension("cogs." + file[:-3])
-            ut.log_info(f"Loaded cog {file[:-3]}")
+# They are loaded in the order of this list,
+# At time of writing, `basic_commands` MUST come first for full functionality
+cogs = [
+    "basic_commands",
+    "logging",
+    "polls",
+    "private_channels",
+    "role_assignment",
+    "odds_on",
+    "example_cog"
+]
+
+for cog in cogs:
+    try:
+        bot.load_extension(f'cogs.{cog}')
+        ut.log_info(f'Loaded cog: {cog}')
+    except commands.errors.ExtensionNotFound:
+        ut.log_info(f'Failed to load cog: {cog}')
 
 # Tells Orator models which database to use
 Model.set_connection_resolver(db)
