@@ -66,14 +66,6 @@ class PollsCog(commands.Cog, name="Polls"):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
         self.poll_daemon.start()
-        BasicCommandsCog.add_user_info("Polls", self.get_user_poll_count, True)
-
-    @staticmethod
-    def get_user_poll_count(user):
-        try:
-            return User.find(user.id).polls.count()
-        except AttributeError:
-            return 0
 
     async def parse_time_as_delta(self, time: str):
         """
