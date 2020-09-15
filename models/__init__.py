@@ -4,3 +4,5 @@ from .message import Message
 from .poll import Poll
 from .poll_choice import PollChoice
 from .user import User
+from .role import Role
+from .voice import Voice
