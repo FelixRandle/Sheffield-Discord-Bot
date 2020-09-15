@@ -15,6 +15,7 @@ from discord.ext import commands
 BASEURL = 'https://api.urbandictionary.com/v0/'
 NEXT_DEFINITION = '➡️'
 EMBED_COLOUR = 0xcf1e25
+MAX_EMBED_VALUE_LENGTH = 1024
 
 
 class UrbanDictionaryCog(commands.Cog):
@@ -40,9 +41,11 @@ class UrbanDictionaryCog(commands.Cog):
 
             embed = discord.Embed(title="Defining...", color=EMBED_COLOUR)
 
-            embed.add_field(name='Word', value=word)
-            embed.add_field(name="Definition", value=definition)
-            embed.add_field(name='Example', value=example)
+            for name, value in [("Word", word),
+                    ("Definition", definition),
+                    ("Example", example)]:
+
+                self.add_field_embed(embed, name=name, value=value)
 
             if message is None:
                 message = await ctx.send(embed=embed)
@@ -58,6 +61,10 @@ class UrbanDictionaryCog(commands.Cog):
                 await message.delete()
                 break
             await reaction.remove(user)
+
+        # Add a field to the embed
+        def add_field_to_embed(self, embed: discord.Embed, *, name: str, value: str):
+            embed.add_field(name=name, value=value[:MAX_EMBED_VALUE_LENGTH])
 
     # Search a word the user types in
     async def search_query(self, querystring):
