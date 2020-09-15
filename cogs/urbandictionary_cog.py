@@ -42,8 +42,8 @@ class UrbanDictionaryCog(commands.Cog):
             embed = discord.Embed(title="Defining...", color=EMBED_COLOUR)
 
             for name, value in [("Word", word),
-                    ("Definition", definition),
-                    ("Example", example)]:
+                                ("Definition", definition),
+                                ("Example", example)]:
 
                 self.add_field_embed(embed, name=name, value=value)
 
@@ -63,7 +63,8 @@ class UrbanDictionaryCog(commands.Cog):
             await reaction.remove(user)
 
         # Add a field to the embed
-        def add_field_to_embed(self, embed: discord.Embed, *, name: str, value: str):
+        def add_field_to_embed(self, embed: discord.Embed,
+                               *, name: str, value: str):
             embed.add_field(name=name, value=value[:MAX_EMBED_VALUE_LENGTH])
 
     # Search a word the user types in
