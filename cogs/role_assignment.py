@@ -308,26 +308,20 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         Lists all possible roles a user can get
         """
 
-        found_roles = Role.where('guild_id', ctx.guild.id).get()
+        found_roles = Role.where('guild_id', ctx.guild.id)\
+            .where('is_locked', False).get()
 
-        roles = "\n".join([(f"~~{role.name}~~" if role.is_locked else role.name)
-                           for role in found_roles])
-
+        roles = "\n".join([role.name for role in found_roles])
 
         embed = Embed(title="Available Roles",
                       description="The following roles have been created by "
-                                  "users to allow for more specific tagging, roles that are crossed out are currently locked and cannot be assigned, new roles can be created by requesting the role",
+                                  "users to allow for more specific tagging, "
+                                  "new roles can be created by requesting "
+                                  "the role using the following command.\n"
+                                  "`$[getRole|iam|iama|gimme] <role_name>`",
                       color=0x71368a)
 
-        #embed.add_field(name="Roles", value=roles)
-        locked_roles = []
-        unlocked_roles = []
-
-        for role in found_roles:
-            locked_roles.append(role.name) if role.is_locked else unlocked_roles.append(role.name)
-
-        embed.add_field(name=":unlock:", value="\n".join(unlocked_roles))
-        embed.add_field(name=":lock:", value="\n".join(locked_roles))
+        embed.add_field(name="Roles", value=roles)
 
         await ctx.send(embed=embed)
 
