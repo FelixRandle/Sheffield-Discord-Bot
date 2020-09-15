@@ -179,7 +179,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             discord_guild = self.bot.get_guild(found_role.guild_id)
             discord_role = discord_guild.get_role(found_role.role_id)
 
-            result, reason = await ut.get_confirmation(
+            result, _ = await ut.get_confirmation(
                 ctx.channel, ctx.author, self.bot,
                 f"Are you sure you wish to delete the role `{role_name}`")
 
@@ -248,7 +248,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
                                f"`{role.name}`")
                 return
 
-        result, reason = await ut.get_confirmation(
+        result, _ = await ut.get_confirmation(
             ctx.channel, ctx.author, self.bot,
             "It looks like that role doesn't exist, "
             "would you like to create it?")
