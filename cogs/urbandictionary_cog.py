@@ -65,9 +65,10 @@ class UrbanDictionaryCog(commands.Cog):
     # Add a field to the embed
     def add_field_to_embed(self, embed: discord.Embed,
                            *, name: str, value: str):
-        value = value[:MAX_EMBED_VALUE_LENGTH-3] + "..." \
-                if len(value) > MAX_EMBED_VALUE_LENGTH \
-                else value
+        value = (value[:MAX_EMBED_VALUE_LENGTH-3] + "..."
+                 if len(value) > MAX_EMBED_VALUE_LENGTH
+                 else value)
+        embed.add_field(name=name, value=value)
 
     # Search a word the user types in
     async def search_query(self, querystring):
