@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 import utils as ut
-from models import User, Guild
+from models import User, Guild, Role
 
 
 class BasicCommandsCog(commands.Cog):
@@ -210,7 +210,14 @@ class BasicCommandsCog(commands.Cog):
     @commands.has_role("Member")
     async def server_info(self, ctx):
         guild = ctx.guild
-        guild_roles = " ".join(role.mention if role.name != "@everyone" else ""
+
+        custom_roles = [role.name for role in
+                        Role.where('guild_id', ctx.guild.id).get()]
+
+        custom_roles.append("@everyone")
+
+        guild_roles = " ".join(role.mention
+                               if role.name not in custom_roles else ""
                                for role in guild.roles)
 
         created_at = ut.get_uk_time(guild.created_at).strftime(
