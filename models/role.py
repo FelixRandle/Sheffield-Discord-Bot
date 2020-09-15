@@ -11,6 +11,6 @@ class Role(BaseModel):
         return User
 
     @belongs_to('guild_id')
-    def creator(self):
+    def guild(self):
         from .guild import Guild
         return Guild
