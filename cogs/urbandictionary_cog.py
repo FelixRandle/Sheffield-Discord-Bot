@@ -62,9 +62,10 @@ class UrbanDictionaryCog(commands.Cog):
                 break
             await reaction.remove(user)
 
-        # Add a field to the embed
-        def add_field_to_embed(self, embed, *, name: str, value: str):
-            embed.add_field(name=name, value=value[:MAX_EMBED_VALUE_LENGTH])
+    # Add a field to the embed
+    def add_field_to_embed(self, embed: discord.Embed,
+                           *, name: str, value: str):
+        embed.add_field(name=name, value=value[:MAX_EMBED_VALUE_LENGTH])
 
     # Search a word the user types in
     async def search_query(self, querystring):
