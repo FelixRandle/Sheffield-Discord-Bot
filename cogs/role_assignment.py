@@ -4,11 +4,11 @@
 """
 Cog for assigning roles to users
 """
+import random
 
 from discord import Colour, Embed
 from discord.ext import commands
 import Levenshtein as lev
-import random
 
 import utils as ut
 from models import Guild, Role
@@ -56,7 +56,7 @@ ROLE_COLOURS = [
     0xa84300,
     0xe74c3c,
     0x992d22,
-    0x7289da
+    0x7289da,
 ]
 
 
@@ -242,7 +242,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             return
 
         for role in ctx.guild.roles:
-            if lev.distance(role_name, role.name) <= 1:
+            if lev.distance(role_name.lower(), role.name.lower()) <= 1:
                 await ctx.send("That role does not exist but cannot be "
                                "created as it's name is too similar to "
                                f"`{role.name}`")
@@ -310,15 +310,24 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
 
         found_roles = Role.where('guild_id', ctx.guild.id).get()
 
-        roles = "\n".join([(":lock: " if role.is_locked else "") + role.name
+        roles = "\n".join([(f"~~{role.name}~~" if role.is_locked else role.name)
                            for role in found_roles])
+
 
         embed = Embed(title="Available Roles",
                       description="The following roles have been created by "
-                                  "users to allow for more specific tagging",
+                                  "users to allow for more specific tagging, roles that are crossed out are currently locked and cannot be assigned, new roles can be created by requesting the role",
                       color=0x71368a)
 
-        embed.add_field(name="Roles", value=roles)
+        #embed.add_field(name="Roles", value=roles)
+        locked_roles = []
+        unlocked_roles = []
+
+        for role in found_roles:
+            locked_roles.append(role.name) if role.is_locked else unlocked_roles.append(role.name)
+
+        embed.add_field(name=":unlock:", value="\n".join(unlocked_roles))
+        embed.add_field(name=":lock:", value="\n".join(locked_roles))
 
         await ctx.send(embed=embed)
 
@@ -328,3 +337,4 @@ def setup(bot):
     Add the cog to the bot
     """
     bot.add_cog(RoleAssignmentCog(bot))
+

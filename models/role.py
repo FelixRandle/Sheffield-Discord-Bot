@@ -5,7 +5,7 @@ from .base import BaseModel
 
 class Role(BaseModel):
 
-    @belongs_to('creator_by')
+    @belongs_to('created_by')
     def creator(self):
         from .user import User
         return User
