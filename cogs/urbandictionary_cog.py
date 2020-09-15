@@ -45,7 +45,7 @@ class UrbanDictionaryCog(commands.Cog):
                                 ("Definition", definition),
                                 ("Example", example)]:
 
-                self.add_field_embed(embed, name=name, value=value)
+                self.add_field_to_embed(embed, name=name, value=value)
 
             if message is None:
                 message = await ctx.send(embed=embed)
