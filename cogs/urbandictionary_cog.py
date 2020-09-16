@@ -65,6 +65,9 @@ class UrbanDictionaryCog(commands.Cog):
     # Add a field to the embed
     def add_field_to_embed(self, embed: discord.Embed,
                            *, name: str, value: str):
+        if not value:
+            value = "..."
+
         value = (value[:MAX_EMBED_VALUE_LENGTH - 3] + "..."
                  if len(value) > MAX_EMBED_VALUE_LENGTH
                  else value)
