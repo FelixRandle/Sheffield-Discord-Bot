@@ -298,33 +298,6 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             await ctx.send(f"I have removed the role `{role_name}` from you")
             return
 
-    @commands.command(
-        name="listRoles",
-        help="Takes the role from the issuing user",
-        aliases=["roles", "listallroles"])
-    @commands.has_role("Member")
-    async def list_roles(self, ctx):
-        """
-        Lists all possible roles a user can get
-        """
-
-        found_roles = Role.where('guild_id', ctx.guild.id)\
-            .where('is_locked', False).get()
-
-        roles = "\n".join([role.name for role in found_roles])
-
-        embed = Embed(title="Available Roles",
-                      description="The following roles have been created by "
-                                  "users to allow for more specific tagging, "
-                                  "new roles can be created by requesting "
-                                  "the role using the following command.\n"
-                                  "`$[getRole|iam|iama|gimme] <role_name>`",
-                      color=0x71368a)
-
-        embed.add_field(name="Roles", value=roles)
-
-        await ctx.send(embed=embed)
-
 
 def setup(bot):
     """
