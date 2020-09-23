@@ -123,7 +123,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         name="lockRole",
         help="Locks off a role, disallowing users to join it.")
     @commands.has_role("Admin")
-    async def lock_role(self, ctx, role_name):
+    async def lock_role(self, ctx, *, role_name):
         """
         Locks off the given role.
         """
@@ -145,7 +145,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         name="unlockRole",
         help="Unlocks a role, allowing users to join it.")
     @commands.has_role("Admin")
-    async def unlock_role(self, ctx, role_name):
+    async def unlock_role(self, ctx, *, role_name):
         """
         Unlocks the given role.
         """
@@ -168,7 +168,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         help="Deletes a role, removing it from all users and "
              "from the database.")
     @commands.has_role("Admin")
-    async def delete_role(self, ctx, role_name):
+    async def delete_role(self, ctx, *, role_name):
         """
         Deletes the given role.
         """
@@ -218,7 +218,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         help="Gives the issuing user a role",
         aliases=["iam", "iama", "gimme"])
     @commands.has_role("Member")
-    async def get_role(self, ctx, role_name):
+    async def get_role(self, ctx, *, role_name):
         """
         Gives the user the requested role if not locked..
         """
@@ -279,7 +279,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         help="Takes the role from the issuing user",
         aliases=["iamnot", "iamnota", "takie"])
     @commands.has_role("Member")
-    async def remove_role(self, ctx, role_name):
+    async def remove_role(self, ctx, *, role_name):
         """
         Removes the given role from the user.
         """
