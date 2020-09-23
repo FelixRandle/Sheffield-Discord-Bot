@@ -6,7 +6,7 @@ Cog for assigning roles to users
 """
 import random
 
-from discord import Colour, Embed
+from discord import Colour
 from discord.ext import commands
 import Levenshtein as lev
 
