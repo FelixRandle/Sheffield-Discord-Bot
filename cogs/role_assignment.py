@@ -6,9 +6,9 @@ Cog for assigning roles to users
 """
 import random
 
+import Levenshtein as lev
 from discord import Colour
 from discord.ext import commands
-import Levenshtein as lev
 
 import utils as ut
 from models import Guild, Role
