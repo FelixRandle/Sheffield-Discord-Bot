@@ -13,7 +13,7 @@ import utils as ut
 from discord.ext import commands
 
 
-PLAYLIST_LINK = "https://open.spotify.com/playlist/45ugA3rSKs5C9jpuC8ihva?si=kkSmsW1dQcmz2n0WRLbuAg"
+PLAYLIST_LINK = "https://open.spotify.com/playlist/45ugA3rSKs5C9jpuC8ihva"
 
 
 class VibinCog(commands.Cog, name="Vibin"):
