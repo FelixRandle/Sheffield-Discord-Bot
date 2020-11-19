@@ -76,8 +76,16 @@ def find_channel_by_name(
     guild: discord.Guild,
     channel_types: ChannelType = discord.TextChannel
 ) -> Optional[discord.abc.GuildChannel]:
+    """
+    Finds a channel within a guild by name. Name is case-insensitive.
+
+    Optionally specify type(s) that the channel.
+    """
     for channel in guild.channels:
-        if isinstance(channel, channel_types) and channel.name == name:
+        if (
+            isinstance(channel, channel_types)
+            and channel.name.lower() == name.lower()
+        ):
             return channel
 
 
@@ -85,8 +93,11 @@ def find_role_by_name(
     name: str,
     guild: discord.Guild,
 ) -> Optional[discord.Role]:
+    """
+    Finds a role within a guild by name. Name is case-insensitive.
+    """
     for role in guild.roles:
-        if role.name == name:
+        if role.name.lower() == name.lower():
             return role
 
 
