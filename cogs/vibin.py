@@ -54,8 +54,8 @@ class VibinCog(commands.Cog, name="Vibin"):
             for visibility, time in zip(
                 (True, False),
                 (
-                    now.replace(day=now.day, hour=22, minute=42, second=0),
-                    now.replace(day=now.day, hour=22, minute=43, second=0),
+                    now.replace(day=now.day, hour=1, minute=0, second=0),
+                    now.replace(day=now.day, hour=4, minute=0, second=0),
                 ),
             ):
                 now = dt.datetime.now()
