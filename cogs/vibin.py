@@ -26,17 +26,24 @@ class VibinCog(commands.Cog, name="Vibin"):
         guild: discord.Guild,
         visibility: bool,
     ):
-        channel = ut.find_channel_by_name("vibin", guild)
-        if channel is None:
+        text_channel = ut.find_channel_by_name("vibin", guild)
+        voice_channel = ut.find_channel_by_name(
+            "vibin", guild, channel_types=discord.VoiceChannel)
+        if text_channel is None or voice_channel is None:
             return
-        role = ut.find_role_by_name("Member", guild)
-        if role is None:
+        member_role = ut.find_role_by_name("Member", guild)
+        if member_role is None:
             return
-        await channel.set_permissions(role, read_messages=visibility)
+        await text_channel.set_permissions(member_role, read_messages=visibility)
+        await voice_channel.set_permissions(member_role, view_channel=visibility)
         if visibility:
-            await channel.purge(limit=10000)
-            msg = await channel.send(PLAYLIST_LINK)
+            # Clear the text channel and send playlist link
+            await text_channel.purge(limit=10000)
+            msg = await text_channel.send(PLAYLIST_LINK)
             await msg.pin()
+        else:
+            for member in voice_channel.members:
+                await member.move_to(None)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -45,8 +52,8 @@ class VibinCog(commands.Cog, name="Vibin"):
             for visibility, time in zip(
                 (True, False),
                 (
-                    now.replace(day=now.day, hour=1, minute=0, second=0),
-                    now.replace(day=now.day, hour=4, minute=0, second=0),
+                    now.replace(day=now.day, hour=22, minute=42, second=0),
+                    now.replace(day=now.day, hour=22, minute=43, second=0),
                 ),
             ):
                 now = dt.datetime.now()
