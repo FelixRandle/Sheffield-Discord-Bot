@@ -34,8 +34,10 @@ class VibinCog(commands.Cog, name="Vibin"):
         member_role = ut.find_role_by_name("Member", guild)
         if member_role is None:
             return
-        await text_channel.set_permissions(member_role, read_messages=visibility)
-        await voice_channel.set_permissions(member_role, view_channel=visibility)
+        await text_channel.set_permissions(
+            member_role, read_messages=visibility)
+        await voice_channel.set_permissions(
+            member_role, view_channel=visibility)
         if visibility:
             # Clear the text channel and send playlist link
             await text_channel.purge(limit=10000)
