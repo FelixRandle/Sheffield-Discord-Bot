@@ -14,6 +14,8 @@ from discord.ext import commands
 
 
 PLAYLIST_LINK = "https://open.spotify.com/playlist/45ugA3rSKs5C9jpuC8ihva"
+START_TIME = dt.time(hour=1, minute=0, second=0)
+END_TIME = dt.time(hour=4, minute=0, second=0)
 
 
 class VibinCog(commands.Cog, name="Vibin"):
@@ -21,48 +23,49 @@ class VibinCog(commands.Cog, name="Vibin"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def change_vibin(
+    async def change_vibin_at(
         self,
-        guild: discord.Guild,
+        time: dt.time,
         visibility: bool,
     ):
-        text_channel = ut.find_channel_by_name("vibin", guild)
-        voice_channel = ut.find_channel_by_name(
-            "vibin", guild, channel_types=discord.VoiceChannel)
-        if text_channel is None or voice_channel is None:
-            return
-        member_role = ut.find_role_by_name("Member", guild)
-        if member_role is None:
-            return
-        await text_channel.set_permissions(
-            member_role, read_messages=visibility)
-        await voice_channel.set_permissions(
-            member_role, view_channel=visibility)
-        if visibility:
-            # Clear the text channel and send playlist link
-            await text_channel.purge(limit=10000)
-            msg = await text_channel.send(PLAYLIST_LINK)
-            await msg.pin()
-        else:
-            for member in voice_channel.members:
-                await member.move_to(None)
+        now = dt.datetime.now()
+        next_time = now.replace(
+            hour=time.hour, minute=time.minute, second=time.second)
+        delay = (next_time - now).total_seconds() % 86400
+        await asyncio.sleep(delay)
+        for guild in self.bot.guilds:
+            text_channel = ut.find_channel_by_name("vibin", guild)
+            voice_channel = ut.find_channel_by_name(
+                "vibin", guild, channel_types=discord.VoiceChannel)
+            if text_channel is None or voice_channel is None:
+                return
+            member_role = ut.find_role_by_name("Member", guild)
+            if member_role is None:
+                return
+            await text_channel.set_permissions(
+                member_role, read_messages=visibility)
+            await voice_channel.set_permissions(
+                member_role, view_channel=visibility)
+            if visibility:
+                # Clear the text channel and send playlist link
+                await text_channel.purge(limit=10000)
+                msg = await text_channel.send(PLAYLIST_LINK)
+                await msg.pin()
+            else:
+                for member in voice_channel.members:
+                    await member.move_to(None)
 
     @commands.Cog.listener()
     async def on_ready(self):
+        first_loop = True
         while True:
-            now = dt.datetime.now()
-            for visibility, time in zip(
-                (True, False),
-                (
-                    now.replace(day=now.day, hour=1, minute=0, second=0),
-                    now.replace(day=now.day, hour=4, minute=0, second=0),
-                ),
+            if (
+                not first_loop
+                or not START_TIME <= dt.datetime.now().time() <= END_TIME
             ):
-                now = dt.datetime.now()
-                delay = (time - now).total_seconds() % 86400
-                await asyncio.sleep(delay)
-                for guild in self.bot.guilds:
-                    await self.change_vibin(guild, visibility)
+                await self.change_vibin_at(START_TIME, True)
+                first_loop = False
+            await self.change_vibin_at(END_TIME, False)
 
 
 def setup(bot: commands.Bot):
