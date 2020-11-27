@@ -16,6 +16,17 @@ class BasicCommandsCog(commands.Cog):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
+    @commands.command(
+            name="fuckYou")
+    @commands.has_role("A fuck to give")
+    async def fuck_you(self, ctx):
+        await ctx.send("Fuck you <@472002587135311872>")
+        await ctx.send("Fuck you <@389070189020577793>")
+    
+    @commands.command(
+            name="fuckFelix")
+    async def fuck_felix(self, ctx):
+        await ctx.send("Buy me dinner first, jeez")
 
     @commands.command(
         name="updateUsers",

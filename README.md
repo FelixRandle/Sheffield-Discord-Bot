@@ -8,11 +8,7 @@
  William Lee
  
  ## Requirements
-*discord.py==1.3.3*
-*pytz==2020.1*
-*orator==0.9.9*
-*python-dotenv==0.13.0*
-*mysqlclient==1.4.6*
+Up to date list can be found in requirements.txt
 
  
 Recommended method of installing
