@@ -38,7 +38,8 @@ cogs = [
     "private_channels",
     "role_assignment",
     "odds_on",
-    "example_cog"
+    "example_cog",
+    "christmas"
 ]
 
 for cog in cogs:
