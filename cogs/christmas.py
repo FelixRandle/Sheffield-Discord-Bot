@@ -21,6 +21,13 @@ class ChristmasCog(commands.Cog):
         if self.christmas_mode:
             await message.add_reaction(u"🎄")
 
+    @commands.command(
+        name="christmasMode",
+        help="Enables christmas mode")
+    async def toggle_christmas_mode(self, ctx):
+        self.christmas_mode = not self.christmas_mode
+        await ctx.send("Toggled christmas mode!")
+
 
 def setup(bot):
     """
