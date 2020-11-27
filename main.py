@@ -39,6 +39,7 @@ cogs = [
     "role_assignment",
     "odds_on",
     "example_cog",
+    "christmas",
     "vibin",
     "urbandictionary_cog"
 ]
