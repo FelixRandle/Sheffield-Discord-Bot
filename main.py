@@ -40,6 +40,8 @@ cogs = [
     "odds_on",
     "example_cog",
     "christmas"
+    "vibin",
+    "urbandictionary_cog"
 ]
 
 for cog in cogs:

@@ -8,7 +8,9 @@ import asyncio
 import datetime
 import os
 import re
+from typing import Optional, Tuple, Union
 
+import discord
 from pytz import timezone
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
@@ -63,6 +65,40 @@ def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
         return get_utc_time().astimezone(tz)
 
     return utc_time.astimezone(tz)
+
+
+ChannelType = Union[discord.abc.GuildChannel,
+                    Tuple[discord.abc.GuildChannel, ...]]
+
+
+def find_channel_by_name(
+    name: str,
+    guild: discord.Guild,
+    channel_types: ChannelType = discord.TextChannel
+) -> Optional[discord.abc.GuildChannel]:
+    """
+    Finds a channel within a guild by name. Name is case-insensitive.
+
+    Optionally specify type(s) that the channel.
+    """
+    for channel in guild.channels:
+        if (
+            isinstance(channel, channel_types)
+            and channel.name.lower() == name.lower()
+        ):
+            return channel
+
+
+def find_role_by_name(
+    name: str,
+    guild: discord.Guild,
+) -> Optional[discord.Role]:
+    """
+    Finds a role within a guild by name. Name is case-insensitive.
+    """
+    for role in guild.roles:
+        if role.name.lower() == name.lower():
+            return role
 
 
 class RemoveReaction:
