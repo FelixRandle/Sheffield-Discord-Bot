@@ -24,6 +24,7 @@ class ChristmasCog(commands.Cog):
     @commands.command(
         name="christmasMode",
         help="Enables christmas mode")
+    @commands.has_role("Admin")
     async def toggle_christmas_mode(self, ctx):
         self.christmas_mode = not self.christmas_mode
         await ctx.send("Toggled christmas mode!")
