@@ -25,7 +25,7 @@ class DuplicateNameCog(commands.Cog):
         # Also check they weren't just updated, just so we don't end up
         # with infinite loops.
         if (
-            after.nick and before.nick != after.nick
+            before.nick and after.nick and before.nick != after.nick
             and before not in self.ignore_users
         ):
             # Loop over each member
@@ -45,8 +45,8 @@ class DuplicateNameCog(commands.Cog):
                     await after.send("Someone else appears to have that "
                                      "nickname already, we like being able to "
                                      "distinguish people so please try "
-                                     "something else, even just a "
-                                     "single character")
+                                     "to change to something else, even just "
+                                     "adding a single character")
 
 
 def setup(bot):
