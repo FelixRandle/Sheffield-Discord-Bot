@@ -51,10 +51,10 @@ class ChristmasCog(commands.Cog):
                                 else "o" for _ in range(i)])
                        .center(line_width) + "\n")
 
-        for leg in range(3):
+        for _leg in range(3):
             output += ("| |".center(line_width) + "\n")
 
-        output += ("\=====/".center(line_width) + "\n")
+        output += ("\=====/".center(line_width) + "\n")  # noqa: W605
         output += "```"
         await ctx.send(output)
 
