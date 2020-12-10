@@ -5,6 +5,8 @@ A christmas cog to be festive and shit
 
 Also provides a simple base for starting a new cog.
 """
+from random import random
+
 from discord.ext import commands
 
 
@@ -28,6 +30,33 @@ class ChristmasCog(commands.Cog):
     async def toggle_christmas_mode(self, ctx):
         self.christmas_mode = not self.christmas_mode
         await ctx.send("Toggled christmas mode!")
+
+    @commands.command(
+        name="christmasTree",
+        help="Produces a lovely christmas tree"
+    )
+    async def christmas_tree(self, ctx,
+                             tree_size: int = 10,
+                             bauble_probability: float = 0.2):
+        """
+        Creates a christmas tree and outputs it to the context's channel
+        :param ctx: Context the command was sent in
+        :param tree_size: Height of the tree
+        :param bauble_probability: Probability of a point being a bauble
+        """
+        output = "```gherkin\n"
+        line_width = 2 * tree_size
+        for i in range(1, line_width, 2):
+            output += ("".join(["*" if random() > bauble_probability
+                                else "o" for _ in range(i)])
+                       .center(line_width) + "\n")
+
+        for leg in range(3):
+            output += ("| |".center(line_width) + "\n")
+
+        output += ("\=====/".center(line_width) + "\n")
+        output += "```"
+        await ctx.send(output)
 
 
 def setup(bot):
