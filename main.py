@@ -37,21 +37,19 @@ bot = commands.Bot(
     intents=bot_intents
 )
 
-# Load all of our cogs
-# They are loaded in the order of this list,
-# At time of writing, `basic_commands` MUST come first for full functionality
+# Set cogs that require loading in a specific order
+# They will be loaded in the order of the list, followed by all
+# other cogs in the /cogs folder
 cogs = [
-    "basic_commands",
-    "logging",
-    "polls",
-    "private_channels",
-    "role_assignment",
-    "odds_on",
-    "example_cog",
-    "christmas",
-    "vibin",
-    "urbandictionary_cog"
+    "basic_commands"
 ]
+
+if os.path.exists("./cogs"):
+    for file in os.listdir("./cogs"):
+        if file.endswith(".py"):
+            cog_name = file[:-3]
+            if cog_name not in cogs:
+                cogs.append(cog_name)
 
 for cog in cogs:
     try:
