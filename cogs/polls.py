@@ -407,7 +407,8 @@ class PollsCog(commands.Cog, name="Polls"):
     def after_poll_daemon_end(self, fut):
         error = fut.exception()
         if error:
-            traceback.print_exception(type(error), error, error.__traceback__)
+            ut.log("Error occurred during poll daemon shutdown",
+                   ut.LogLevel.WARNING, error)
 
     @commands.Cog.listener('on_raw_reaction_add')
     async def on_poll_react(self, payload):

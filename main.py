@@ -54,9 +54,9 @@ if os.path.exists("./cogs"):
 for cog in cogs:
     try:
         bot.load_extension(f'cogs.{cog}')
-        ut.log_info(f'Loaded cog: {cog}')
+        ut.log(f'Loaded cog: {cog}')
     except commands.errors.ExtensionNotFound:
-        ut.log_info(f'Failed to load cog: {cog}')
+        ut.log(f'Failed to load cog: {cog}')
 
 # Tells Orator models which database to use
 Model.set_connection_resolver(db)
@@ -65,7 +65,7 @@ Model.set_connection_resolver(db)
 @bot.event
 async def on_ready():
     """Run post-launch setup."""
-    ut.log_info(f'{bot.user.name} has successfully connected to Discord!')
+    ut.log(f'{bot.user.name} has successfully connected to Discord!')
 
     # Ensure all guilds are in the DB (In case we joined one while not running)
 
@@ -173,7 +173,8 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send("Error running command. "
                        "Please try again later or contact an administrator.")
-        ut.log_error(error)
+        ut.log("An unhandled error occured whilst a command was run",
+               ut.LogLevel.WARNING, error)
 
 
 async def add_role(member, role_id):
@@ -188,5 +189,5 @@ async def remove_role(member, role_id):
         await member.remove_roles(role)
 
 # Start the bot
-ut.log_info("Starting bot...")
+ut.log("Starting bot...")
 bot.run(BOT_TOKEN)

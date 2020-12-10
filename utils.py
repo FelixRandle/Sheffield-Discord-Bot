@@ -6,12 +6,40 @@ Utility commands to be used throughout the cogs
 
 import asyncio
 import datetime
-import os
+import sys
 import re
+from types import TracebackType
 from typing import Optional, Tuple, Union
+import traceback as tb
 
 import discord
 from pytz import timezone
+
+from enum import Enum
+
+
+class LogLevel(Enum):
+    INFO = 1
+    WARNING = 2
+    ERROR = 3
+
+
+def log(message, level=LogLevel.INFO, error=None):
+    if level is LogLevel.INFO:
+        # Do basic output
+        print(message)
+        if error:
+            tb.print_exception(type(error), error, error.__traceback__)
+    else:
+        # Do output, but more warny
+        print(message, file=sys.stderr)
+        if error:
+            tb.print_exception(type(error), error, error.__traceback__,
+                               file=sys.stderr)
+
+        if level is LogLevel.ERROR:
+            print("Critical error above, exiting program", file=sys.stderr)
+            raise SystemExit
 
 
 # Create a regex for finding id's within messages
@@ -127,15 +155,3 @@ def is_admin(user):
             return True
 
     return False
-
-
-def log_error(error):
-    # At some point, I want to perform different operations here between
-    # Production and development.
-    raise Exception from error
-
-
-def log_info(message):
-    # Again, at some point this will be different between production and
-    # Development.
-    print(message)
