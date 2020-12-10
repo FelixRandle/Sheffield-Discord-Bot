@@ -58,7 +58,7 @@ SHOW_POLLS_EMOJI = (
 
 
 class PollsCog(commands.Cog, name="Polls"):
-    """Class for polls cog"""
+    """Create polls in the server."""
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""

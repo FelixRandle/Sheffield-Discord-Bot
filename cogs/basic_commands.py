@@ -9,7 +9,7 @@ from models import User, Guild, Role
 
 
 class BasicCommandsCog(commands.Cog):
-    """Create a class that extends Cog to make our functionality in."""
+    """Basic server commands."""
     _user_info = []
     _server_info = []
 

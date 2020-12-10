@@ -12,6 +12,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from orator import Model
 import discord
+from pretty_help import PrettyHelp
 
 import utils as ut
 from database import db
@@ -34,7 +35,8 @@ bot_intents.typing = False
 bot = commands.Bot(
     command_prefix="$",
     case_insensitive=True,
-    intents=bot_intents
+    intents=bot_intents,
+    help_command=PrettyHelp()
 )
 
 # Set cogs that require loading in a specific order

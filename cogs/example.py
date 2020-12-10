@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 An example cog to show how things should be done.
 
@@ -11,7 +11,7 @@ from discord.ext import commands
 
 
 class ExampleCog(commands.Cog):
-    """Create a class that extends Cog to make our functionality in."""
+    """The ping to your pong"""
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""

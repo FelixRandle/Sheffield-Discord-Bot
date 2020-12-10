@@ -70,6 +70,7 @@ async def search_random_word():
 
 
 class UrbanDictionaryCog(commands.Cog):
+    """Get definitions of words straight from Urban Dictionary."""
 
     def __init__(self, bot):
         self.bot = bot

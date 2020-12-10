@@ -59,6 +59,7 @@ ROLE_COLOURS = [
 
 
 class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
+    """Give yourself whatever role you want."""
 
     def __init__(self, bot):
         """

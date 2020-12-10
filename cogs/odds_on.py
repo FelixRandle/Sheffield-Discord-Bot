@@ -13,7 +13,7 @@ from discord.ext import commands
 
 
 class OddsOnCog(commands.Cog):
-    """Create a class that extends Cog to make our functionality in."""
+    """Play Odds On against other users."""
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
