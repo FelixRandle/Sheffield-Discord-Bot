@@ -8,7 +8,6 @@ import asyncio
 import datetime
 import sys
 import re
-from types import TracebackType
 from typing import Optional, Tuple, Union
 import traceback as tb
 
