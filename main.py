@@ -25,8 +25,17 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if BOT_TOKEN is None:
     raise Exception("Cannot find required bot token.")
 
+# Set our bot's intents
+bot_intents = discord.Intents.default()
+bot_intents.members = True
+bot_intents.typing = False
+
 # Set our bot's prefix to $. This must be typed before any command
-bot = commands.Bot(command_prefix="$", case_insensitive=True)
+bot = commands.Bot(
+    command_prefix="$",
+    case_insensitive=True,
+    intents=bot_intents
+)
 
 # Load all of our cogs
 # They are loaded in the order of this list,
