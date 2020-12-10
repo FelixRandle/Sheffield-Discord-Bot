@@ -10,11 +10,10 @@ import sys
 import re
 from typing import Optional, Tuple, Union
 import traceback as tb
+from enum import Enum
 
 import discord
 from pytz import timezone
-
-from enum import Enum
 
 
 class LogLevel(Enum):

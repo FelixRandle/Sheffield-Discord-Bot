@@ -10,13 +10,11 @@ Author: William Lee
 import asyncio
 import datetime
 import re
-import traceback
 
 import discord
 from discord.ext import commands, tasks
 
 import utils as ut
-from cogs.basic_commands import BasicCommandsCog
 from models import User, Poll, PollChoice
 
 # Regex from extracting time from format 00h00m00s
@@ -284,7 +282,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
     async def create_poll_embed(self, title, end_date: datetime.datetime,
-                                ended, choices=[]):
+                                ended):
         if ended:
             description = (
                 "Poll has now ended\n"

@@ -9,7 +9,6 @@ Also provides a simple base for starting a new cog.
 import discord
 from discord.ext import commands
 
-import database as db
 from models import Channel
 
 

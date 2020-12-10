@@ -11,8 +11,6 @@ import asyncio
 import discord
 from discord.ext import commands
 
-import utils as ut
-
 
 class OddsOnCog(commands.Cog):
     """Create a class that extends Cog to make our functionality in."""
@@ -25,7 +23,7 @@ class OddsOnCog(commands.Cog):
         name="oddsOn",
         help="Let's you play Odds On against other members")
     @commands.has_role("Member")
-    async def odds_on(self, ctx, role, *, wager: str):
+    async def odds_on(self, ctx, *, wager: str):
         """
         Challenge a user to odds on
 
