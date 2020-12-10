@@ -89,7 +89,7 @@ class UrbanDictionaryCog(commands.Cog):
         counter = 0
         message = None
 
-        if len(definitions) is 0:
+        if len(definitions) == 0:
             embed = discord.Embed(color=EMBED_COLOUR)
             embed.add_field(
                 name="Error",
