@@ -9,12 +9,11 @@ Also provides a simple base for starting a new cog.
 import discord
 from discord.ext import commands
 
-import database as db
 from models import Channel
 
 
 class PrivateChannels(commands.Cog):
-    """Create a class that extends Cog to make our functionality in."""
+    """Create your own private channels."""
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""

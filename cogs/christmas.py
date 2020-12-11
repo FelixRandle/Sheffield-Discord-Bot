@@ -11,7 +11,7 @@ from discord.ext import commands
 
 
 class ChristmasCog(commands.Cog):
-    """Create a class that extends Cog to make our functionality in."""
+    """Festive commands for the server."""
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""

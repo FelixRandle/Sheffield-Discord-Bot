@@ -59,6 +59,7 @@ ROLE_COLOURS = [
 
 
 class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
+    """Give yourself whatever role you want."""
 
     def __init__(self, bot):
         """
@@ -185,7 +186,8 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
                 try:
                     await discord_role.delete()
                 except AttributeError:
-                    ut.log_info(f"Role `{role_name}` was deleted incorrectly")
+                    ut.log(f"Role `{role_name}` was deleted incorrectly",
+                           ut.LogLevel.WARNING)
                 finally:
                     found_role.delete()
                 await ctx.send(f"Successfully deleted the role `{role_name}`")

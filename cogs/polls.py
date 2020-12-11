@@ -10,13 +10,11 @@ Author: William Lee
 import asyncio
 import datetime
 import re
-import traceback
 
 import discord
 from discord.ext import commands, tasks
 
 import utils as ut
-from cogs.basic_commands import BasicCommandsCog
 from models import User, Poll, PollChoice
 
 # Regex from extracting time from format 00h00m00s
@@ -60,7 +58,7 @@ SHOW_POLLS_EMOJI = (
 
 
 class PollsCog(commands.Cog, name="Polls"):
-    """Class for polls cog"""
+    """Create polls in the server."""
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
@@ -284,7 +282,7 @@ class PollsCog(commands.Cog, name="Polls"):
             return
 
     async def create_poll_embed(self, title, end_date: datetime.datetime,
-                                ended, choices=[]):
+                                ended):
         if ended:
             description = (
                 "Poll has now ended\n"
@@ -407,7 +405,8 @@ class PollsCog(commands.Cog, name="Polls"):
     def after_poll_daemon_end(self, fut):
         error = fut.exception()
         if error:
-            traceback.print_exception(type(error), error, error.__traceback__)
+            ut.log("Error occurred during poll daemon shutdown",
+                   ut.LogLevel.WARNING, error)
 
     @commands.Cog.listener('on_raw_reaction_add')
     async def on_poll_react(self, payload):

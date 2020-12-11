@@ -9,20 +9,21 @@ from models import User, Guild, Role
 
 
 class BasicCommandsCog(commands.Cog):
-    """Create a class that extends Cog to make our functionality in."""
+    """Basic server commands."""
     _user_info = []
     _server_info = []
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
+
     @commands.command(
             name="fuckYou")
     @commands.has_role("A fuck to give")
     async def fuck_you(self, ctx):
         await ctx.send("Fuck you <@472002587135311872>")
         await ctx.send("Fuck you <@389070189020577793>")
-    
+
     @commands.command(
             name="fuckFelix")
     async def fuck_felix(self, ctx):
@@ -49,7 +50,7 @@ class BasicCommandsCog(commands.Cog):
         name="setRegistering",
         help="Sets the role assigned to new members of the guild")
     @commands.has_role("Admin")
-    async def set_registering_role(self, ctx, role_id):
+    async def set_registering_role(self, ctx):
         """
         Updates the registeringID for the guild.
 
@@ -79,7 +80,7 @@ class BasicCommandsCog(commands.Cog):
         name="setMember",
         help="Sets the role assigned to registered members of the guild")
     @commands.has_role("Admin")
-    async def set_member_role(self, ctx, role_id):
+    async def set_member_role(self, ctx):
         """
         Updates the memberID for the guild.
 
@@ -217,6 +218,7 @@ class BasicCommandsCog(commands.Cog):
 
     @commands.command(
         name="serverinfo",
+        aliases=["server"],
         help="Gives you information about the current server")
     @commands.has_role("Member")
     async def server_info(self, ctx):

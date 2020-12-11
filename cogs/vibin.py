@@ -19,6 +19,7 @@ END_TIME = dt.time(hour=4, minute=0, second=0)
 
 
 class VibinCog(commands.Cog, name="Vibin"):
+    """Vibe."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
