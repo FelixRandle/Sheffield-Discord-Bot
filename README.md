@@ -1,5 +1,7 @@
 # Sheffield-Discord-Bot
 
+![GPL-3.0 license badge](https://img.shields.io/github/license/FelixRandle/Sheffield-Discord-Bot)
+
 Discord bot created for the (unofficial) University of Sheffield Computer Science server.
 
 Main Author:
