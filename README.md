@@ -1,5 +1,10 @@
 # Sheffield-Discord-Bot
 
+![Python 3.6+ badge](https://img.shields.io/badge/python-3.6%2B-blue)
+![Code quality badge](https://img.shields.io/codefactor/grade/github/FelixRandle/Sheffield-Discord-Bot/master)
+![GitHub issues badge](https://img.shields.io/github/issues/FelixRandle/Sheffield-Discord-Bot)
+![GitHub forks badge](https://img.shields.io/github/forks/FelixRandle/Sheffield-Discord-Bot)
+![GitHub stars badge](https://img.shields.io/github/stars/FelixRandle/Sheffield-Discord-Bot)
 ![GPL-3.0 license badge](https://img.shields.io/github/license/FelixRandle/Sheffield-Discord-Bot)
 
 Discord bot created for the (unofficial) University of Sheffield Computer Science server.
