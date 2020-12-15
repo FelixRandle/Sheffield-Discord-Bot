@@ -6,6 +6,7 @@
 ![GitHub forks badge](https://img.shields.io/github/forks/FelixRandle/Sheffield-Discord-Bot)
 ![GitHub stars badge](https://img.shields.io/github/stars/FelixRandle/Sheffield-Discord-Bot)
 ![GPL-3.0 license badge](https://img.shields.io/github/license/FelixRandle/Sheffield-Discord-Bot)
+![Discord server status badge](https://img.shields.io/discord/612377874787336212)
 
 Discord bot created for the (unofficial) University of Sheffield Computer Science server.
 
