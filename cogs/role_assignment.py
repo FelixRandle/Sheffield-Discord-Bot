@@ -296,6 +296,10 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
                 return
             await ctx.author.remove_roles(discord_role)
             await ctx.send(f"I have removed the role `{role_name}` from you")
+
+            if len(discord_role.members) < 1:
+                await ctx.send("I have also deleted the role since it is no longer used by anyone.")
+                await discord_role.delete()
             return
 
 
