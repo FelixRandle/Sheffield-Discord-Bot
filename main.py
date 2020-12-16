@@ -21,6 +21,7 @@ from models import Guild
 # Tells Orator models which database to use
 Model.set_connection_resolver(db)
 
+
 def load_environment():
     # We must load env variables in order to retrieve the bot token
     load_dotenv()
@@ -30,6 +31,7 @@ def load_environment():
     if token is None:
         ut.log("Cannot find required bot token.", ut.LogLevel.ERROR)
     return token
+
 
 # Set our bot's intents
 bot_intents = discord.Intents.default()
@@ -43,6 +45,7 @@ bot = commands.Bot(
     intents=bot_intents,
     help_command=PrettyHelp()
 )
+
 
 def load_cogs():
     # Set cogs that require loading in a specific order
@@ -65,6 +68,7 @@ def load_cogs():
             ut.log(f'Loaded cog: {cog}')
         except commands.errors.ExtensionNotFound:
             ut.log(f'Failed to load cog: {cog}')
+
 
 @bot.event
 async def on_ready():

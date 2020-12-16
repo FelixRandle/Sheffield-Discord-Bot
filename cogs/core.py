@@ -17,7 +17,6 @@ class CoreCog(commands.Cog):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
 
-
     @commands.Cog.listener("on_guild_join")
     async def on_guild_join(self, guild):
         registering_id = None
@@ -40,16 +39,19 @@ class CoreCog(commands.Cog):
         try:  # Avoid throwing errors on users with friend-only DMs.
             await member.create_dm()
             await member.dm_channel.send(
-                f'Hey {member.name}, welcome to the (unofficial) University of '
-                'Sheffield Computer Science Discord!\n'
+                f'Hey {member.name}, welcome to the (unofficial) University '
+                f'of Sheffield Computer Science Discord!\n'
                 'We like to know who we\'re talking to, so please change your '
-                'nickname on the server to include your real name in some way.\n'
-                'Apart from that, have fun on the server, get to know people and '
-                'feel free to ask any questions about the course that you may have, '
+                'nickname on the server to include your real name '
+                'in some way.\n'
+                'Apart from that, have fun on the server, get to know '
+                'people and feel free to ask any questions about the course '
+                'that you may have, '
                 'we\'re all here to help each other!\n'
                 'Many thanks,\n'
                 'The Discord Server Admin Team\n\n'
-                'As a note, all messages that you send on the server are logged.\n'
+                'As a note, all messages that you send '
+                'on the server are logged.\n'
                 'This is to help us in the case of messages that contain'
                 'offensive content and need to be reported.\n'
                 'If you would like your logged messages to be'
@@ -64,7 +66,6 @@ class CoreCog(commands.Cog):
         role_id = guild.registering_id
         await ut.add_role(member, role_id)
 
-
     @commands.Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
@@ -73,7 +74,8 @@ class CoreCog(commands.Cog):
         guild = Guild.find(payload.guild_id)
         expected_id = guild.welcome_message_id
         if payload.message_id == expected_id:
-            message = await payload.member.guild.get_channel(payload.channel_id) \
+            message = await payload.member.guild \
+                .get_channel(payload.channel_id) \
                 .fetch_message(payload.message_id)
             await message.remove_reaction(payload.emoji, payload.member)
             if payload.emoji.name == u"\u2705":
@@ -104,7 +106,9 @@ class CoreCog(commands.Cog):
                 User.first_or_create(id=member.id, guild_id=ctx.guild.id)
                 added_count += 1
 
-        await ctx.send(f"Added {added_count} new {'users' if added_count != 1 else 'user'} to database!")
+        await ctx.send(f"Added {added_count} new "
+                       f"{'users' if added_count != 1 else 'user'} "
+                       "to database!")
 
     @commands.command(
         name="setRegistering",

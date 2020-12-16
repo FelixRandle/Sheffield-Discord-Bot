@@ -227,9 +227,9 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             .where('guild_id', ctx.guild.id).first()
         if found_role:
             if found_role.is_locked:
-                await ctx.send("That custom role is currently locked and cannot be "
-                               "assigned, if you believe this is an error "
-                               "please contact an Admin")
+                await ctx.send("That custom role is currently locked and "
+                               "cannot assigned, if you believe this is an "
+                               "error then please contact an Admin")
                 return
             discord_guild = self.bot.get_guild(found_role.guild_id)
             discord_role = discord_guild.get_role(found_role.role_id)
@@ -238,14 +238,15 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
                                "please contact an admin")
                 return
             await ctx.author.add_roles(discord_role)
-            await ctx.send(f"You have been given the custom role `{role_name}`")
+            await ctx.send("You have been given the custom role "
+                           f"`{role_name}`")
             return
 
         for role in ctx.guild.roles:
             if lev.distance(role_name.lower(), role.name.lower()) <= 1:
                 await ctx.send("That custom role does not exist but cannot be "
-                               "created as it's name is too similar to the pre-existing role "
-                               f"`{role.name}`")
+                               "created as it's name is too similar to the "
+                               f"pre-existing role `{role.name}`")
                 return
 
         result, _ = await ut.get_confirmation(
@@ -298,7 +299,8 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             await ctx.send(f"I have removed the role `{role_name}` from you")
 
             if len(discord_role.members) < 1:
-                await ctx.send("I have also deleted the custom role since it is no longer used by anyone.")
+                await ctx.send("I have also deleted the custom role since it "
+                               "is no longer used by anyone.")
                 await discord_role.delete()
             return
 

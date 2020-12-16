@@ -154,6 +154,7 @@ def is_admin(user):
 
     return False
 
+
 async def add_role(member, role_id):
     role = member.guild.get_role(role_id)
     if role:
