@@ -24,7 +24,7 @@ class LoggingCog(commands.Cog):
         self.voice_channel_check.start()
 
         CoreCog.add_user_info("Voice Time", self.get_user_voice_time,
-                                       True)
+                              True)
 
     @staticmethod
     def get_user_voice_time(user):
