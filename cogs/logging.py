@@ -7,7 +7,7 @@ Also provides a simple base for starting a new cog.
 """
 from discord.ext import commands, tasks
 
-from cogs.basic_commands import BasicCommandsCog
+from cogs.core import CoreCog
 from models import Message
 from models.voice import Voice
 
@@ -23,8 +23,8 @@ class LoggingCog(commands.Cog):
 
         self.voice_channel_check.start()
 
-        BasicCommandsCog.add_user_info("Voice Time", self.get_user_voice_time,
-                                       True)
+        CoreCog.add_user_info("Voice Time", self.get_user_voice_time,
+                              True)
 
     @staticmethod
     def get_user_voice_time(user):

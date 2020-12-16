@@ -44,6 +44,10 @@ class ChristmasCog(commands.Cog):
         :param tree_size: Height of the tree
         :param bauble_probability: Probability of a point being a bauble
         """
+        # Limit tree size to stop errors and unintended behaviour.
+        tree_size = max(min(tree_size, 29), 5)
+
+        # Generate our tree
         output = "```gherkin\n"
         line_width = 2 * tree_size
         for i in range(1, line_width, 2):

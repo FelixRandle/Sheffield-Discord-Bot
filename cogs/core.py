@@ -8,7 +8,7 @@ import utils as ut
 from models import User, Guild, Role
 
 
-class BasicCommandsCog(commands.Cog):
+class CoreCog(commands.Cog):
     """Basic server commands."""
     _user_info = []
     _server_info = []
@@ -17,17 +17,77 @@ class BasicCommandsCog(commands.Cog):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
 
-    @commands.command(
-            name="fuckYou")
-    @commands.has_role("A fuck to give")
-    async def fuck_you(self, ctx):
-        await ctx.send("Fuck you <@472002587135311872>")
-        await ctx.send("Fuck you <@389070189020577793>")
+    @commands.Cog.listener("on_guild_join")
+    async def on_guild_join(self, guild):
+        registering_id = None
+        member_id = None
+        for role in guild.roles:
+            if role.name.lower() == "registering":
+                registering_id = role.id
+            if role.name.lower() == "member":
+                member_id = role.id
 
-    @commands.command(
-            name="fuckFelix")
-    async def fuck_felix(self, ctx):
-        await ctx.send("Buy me dinner first, jeez")
+        Guild.first_or_create(
+            id=guild.id, registering_id=registering_id, member_id=member_id)
+
+    @commands.Cog.listener("on_member_join")
+    async def on_member_join(self, member):
+        """Send user a welcome message."""
+        if member.bot:
+            return
+
+        try:  # Avoid throwing errors on users with friend-only DMs.
+            await member.create_dm()
+            await member.dm_channel.send(
+                f'Hey {member.name}, welcome to the (unofficial) University '
+                f'of Sheffield Computer Science Discord!\n'
+                'We like to know who we\'re talking to, so please change your '
+                'nickname on the server to include your real name '
+                'in some way.\n'
+                'Apart from that, have fun on the server, get to know '
+                'people and feel free to ask any questions about the course '
+                'that you may have, '
+                'we\'re all here to help each other!\n'
+                'Many thanks,\n'
+                'The Discord Server Admin Team\n\n'
+                'As a note, all messages that you send '
+                'on the server are logged.\n'
+                'This is to help us in the case of messages that contain'
+                'offensive content and need to be reported.\n'
+                'If you would like your logged messages to be'
+                'removed for any reason, please contact <@247428233086238720>.'
+            )
+        except discord.Forbidden:
+            pass
+        guild = Guild.find(member.guild.id)
+
+        User.first_or_create(id=member.id, guild_id=guild.id)
+
+        role_id = guild.registering_id
+        await ut.add_role(member, role_id)
+
+    @commands.Cog.listener("on_raw_reaction_add")
+    async def on_raw_reaction_add(self, payload):
+        if payload.member.bot:
+            return
+
+        guild = Guild.find(payload.guild_id)
+        expected_id = guild.welcome_message_id
+        if payload.message_id == expected_id:
+            message = await payload.member.guild \
+                .get_channel(payload.channel_id) \
+                .fetch_message(payload.message_id)
+            await message.remove_reaction(payload.emoji, payload.member)
+            if payload.emoji.name == u"\u2705":
+                registering_id = guild.registering_id
+                member_id = guild.member_id
+
+                await ut.add_role(payload.member, member_id)
+                await ut.remove_role(payload.member, registering_id)
+
+            elif payload.emoji.name == u"\u274E":
+                await payload.member.guild.kick(payload.member,
+                                                reason="Rejected T's&C's")
 
     @commands.command(
         name="updateUsers",
@@ -40,11 +100,15 @@ class BasicCommandsCog(commands.Cog):
         This command adds some help text and also required that the user
         have the Member role, this is case-sensitive.
         """
+        added_count = 0
         for member in ctx.guild.members:
             if not member.bot:
                 User.first_or_create(id=member.id, guild_id=ctx.guild.id)
+                added_count += 1
 
-        await ctx.send("Added all users to database!")
+        await ctx.send(f"Added {added_count} new "
+                       f"{'users' if added_count != 1 else 'user'} "
+                       "to database!")
 
     @commands.command(
         name="setRegistering",
@@ -271,4 +335,4 @@ def setup(bot):
     This function is necessary for every cog file, multiple classes in the
     same file all need adding and each file must have their own setup function.
     """
-    bot.add_cog(BasicCommandsCog(bot))
+    bot.add_cog(CoreCog(bot))
