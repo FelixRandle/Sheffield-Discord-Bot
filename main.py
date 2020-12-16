@@ -16,15 +16,20 @@ from pretty_help import PrettyHelp
 
 import utils as ut
 from database import db
-from models import Guild, User
+from models import Guild
 
-# We must load env variables in order to retrieve the bot token
-load_dotenv()
+# Tells Orator models which database to use
+Model.set_connection_resolver(db)
 
-# Load our login details from environment variables and check they are set
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-if BOT_TOKEN is None:
-    raise Exception("Cannot find required bot token.")
+def load_environment():
+    # We must load env variables in order to retrieve the bot token
+    load_dotenv()
+
+    # Load our login details from environment variables and check they are set
+    token = os.getenv("BOT_TOKEN")
+    if token is None:
+        ut.log("Cannot find required bot token.", ut.LogLevel.ERROR)
+    return token
 
 # Set our bot's intents
 bot_intents = discord.Intents.default()
@@ -39,30 +44,27 @@ bot = commands.Bot(
     help_command=PrettyHelp()
 )
 
-# Set cogs that require loading in a specific order
-# They will be loaded in the order of the list, followed by all
-# other cogs in the /cogs folder
-cogs = [
-    "basic_commands"
-]
+def load_cogs():
+    # Set cogs that require loading in a specific order
+    # They will be loaded in the order of the list, followed by all
+    # other cogs in the /cogs folder
+    cogs = [
+        "core"
+    ]
 
-if os.path.exists("./cogs"):
-    for file in os.listdir("./cogs"):
-        if file.endswith(".py"):
-            cog_name = file[:-3]
-            if cog_name not in cogs:
-                cogs.append(cog_name)
+    if os.path.exists("./cogs"):
+        for file in os.listdir("./cogs"):
+            if file.endswith(".py"):
+                cog_name = file[:-3]
+                if cog_name not in cogs:
+                    cogs.append(cog_name)
 
-for cog in cogs:
-    try:
-        bot.load_extension(f'cogs.{cog}')
-        ut.log(f'Loaded cog: {cog}')
-    except commands.errors.ExtensionNotFound:
-        ut.log(f'Failed to load cog: {cog}')
-
-# Tells Orator models which database to use
-Model.set_connection_resolver(db)
-
+    for cog in cogs:
+        try:
+            bot.load_extension(f'cogs.{cog}')
+            ut.log(f'Loaded cog: {cog}')
+        except commands.errors.ExtensionNotFound:
+            ut.log(f'Failed to load cog: {cog}')
 
 @bot.event
 async def on_ready():
@@ -73,77 +75,6 @@ async def on_ready():
 
     for guild in bot.guilds:
         Guild.first_or_create(id=guild.id)
-
-
-@bot.event
-async def on_guild_join(guild):
-    registering_id = None
-    member_id = None
-    for role in guild.roles:
-        if role.name.lower() == "registering":
-            registering_id = role.id
-        if role.name.lower() == "member":
-            member_id = role.id
-
-    Guild.first_or_create(
-        id=guild.id, registering_id=registering_id, member_id=member_id)
-
-
-@bot.event
-async def on_member_join(member):
-    """Send user a welcome message."""
-    if member.bot:
-        return
-
-    try:  # Avoid throwing errors on users with friend-only DMs.
-        await member.create_dm()
-        await member.dm_channel.send(
-            f'Hey {member.name}, welcome to the (unofficial) University of '
-            'Sheffield Computer Science Discord!\n'
-            'We like to know who we\'re talking to, so please change your '
-            'nickname on the server to include your real name in some way.\n'
-            'Apart from that, have fun on the server, get to know people and '
-            'feel free to ask any questions about the course that you may have, '
-            'we\'re all here to help each other!\n'
-            'Many thanks,\n'
-            'The Discord Server Admin Team\n\n'
-            'As a note, all messages that you send on the server are logged.\n'
-            'This is to help us in the case of messages that contain'
-            'offensive content and need to be reported.\n'
-            'If you would like your logged messages to be'
-            'removed for any reason, please contact <@247428233086238720>.'
-        )
-    except discord.Forbidden:
-        pass
-    guild = Guild.find(member.guild.id)
-
-    User.first_or_create(id=member.id, guild_id=guild.id)
-
-    role_id = guild.registering_id
-    await add_role(member, role_id)
-
-
-@bot.event
-async def on_raw_reaction_add(payload):
-    if payload.member.bot:
-        return
-
-    guild = Guild.find(payload.guild_id)
-    expected_id = guild.welcome_message_id
-    if payload.message_id == expected_id:
-        message = await payload.member.guild.get_channel(payload.channel_id)\
-            .fetch_message(payload.message_id)
-        await message.remove_reaction(payload.emoji, payload.member)
-        if payload.emoji.name == u"\u2705":
-            registering_id = guild.registering_id
-            member_id = guild.member_id
-
-            await add_role(payload.member, member_id)
-            await remove_role(payload.member, registering_id)
-
-        elif payload.emoji.name == u"\u274E":
-            await payload.member.guild.kick(payload.member,
-                                            reason="Rejected T's&C's")
 
 
 # Implement errors from
@@ -178,18 +109,9 @@ async def on_command_error(ctx, error):
         ut.log("An unhandled error occured whilst a command was run",
                ut.LogLevel.WARNING, error)
 
-
-async def add_role(member, role_id):
-    role = member.guild.get_role(role_id)
-    if role:
-        await member.add_roles(role)
-
-
-async def remove_role(member, role_id):
-    role = member.guild.get_role(role_id)
-    if role:
-        await member.remove_roles(role)
-
-# Start the bot
-ut.log("Starting bot...")
-bot.run(BOT_TOKEN)
+if __name__ == '__main__':
+    bot_token = load_environment()
+    load_cogs()
+    # Start the bot
+    ut.log("Starting bot...")
+    bot.run(bot_token)
