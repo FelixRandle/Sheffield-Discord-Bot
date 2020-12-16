@@ -215,42 +215,42 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
 
     @commands.command(
         name="getRole",
-        help="Gives the issuing user a role",
+        help="Gives the issuing user a custom role",
         aliases=["iam", "iama", "gimme"])
     @commands.has_role("Member")
     async def get_role(self, ctx, *, role_name):
         """
-        Gives the user the requested role if not locked..
+        Gives the user the requested custom role if not locked..
         """
 
         found_role = Role.where('name', role_name)\
             .where('guild_id', ctx.guild.id).first()
         if found_role:
             if found_role.is_locked:
-                await ctx.send("That role is currently locked and cannot be "
+                await ctx.send("That custom role is currently locked and cannot be "
                                "assigned, if you believe this is an error "
                                "please contact an Admin")
                 return
             discord_guild = self.bot.get_guild(found_role.guild_id)
             discord_role = discord_guild.get_role(found_role.role_id)
             if discord_role is None:
-                await ctx.send("That role appears to be broken, "
+                await ctx.send("That custom role appears to be broken, "
                                "please contact an admin")
                 return
             await ctx.author.add_roles(discord_role)
-            await ctx.send(f"You have been given the role `{role_name}`")
+            await ctx.send(f"You have been given the custom role `{role_name}`")
             return
 
         for role in ctx.guild.roles:
             if lev.distance(role_name.lower(), role.name.lower()) <= 1:
-                await ctx.send("That role does not exist but cannot be "
-                               "created as it's name is too similar to "
+                await ctx.send("That custom role does not exist but cannot be "
+                               "created as it's name is too similar to the pre-existing role "
                                f"`{role.name}`")
                 return
 
         result, _ = await ut.get_confirmation(
             ctx.channel, ctx.author, self.bot,
-            "It looks like that role doesn't exist, "
+            "It looks like that custom role doesn't exist, "
             "would you like to create it?")
 
         if result:
@@ -276,7 +276,7 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
 
     @commands.command(
         name="removeRole",
-        help="Takes the role from the issuing user",
+        help="Takes the custom role from the issuing user",
         aliases=["iamnot", "iamnota", "takie"])
     @commands.has_role("Member")
     async def remove_role(self, ctx, *, role_name):
@@ -291,14 +291,14 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
             discord_guild = self.bot.get_guild(found_role.guild_id)
             discord_role = discord_guild.get_role(found_role.role_id)
             if discord_role is None:
-                await ctx.send("That role appears to be broken, "
+                await ctx.send("That custom role appears to be broken, "
                                "please contact an admin")
                 return
             await ctx.author.remove_roles(discord_role)
             await ctx.send(f"I have removed the role `{role_name}` from you")
 
             if len(discord_role.members) < 1:
-                await ctx.send("I have also deleted the role since it is no longer used by anyone.")
+                await ctx.send("I have also deleted the custom role since it is no longer used by anyone.")
                 await discord_role.delete()
             return
 
