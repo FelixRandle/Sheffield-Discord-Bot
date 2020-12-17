@@ -5,14 +5,13 @@
 An extension for providing message-related statistics
 """
 
-import re
 import datetime as dt
+import os
+import re
 
+import discord
 import matplotlib.pyplot as plt
-# In this case, discord import is not needed, in some cases it may be.
-# import discord
 from discord.ext import commands
-
 
 EMOJI_REGEX = re.compile(
     "["
@@ -47,6 +46,7 @@ class StatsCog(commands.Cog, name="Statistics"):
 
         The graph is deleted after being successfully sent
         """
+
         if not ctx.message.channel_mentions:
             channel = ctx.channel
         else:
@@ -58,33 +58,57 @@ class StatsCog(commands.Cog, name="Statistics"):
         today = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
         dates = []
+        dates_ticks = []
         message_nums = []
 
         # Calculates the oldest day to look at
         date = today - dt.timedelta(days=days - 1)
 
-        for _ in range(days):
-            # Adds the date label
-            dates.append(date.strftime("%Y-%m-%d"))
+        with ctx.typing():
+            for _ in range(days):
+                # Adds the date label
+                date_str = date.strftime("%Y-%m-%d")
+                if date.weekday() == 0:
+                    dates_ticks.append(date_str)
+                dates.append(date_str)
 
-            # Retrieves the history of messages
-            history = channel.history(
-                limit=None,
-                after=date,
-                before=(
-                    date
-                    + dt.timedelta(days=1)
-                    - dt.timedelta(microseconds=1)
+                # Retrieves the history of messages
+                history = channel.history(
+                    limit=None,
+                    after=date,
+                    before=(
+                        date
+                        + dt.timedelta(days=1)
+                        - dt.timedelta(microseconds=1)
+                    )
                 )
-            )
-            # Finds the number of messages in it
-            num_messages = 0
-            async for _ in history:
-                num_messages += 1
+                # Finds the number of messages in it
+                num_messages = 0
+                async for _ in history:
+                    num_messages += 1
 
-            message_nums.append(num_messages)
+                message_nums.append(num_messages)
+                date += dt.timedelta(days=1)
 
-            date += dt.timedelta(days=1)
+        plt.figure()
+        plt.plot(dates, message_nums)
+        plt.title(
+            f"Number of messages sent to #{EMOJI_REGEX.sub('', channel.name)} "
+            f"in the past {days} days")
+        plt.xlabel("Date")
+        plt.ylabel("Number of messages")
+        plt.xticks(dates_ticks, rotation=90)
+
+        filename = f"{ctx.message.id}.png"
+        plt.savefig(filename, bbox_inches="tight")
+
+        try:
+            with open(filename, "rb") as f:
+                file = discord.File(f)
+                await ctx.send(file=file)
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
 
 
 def setup(bot):
