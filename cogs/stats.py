@@ -30,14 +30,14 @@ class StatsCog(commands.Cog, name="Statistics"):
         self.bot = bot
 
     @commands.command(
-        name="historyGraph",
+        name="msgFreqGraph",
         help=(
             "Creates a graph of message frequency within a given timeframe. "
             "Defaults to messages in the last 30 days in the current channel"
         )
     )
     @commands.has_role("Member")
-    async def history_graph(self, ctx, channel=None, days: int = 30):
+    async def message_frequency_graph(self, ctx, channel=None, days: int = 30):
         """
         A command that generates a graph of message frequency against date.
 
