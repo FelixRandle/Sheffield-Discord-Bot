@@ -101,13 +101,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         filename = f"{ctx.message.id}.png"
         plt.savefig(filename, bbox_inches="tight")
 
-        try:
-            with open(filename, "rb") as f:
-                file = discord.File(f)
-                await ctx.send(file=file)
-        finally:
-            if os.path.exists(filename):
-                os.remove(filename)
+        await ut.send_and_delete_file(ctx, filename)
 
 
 def setup(bot):

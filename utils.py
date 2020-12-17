@@ -6,6 +6,7 @@ Utility commands to be used throughout the cogs
 
 import asyncio
 import datetime
+import os
 import re
 import sys
 import traceback as tb
@@ -182,3 +183,18 @@ def demojify(s: str):
     Removes emojis from the given string
     """
     return EMOJI_REGEX.sub("", s)
+
+
+async def send_and_delete_file(messageable: discord.abc.Messageable,
+                               filename: str):
+    """
+    Sends a file specified by the file to the messageable,
+    and deletes the file regardless of message success
+    """
+    try:
+        with open(filename, "rb") as f:
+            file = discord.File(f)
+            await messageable.send(file=file)
+    finally:
+        if os.path.exists(filename):
+            os.remove(filename)
