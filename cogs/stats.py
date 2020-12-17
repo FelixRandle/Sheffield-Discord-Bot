@@ -58,18 +58,16 @@ class StatsCog(commands.Cog, name="Statistics"):
         today = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
         dates = []
-        dates_ticks = []
         message_nums = []
 
         # Calculates the oldest day to look at
-        date = today - dt.timedelta(days=days - 1)
+        oldest_day = today - dt.timedelta(days=days - 1)
 
+        date = oldest_day
         with ctx.typing():
             for _ in range(days):
                 # Adds the date label
                 date_str = date.strftime("%Y-%m-%d")
-                if date.weekday() == 0:
-                    dates_ticks.append(date_str)
                 dates.append(date_str)
 
                 # Retrieves the history of messages
@@ -90,6 +88,16 @@ class StatsCog(commands.Cog, name="Statistics"):
                 message_nums.append(num_messages)
                 date += dt.timedelta(days=1)
 
+        # Sets x-axis interval: 7 days if days < 60 otherwise 14 days
+        interval = dt.timedelta(days=14 if days >= 60 else 7)
+        date_ticks = []
+        last_monday = today - dt.timedelta(days=today.weekday())
+
+        date = last_monday
+        while date >= oldest_day:
+            date_ticks.insert(0, date.strftime("%Y-%m-%d"))
+            date -= interval
+
         plt.figure()
         plt.plot(dates, message_nums)
         plt.title(
@@ -97,7 +105,7 @@ class StatsCog(commands.Cog, name="Statistics"):
             f"in the past {days} days")
         plt.xlabel("Date")
         plt.ylabel("Number of messages")
-        plt.xticks(dates_ticks, rotation=90)
+        plt.xticks(date_ticks, rotation=90)
 
         filename = f"{ctx.message.id}.png"
         plt.savefig(filename, bbox_inches="tight")
