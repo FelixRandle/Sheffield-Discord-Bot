@@ -7,21 +7,12 @@ An extension for providing message-related statistics
 
 import datetime as dt
 import os
-import re
 
 import discord
 import matplotlib.pyplot as plt
 from discord.ext import commands
 
-EMOJI_REGEX = re.compile(
-    "["
-    "\U0001F600-\U0001F64F"  # emoticons
-    "\U0001F300-\U0001F5FF"  # symbols & pictographs
-    "\U0001F680-\U0001F6FF"  # transport & map symbols
-    "\U0001F1E0-\U0001F1FF"  # flags (iOS)
-    "]+",
-    flags=re.UNICODE,
-)
+import utils as ut
 
 
 class StatsCog(commands.Cog, name="Statistics"):
@@ -101,7 +92,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         plt.figure()
         plt.plot(dates, message_nums)
         plt.title(
-            f"Number of messages sent to #{EMOJI_REGEX.sub('', channel.name)} "
+            f"Number of messages sent to #{ut.demojify(channel.name)} "
             f"in the past {days} days")
         plt.xlabel("Date")
         plt.ylabel("Number of messages")
