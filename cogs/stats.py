@@ -37,7 +37,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         )
     )
     @commands.has_role("Member")
-    async def historyGraph(self, ctx, channel=None, days: int = 30):
+    async def history_graph(self, ctx, channel=None, days: int = 30):
         """
         A command that generates a graph of message frequency against date.
 
