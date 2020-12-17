@@ -64,7 +64,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         oldest_day = today - dt.timedelta(days=days - 1)
 
         date = oldest_day
-        with ctx.typing():
+        async with ctx.typing():
             for _ in range(days):
                 # Adds the date label
                 date_str = date.strftime("%Y-%m-%d")
