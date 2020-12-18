@@ -103,12 +103,11 @@ class StatsCog(commands.Cog, name="Statistics"):
         await ut.send_and_delete_file(ctx, filename)
 
     @commands.command(
-        name="memberMsgActivity",
-        help=("Shows a visualisation of members and the messages "
+        name="channelSummary",
+        help=("Shows a visualisation of members and the number of messages "
               "they've sent in a channel."))
     @commands.has_role("Member")
-    async def member_message_activity(self, ctx, limit: int = 100,
-                                      channel=None):
+    async def channel_summary(self, ctx, limit: int = 100, channel=None):
         if not ctx.message.channel_mentions:
             channel = ctx.channel
         else:
