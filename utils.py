@@ -6,14 +6,25 @@ Utility commands to be used throughout the cogs
 
 import asyncio
 import datetime
-import sys
+import os
 import re
-from typing import Optional, Tuple, Union
+import sys
 import traceback as tb
 from enum import Enum
+from typing import Optional, Tuple, Union
 
 import discord
 from pytz import timezone
+
+EMOJI_REGEX = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"  # emoticons
+    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+    "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+    "]+",
+    flags=re.UNICODE,
+)
 
 
 class LogLevel(Enum):
@@ -165,3 +176,25 @@ async def remove_role(member, role_id):
     role = member.guild.get_role(role_id)
     if role:
         await member.remove_roles(role)
+
+
+def demojify(s: str):
+    """
+    Removes emojis from the given string
+    """
+    return EMOJI_REGEX.sub("", s)
+
+
+async def send_and_delete_file(messageable: discord.abc.Messageable,
+                               filename: str):
+    """
+    Sends a file specified by the file to the messageable,
+    and deletes the file regardless of message success
+    """
+    try:
+        with open(filename, "rb") as f:
+            file = discord.File(f)
+            await messageable.send(file=file)
+    finally:
+        if os.path.exists(filename):
+            os.remove(filename)
