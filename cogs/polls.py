@@ -402,11 +402,10 @@ class PollsCog(commands.Cog, name="Polls"):
         # Waits until the bot is ready before starting the task loop
         await self.bot.wait_until_ready()
 
-    def after_poll_daemon_end(self, fut):
-        error = fut.exception()
-        if error:
-            ut.log("Error occurred during poll daemon shutdown",
-                   ut.LogLevel.WARNING, error)
+    @poll_daemon.error
+    async def on_poll_daemon_error(self, error):
+        ut.log("Error occurred during poll daemon shutdown",
+               ut.LogLevel.WARNING, error)
 
     @commands.Cog.listener('on_raw_reaction_add')
     async def on_poll_react(self, payload):
