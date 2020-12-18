@@ -6,10 +6,11 @@ An example cog to show how things should be done.
 Also provides a simple base for starting a new cog.
 """
 from discord.ext import commands, tasks
+from orator.exceptions.query import QueryException
 
+import utils as ut
 from cogs.core import CoreCog
-from models import Message
-from models.voice import Voice
+from models import Message, User, Voice
 
 VOICE_CHECK_FREQUENCY = 10.0
 
@@ -27,10 +28,10 @@ class LoggingCog(commands.Cog):
                               True)
 
     @staticmethod
-    def get_user_voice_time(user):
+    def get_user_voice_time(member):
         try:
-            time = Voice.where('user_id', user.id) \
-                .where('guild_id', user.guild.id).first().time
+            time = Voice.where('user_id', member.id) \
+                .where('guild_id', member.guild.id).first().time
             secs = time % 60
             mins = time // 60 % 60
             hrs = time // 60 // 60
@@ -43,8 +44,18 @@ class LoggingCog(commands.Cog):
         if message.author.bot:
             return
 
-        Message.create(id=message.id, author_id=message.author.id,
-                       content=message.content)
+        try:
+            # Ensure user exists in the guild.
+            User.first_or_create(id=message.author.id,
+                                 guild_id=message.guild.id)
+
+            # Add the message to the database.
+            Message.create(id=message.id, author_id=message.author.id,
+                           content=message.content)
+        except QueryException:
+            ut.log(f"Failed to add message '{message.content}' for user "
+                   f"{message.author.id} in guild {message.guild.id}",
+                   ut.LogLevel.WARNING)
 
     @commands.Cog.listener('on_message_delete')
     async def on_message_delete(self, message):
@@ -136,12 +147,21 @@ class LoggingCog(commands.Cog):
         for guild in self.bot.guilds:
             for channel in guild.voice_channels:
                 for member in channel.members:
-                    Voice.first_or_create(user_id=member.id,
-                                          guild_id=guild.id)
+                    # Ensure our user exists on the guild
+                    try:
+                        User.first_or_create(id=member.id,
+                                             guild_id=member.guild.id)
 
-                    Voice.where('user_id', member.id)\
-                        .where('guild_id', guild.id)\
-                        .increment('time', VOICE_CHECK_FREQUENCY)
+                        Voice.first_or_create(user_id=member.id,
+                                              guild_id=guild.id)
+
+                        Voice.where('user_id', member.id)\
+                            .where('guild_id', guild.id)\
+                            .increment('time', VOICE_CHECK_FREQUENCY)
+                    except QueryException:
+                        ut.log(f"Failed to insert user '{member.id}', "
+                               f"guild '{guild.id}' voice time.",
+                               ut.LogLevel.WARNING)
 
 
 def setup(bot):
