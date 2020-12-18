@@ -46,7 +46,8 @@ class LoggingCog(commands.Cog):
 
         try:
             # Ensure user exists in the guild.
-            User.first_or_create(id=message.author.id, guild_id=message.guild.id)
+            User.first_or_create(id=message.author.id,
+                                 guild_id=message.guild.id)
 
             # Add the message to the database.
             Message.create(id=message.id, author_id=message.author.id,
@@ -148,7 +149,8 @@ class LoggingCog(commands.Cog):
                 for member in channel.members:
                     # Ensure our user exists on the guild
                     try:
-                        User.first_or_create(id=member.id, guild_id=member.guild.id)
+                        User.first_or_create(id=member.id,
+                                             guild_id=member.guild.id)
 
                         Voice.first_or_create(user_id=member.id,
                                               guild_id=guild.id)
