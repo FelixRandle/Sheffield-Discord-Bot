@@ -6,13 +6,12 @@ An extension for providing message-related statistics
 """
 
 import datetime as dt
-import os
+import random
 
-import discord
 import matplotlib.pyplot as plt
-from discord.ext import commands
-
 import utils as ut
+from discord.ext import commands
+from matplotlib.patches import Rectangle
 
 
 class StatsCog(commands.Cog, name="Statistics"):
@@ -97,6 +96,69 @@ class StatsCog(commands.Cog, name="Statistics"):
         plt.xlabel("Date")
         plt.ylabel("Number of messages")
         plt.xticks(date_ticks, rotation=90)
+
+        filename = f"{ctx.message.id}.png"
+        plt.savefig(filename, bbox_inches="tight")
+
+        await ut.send_and_delete_file(ctx, filename)
+
+    @commands.command(
+        name="memberMsgActivity",
+        help=("Shows a visualisation of members and the messages "
+              "they've sent in a channel."))
+    @commands.has_role("Member")
+    async def member_message_activity(self, ctx, channel=None,
+                                      limit: int = 100):
+        if not ctx.message.channel_mentions:
+            channel = ctx.channel
+        else:
+            channel = ctx.message.channel_mentions[0]
+
+        # Maps members to a tuple of RGB floats
+        member_to_message_count = {}
+        member_to_color = {}
+
+        async with ctx.typing():
+            async for msg in channel.history(limit=limit):
+                if msg.author not in member_to_color:
+                    new_color = [random.random() for _ in range(3)]
+                    member_to_color[msg.author] = new_color
+                else:
+                    color = member_to_color[msg.author]
+
+                member_to_message_count.setdefault(msg.author, 0)
+                member_to_message_count[msg.author] += 1
+
+        plt.figure(ctx.message.id)
+
+        ax = plt.gca()
+        x = 0
+        artist_members = []
+
+        member_to_message_count = {
+            k: v
+            for (k, v)
+            in sorted(
+                member_to_message_count.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )
+        }
+
+        for member, count in member_to_message_count.items():
+            color = member_to_color[member]
+            rect = Rectangle((x, 0), count, 1, facecolor=color, fill=True)
+            ax.add_patch(rect)
+            x += count
+            artist_members.append((rect, member))
+        plt.xlim(0, x)
+        ax.axes.xaxis.set_visible(False)
+        ax.axes.yaxis.set_visible(False)
+
+        plt.title(
+            "Visualisation of members' message activity "
+            f"in #{ut.demojify(channel.name)}, using last {limit} messages")
+        plt.legend(*(zip(*artist_members)))
 
         filename = f"{ctx.message.id}.png"
         plt.savefig(filename, bbox_inches="tight")
