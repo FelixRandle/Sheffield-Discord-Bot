@@ -144,7 +144,9 @@ class StatsCog(commands.Cog, name="Statistics"):
         plt.title(
             "Visualisation of members' message activity "
             f"in #{ut.demojify(channel.name)}, using last {limit} messages")
-        plt.legend(*zip(*[(v, k) for k, v in member_to_artist.items()]))
+        plt.legend(
+            *zip(*[(v, k) for k, v in member_to_artist.items()]),
+            loc="upper left")
 
         filename = f"{ctx.message.id}.png"
         plt.savefig(filename, bbox_inches="tight")
