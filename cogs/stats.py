@@ -103,6 +103,55 @@ class StatsCog(commands.Cog, name="Statistics"):
         await ut.send_and_delete_file(ctx, filename)
 
     @commands.command(
+        name="channelHistory",
+        help=("Shows a visualisation of a channel's history "
+              "by which member sent those messages"))
+    @commands.has_role("Member")
+    async def channel_history(self, ctx, limit: int = 500, channel=None):
+        if not ctx.message.channel_mentions:
+            channel = ctx.channel
+        else:
+            channel = ctx.message.channel_mentions[0]
+
+        # Maps members to a tuple of RGB floats
+        history = []
+        member_to_color = {}
+
+        async with ctx.typing():
+            async for msg in channel.history(limit=limit):
+                if msg.author not in member_to_color:
+                    new_color = [random.random() for _ in range(3)]
+                    member_to_color[msg.author] = new_color
+                else:
+                    color = member_to_color[msg.author]
+                history.append(msg.author)
+
+        plt.figure(ctx.message.id)
+
+        ax = plt.gca()
+        x = 0
+        member_to_artist = {}
+
+        for member in history:
+            color = member_to_color[member]
+            line = plt.axvline(x, color=color)
+            if member not in member_to_artist:
+                member_to_artist[member] = line
+            x += 1
+        ax.axes.xaxis.set_visible(False)
+        ax.axes.yaxis.set_visible(False)
+
+        plt.title(
+            "Visualisation of members' message activity "
+            f"in #{ut.demojify(channel.name)}, using last {limit} messages")
+        plt.legend(*zip(*[(v, k) for k, v in member_to_artist.items()]))
+
+        filename = f"{ctx.message.id}.png"
+        plt.savefig(filename, bbox_inches="tight")
+
+        await ut.send_and_delete_file(ctx, filename)
+
+    @commands.command(
         name="channelSummary",
         help=("Shows a visualisation of members and the number of messages "
               "they've sent in a channel."))
