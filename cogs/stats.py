@@ -27,7 +27,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         )
     )
     @commands.has_role("Member")
-    async def channel_activity(self, ctx, channel=None, days: int = 30):
+    async def channel_activity(self, ctx, days: int = 30, channel=None):
         """
         A command that generates a graph of message frequency against date.
 
@@ -107,8 +107,8 @@ class StatsCog(commands.Cog, name="Statistics"):
         help=("Shows a visualisation of members and the messages "
               "they've sent in a channel."))
     @commands.has_role("Member")
-    async def member_message_activity(self, ctx, channel=None,
-                                      limit: int = 100):
+    async def member_message_activity(self, ctx, limit: int = 100,
+                                      channel=None):
         if not ctx.message.channel_mentions:
             channel = ctx.channel
         else:
