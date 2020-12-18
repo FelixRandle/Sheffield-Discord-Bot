@@ -107,7 +107,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         help=("Shows a visualisation of members and the number of messages "
               "they've sent in a channel."))
     @commands.has_role("Member")
-    async def channel_summary(self, ctx, limit: int = 100, channel=None):
+    async def channel_summary(self, ctx, limit: int = 500, channel=None):
         if not ctx.message.channel_mentions:
             channel = ctx.channel
         else:
@@ -155,7 +155,7 @@ class StatsCog(commands.Cog, name="Statistics"):
         ax.axes.yaxis.set_visible(False)
 
         plt.title(
-            "Visualisation of members' message activity "
+            "Visualisation of members' number of messages "
             f"in #{ut.demojify(channel.name)}, using last {limit} messages")
         plt.legend(*(zip(*artist_members)))
 
