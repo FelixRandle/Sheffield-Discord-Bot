@@ -10,7 +10,8 @@ import re
 from discord.ext import commands
 
 
-GITHUB_LINK_REGEX = re.compile(r"github.com/(?P<owner>\S+)/(?P<repo>\S+)")
+GITHUB_LINK_REGEX = re.compile(
+    r"github.com/(?P<owner>[a-zA-Z0-9-]+)/(?P<repo>[a-zA-Z0-9-_]+)")
 API_TEMPLATE = "https://api.github.com/repos/{owner}/{repo}"
 
 
