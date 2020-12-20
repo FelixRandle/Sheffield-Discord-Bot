@@ -5,9 +5,14 @@
 A cog for showcasing GitHub project repos
 """
 
+import json
 import re
 
+import aiohttp
+import discord
 from discord.ext import commands
+
+import utils as ut
 
 
 GITHUB_LINK_REGEX = re.compile(
@@ -29,12 +34,31 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
         Extracts info from the repo and displays it in an embed
         """
+        projects_channel = ut.find_channel_by_name("projects", ctx.guild)
+        if projects_channel is None:
+            return await ctx.send(
+                "Could not find projects channel to post project in")
+
         match = GITHUB_LINK_REGEX.search(repo_link)
         if not match:
             return await ctx.send("GitHub repo link is invalid")
 
         params = match.groupdict()
         url = API_TEMPLATE.format(**params)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Could not access repo. "
+                        "Check that the repo exists and is not private")
+                body = await response.text()
+
+        data = json.loads(body)
+        embed = discord.Embed(
+            title=data["name"], description=data["description"])
+
+        await projects_channel.send(embed=embed)
 
 
 def setup(bot):
