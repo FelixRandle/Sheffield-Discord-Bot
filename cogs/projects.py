@@ -30,7 +30,11 @@ class ProjectsCog(commands.Cog, name="Projects"):
         Extracts info from the repo and displays it in an embed
         """
         match = GITHUB_LINK_REGEX.search(repo_link)
-        await ctx.send("Link valid" if match else "Link invalid")
+        if not match:
+            return await ctx.send("GitHub repo link is invalid")
+
+        params = match.groupdict()
+        url = API_TEMPLATE.format(**params)
 
 
 def setup(bot):
