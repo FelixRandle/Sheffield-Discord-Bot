@@ -45,6 +45,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
         """
         info = self.extract_info_from_url(url)
         data = await self.get_repo_data(session, **info)
+        if data is None:
+            return None
         embed = discord.Embed(
             title=data["name"], description=data["description"])
         embed.set_author(
@@ -126,6 +128,11 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
         async with aiohttp.ClientSession() as session:
             embed = self.create_repo_embed(repo_link, session)
+
+        if embed is None:
+            return await ctx.send(
+                "Could not access repo. "
+                "Check that the repo exists and is not private")
 
         await projects_channel.send(
             f"{ctx.author.mention} has shared this project on GitHub:",
