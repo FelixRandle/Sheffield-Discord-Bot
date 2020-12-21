@@ -131,7 +131,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 "Could not find projects channel to post project in")
 
         async with aiohttp.ClientSession() as session:
-            embed = self.create_repo_embed(repo_link, session)
+            embed = await self.create_repo_embed(repo_link, session)
 
         if embed is None:
             return await ctx.send(
