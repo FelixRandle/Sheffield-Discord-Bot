@@ -11,7 +11,7 @@ from typing import Optional
 
 import aiohttp
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import utils as ut
 
@@ -32,6 +32,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
     def __init__(self, bot):
         self.bot = bot
+        self.update_repo_stats.start()
 
     @staticmethod
     def create_repo_embed(data: dict):
@@ -74,6 +75,27 @@ class ProjectsCog(commands.Cog, name="Projects"):
             body = await response.text()
         data = json.loads(body)
         return data
+
+    @tasks.loop(hours=24)
+    async def update_repo_stats(self):
+        async with aiohttp.ClientSession() as session:
+            for guild in self.bot.guilds:
+                projects_channel = ut.find_channel_by_name("projects", guild)
+                if projects_channel is None:
+                    continue
+
+                async for msg in projects_channel.history():
+                    embed = msg.embeds[0]
+                    url = embed.footer.text
+                    info = self.extract_info_from_url(url)
+                    data = await self.get_repo_data(session, **info)
+                    embed = self.create_repo_embed(data)
+
+                    await msg.edit(embed=embed)
+
+    @update_repo_stats.before_loop
+    async def before_update_repo_stats(self):
+        await self.bot.wait_until_ready()
 
     @commands.command(help="Showcase your projects on GitHub")
     @commands.has_role("Member")
