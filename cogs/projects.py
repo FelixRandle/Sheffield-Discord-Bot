@@ -103,7 +103,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 async for msg in projects_channel.history():
                     embed = msg.embeds[0]
                     url = embed.footer.text
-                    embed = self.create_repo_embed(url, session)
+                    embed = await self.create_repo_embed(url, session)
 
                     await msg.edit(embed=embed)
 
