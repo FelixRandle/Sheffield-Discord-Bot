@@ -39,6 +39,10 @@ class ProjectsCog(commands.Cog, name="Projects"):
         url: str,
         session: aiohttp.ClientSession
     ):
+        """
+        Creates a Discord embed from a GitHub repo link,
+        using the given aiohttp client session
+        """
         info = self.extract_info_from_url(url)
         data = await self.get_repo_data(session, **info)
         embed = discord.Embed(
@@ -60,6 +64,9 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
     @staticmethod
     def extract_info_from_url(url: str):
+        """
+        Extracts owner and repo name info from a GitHub repo link
+        """
         match = GITHUB_LINK_REGEX.search(url)
         if not match:
             return None
@@ -73,6 +80,10 @@ class ProjectsCog(commands.Cog, name="Projects"):
         owner: str,
         repo: str,
     ) -> Optional[dict]:
+        """
+        Retrieves repo data from the GitHub API for the given owner
+        and repo number, using the given aiohttp client session
+        """
         url = API_TEMPLATE.format(owner=owner, repo=repo)
         async with session.get(url) as response:
             if response.status != 200:
