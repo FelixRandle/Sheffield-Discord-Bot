@@ -79,6 +79,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
             f"{ctx.author.mention} has shared this project on GitHub:",
             embed=embed)
 
+        await ctx.send("GitHub repo shared!")
+
 
 def setup(bot):
     """
