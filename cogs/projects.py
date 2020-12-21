@@ -7,6 +7,7 @@ A cog for showcasing GitHub project repos
 
 import json
 import re
+from typing import Optional
 
 import aiohttp
 import discord
@@ -50,6 +51,20 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
         return embed
 
+    async def get_repo_data(
+        self,
+        session: aiohttp.ClientSession,
+        owner: str,
+        repo: str,
+    ) -> Optional[dict]:
+        url = API_TEMPLATE.format(owner=owner, repo=repo)
+        async with session.get(url) as response:
+            if response.status != 200:
+                return None
+            body = await response.text()
+        data = json.loads(body)
+        return data
+
     @commands.command(help="Showcase your projects on GitHub")
     @commands.has_role("Member")
     async def project(self, ctx, *, repo_link: str):
@@ -68,17 +83,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
             return await ctx.send("GitHub repo link is invalid")
 
         params = match.groupdict()
-        url = API_TEMPLATE.format(**params)
-
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return await ctx.send(
-                        "Could not access repo. "
-                        "Check that the repo exists and is not private")
-                body = await response.text()
-
-        data = json.loads(body)
+            data = await self.get_repo_data(session, **params)
         embed = self.create_repo_embed(data)
 
         await projects_channel.send(
