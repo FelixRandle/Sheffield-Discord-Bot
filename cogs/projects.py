@@ -19,6 +19,13 @@ GITHUB_LINK_REGEX = re.compile(
     r"github.com/(?P<owner>[a-zA-Z0-9-]+)/(?P<repo>[a-zA-Z0-9-_]+)")
 API_TEMPLATE = "https://api.github.com/repos/{owner}/{repo}"
 
+FIELD_PARAMS = [
+    ("Link", ("html_url",), False),
+    ("Owner", ("owner", "login"), True),
+    ("Language", ("language",), True),
+    ("Stars", ("stargazers_count",), True),
+]
+
 
 class ProjectsCog(commands.Cog, name="Projects"):
     """Show off your projects"""
@@ -57,6 +64,12 @@ class ProjectsCog(commands.Cog, name="Projects"):
         data = json.loads(body)
         embed = discord.Embed(
             title=data["name"], description=data["description"])
+
+        for name, keys, inline in FIELD_PARAMS:
+            value = data
+            for key in keys:
+                value = value[key]
+            embed.add_field(name=name, value=value, inline=inline)
 
         await projects_channel.send(embed=embed)
 
