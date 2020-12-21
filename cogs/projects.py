@@ -51,6 +51,15 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
         return embed
 
+    @staticmethod
+    def extract_info_from_url(url: str):
+        match = GITHUB_LINK_REGEX.search(url)
+        if not match:
+            return None
+
+        info = match.groupdict()
+        return info
+
     async def get_repo_data(
         self,
         session: aiohttp.ClientSession,
@@ -78,13 +87,9 @@ class ProjectsCog(commands.Cog, name="Projects"):
             return await ctx.send(
                 "Could not find projects channel to post project in")
 
-        match = GITHUB_LINK_REGEX.search(repo_link)
-        if not match:
-            return await ctx.send("GitHub repo link is invalid")
-
-        params = match.groupdict()
+        info = self.extract_info_from_url(repo_link)
         async with aiohttp.ClientSession() as session:
-            data = await self.get_repo_data(session, **params)
+            data = await self.get_repo_data(session, **info)
         embed = self.create_repo_embed(data)
 
         await projects_channel.send(
