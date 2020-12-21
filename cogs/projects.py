@@ -21,7 +21,6 @@ API_TEMPLATE = "https://api.github.com/repos/{owner}/{repo}"
 
 FIELD_PARAMS = [
     ("Link", ("html_url",), False),
-    ("Owner", ("owner", "login"), True),
     ("Language", ("language",), True),
     ("Stars", ("stargazers_count",), True),
 ]
@@ -64,6 +63,11 @@ class ProjectsCog(commands.Cog, name="Projects"):
         data = json.loads(body)
         embed = discord.Embed(
             title=data["name"], description=data["description"])
+        embed.set_author(
+            name=data["owner"]["login"],
+            url=data["owner"]["html_url"],
+            icon_url=data["owner"]["avatar_url"]
+        )
 
         for name, keys, inline in FIELD_PARAMS:
             value = data
