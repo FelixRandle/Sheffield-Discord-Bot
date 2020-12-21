@@ -49,6 +49,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 value = value[key]
             embed.add_field(name=name, value=value, inline=inline)
 
+        embed.set_footer(text=data["html_url"])
         return embed
 
     @staticmethod
