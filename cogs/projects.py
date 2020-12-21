@@ -34,8 +34,13 @@ class ProjectsCog(commands.Cog, name="Projects"):
         self.bot = bot
         self.update_repo_stats.start()
 
-    @staticmethod
-    def create_repo_embed(data: dict):
+    async def create_repo_embed(
+        self,
+        url: str,
+        session: aiohttp.ClientSession
+    ):
+        info = self.extract_info_from_url(url)
+        data = await self.get_repo_data(session, **info)
         embed = discord.Embed(
             title=data["name"], description=data["description"])
         embed.set_author(
@@ -87,9 +92,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 async for msg in projects_channel.history():
                     embed = msg.embeds[0]
                     url = embed.footer.text
-                    info = self.extract_info_from_url(url)
-                    data = await self.get_repo_data(session, **info)
-                    embed = self.create_repo_embed(data)
+                    embed = self.create_repo_embed(url, session)
 
                     await msg.edit(embed=embed)
 
@@ -110,10 +113,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
             return await ctx.send(
                 "Could not find projects channel to post project in")
 
-        info = self.extract_info_from_url(repo_link)
         async with aiohttp.ClientSession() as session:
-            data = await self.get_repo_data(session, **info)
-        embed = self.create_repo_embed(data)
+            embed = self.create_repo_embed(repo_link, session)
 
         await projects_channel.send(
             f"{ctx.author.mention} has shared this project on GitHub:",
