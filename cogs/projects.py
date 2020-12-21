@@ -32,6 +32,24 @@ class ProjectsCog(commands.Cog, name="Projects"):
     def __init__(self, bot):
         self.bot = bot
 
+    @staticmethod
+    def create_repo_embed(data: dict):
+        embed = discord.Embed(
+            title=data["name"], description=data["description"])
+        embed.set_author(
+            name=data["owner"]["login"],
+            url=data["owner"]["html_url"],
+            icon_url=data["owner"]["avatar_url"]
+        )
+
+        for name, keys, inline in FIELD_PARAMS:
+            value = data
+            for key in keys:
+                value = value[key]
+            embed.add_field(name=name, value=value, inline=inline)
+
+        return embed
+
     @commands.command(help="Showcase your projects on GitHub")
     @commands.has_role("Member")
     async def project(self, ctx, *, repo_link: str):
@@ -61,19 +79,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 body = await response.text()
 
         data = json.loads(body)
-        embed = discord.Embed(
-            title=data["name"], description=data["description"])
-        embed.set_author(
-            name=data["owner"]["login"],
-            url=data["owner"]["html_url"],
-            icon_url=data["owner"]["avatar_url"]
-        )
-
-        for name, keys, inline in FIELD_PARAMS:
-            value = data
-            for key in keys:
-                value = value[key]
-            embed.add_field(name=name, value=value, inline=inline)
+        embed = self.create_repo_embed(data)
 
         await projects_channel.send(
             f"{ctx.author.mention} has shared this project on GitHub:",
