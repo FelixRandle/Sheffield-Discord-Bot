@@ -75,7 +75,7 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 value = value[key]
             embed.add_field(name=name, value=value, inline=inline)
 
-        await projects_channel.send(embed=embed)
+        await projects_channel.send(ctx.author.mention, embed=embed)
 
 
 def setup(bot):
