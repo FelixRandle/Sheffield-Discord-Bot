@@ -146,7 +146,8 @@ class StatsCog(commands.Cog, name="Statistics"):
             f"in #{ut.demojify(channel.name)}, using last {limit} messages")
         plt.legend(
             *zip(*[(v, k) for k, v in member_to_artist.items()]),
-            loc="upper left")
+            bbox_to_anchor=(0, 0, 1, 0), loc="upper left",
+            mode="expand", ncol=2)
 
         filename = f"{ctx.message.id}.png"
         plt.savefig(filename, bbox_inches="tight")
@@ -208,7 +209,8 @@ class StatsCog(commands.Cog, name="Statistics"):
         plt.title(
             "Visualisation of members' number of messages "
             f"in #{ut.demojify(channel.name)}, using last {limit} messages")
-        plt.legend(*(zip(*artist_members)))
+        plt.legend(*(zip(*artist_members)), bbox_to_anchor=(0, 0, 1, 0),
+                   loc="upper left", mode="expand", ncol=2)
 
         filename = f"{ctx.message.id}.png"
         plt.savefig(filename, bbox_inches="tight")
