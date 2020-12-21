@@ -42,6 +42,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
         """
         Creates a Discord embed from a GitHub repo link,
         using the given aiohttp client session
+
+        Returns None if the repo cannot be accessed
         """
         info = self.extract_info_from_url(url)
         data = await self.get_repo_data(session, **info)
@@ -106,8 +108,10 @@ class ProjectsCog(commands.Cog, name="Projects"):
                     embed = msg.embeds[0]
                     url = embed.footer.text
                     embed = await self.create_repo_embed(url, session)
-
-                    await msg.edit(embed=embed)
+                    if embed is None:
+                        await msg.delete()
+                    else:
+                        await msg.edit(embed=embed)
 
     @update_repo_stats.before_loop
     async def before_update_repo_stats(self):
