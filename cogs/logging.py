@@ -41,7 +41,7 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener('on_message')
     async def log_message_add(self, message):
-        if message.author.bot:
+        if message.author.bot or message.guild is None:
             return
 
         try:
