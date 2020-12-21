@@ -75,7 +75,9 @@ class ProjectsCog(commands.Cog, name="Projects"):
                 value = value[key]
             embed.add_field(name=name, value=value, inline=inline)
 
-        await projects_channel.send(ctx.author.mention, embed=embed)
+        await projects_channel.send(
+            f"{ctx.author.mention} has shared this project on GitHub:",
+            embed=embed)
 
 
 def setup(bot):
