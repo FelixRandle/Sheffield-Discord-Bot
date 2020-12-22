@@ -8,10 +8,10 @@ import discord
 from discord.ext import commands
 
 import utils as ut
-from models.compscession import Compscession
+from models.compfession import Compscession
 
 
-class CompscessionsCog(commands.Cog):
+class CompfessionsCog(commands.Cog):
     """The ping to your pong"""
 
     def __init__(self, bot):
@@ -20,7 +20,7 @@ class CompscessionsCog(commands.Cog):
 
     @commands.command(
         name="confess",
-        alias=["compscession", "sheffession"],
+        alias=["compfession", "sheffession"],
         help="Confess your darkest secrets and have"
              " them broadcast anonymously.")
     @commands.dm_only()
@@ -31,11 +31,11 @@ class CompscessionsCog(commands.Cog):
         This command adds some help text and also required that the user
         have the Member role, this is case-sensitive.
         """
-        compscession = Compscession()
+        compfession = Compscession()
 
-        compscession.confession = message
+        compfession.confession = message
 
-        compscession.save()
+        compfession.save()
 
         await ctx.send("Sent your confession, it will need to get "
                        "moderated before it is posted to servers.")
@@ -43,7 +43,7 @@ class CompscessionsCog(commands.Cog):
         for guild in self.bot.guilds:
             confession_channel = discord.utils.get(
                 guild.text_channels,
-                name="compscessions-notifications")
+                name="compfessions-notifications")
 
             if confession_channel:
                 await confession_channel.send(
@@ -55,12 +55,12 @@ class CompscessionsCog(commands.Cog):
     )
     @commands.has_role("Admin")
     async def moderate_confessions(self, ctx):
-        compscessions = Compscession.where('approved', False).get()
+        compfessions = Compscession.where('approved', False).get()
 
-        for compscession in compscessions:
+        for compfession in compfessions:
             embed = discord.Embed(color=0xf71e1e)
             embed.add_field(name="Confession",
-                            value=compscession.confession)
+                            value=compfession.confession)
 
             result, reason = await ut.get_confirmation(ctx.channel,
                                                        ctx.author,
@@ -68,34 +68,34 @@ class CompscessionsCog(commands.Cog):
                                                        None, embed)
 
             if result:
-                compscession.approved = True
-                compscession.approved_by = ctx.author.id
-                compscession.save()
-                await self.publish_compscession(compscession)
+                compfession.approved = True
+                compfession.approved_by = ctx.author.id
+                compfession.save()
+                await self.publish_compfession(compfession)
             elif reason == "Timeout":
                 return
             else:
-                compscession.delete()
+                compfession.delete()
 
-    async def publish_compscession(self, compscession):
+    async def publish_compfession(self, compfession):
         for guild in self.bot.guilds:
             confession_channel = discord.utils.get(guild.text_channels,
-                                                   name="compscessions")
+                                                   name="compfessions")
 
             if confession_channel:
                 embed = discord.Embed(color=0xf71e1e)
                 embed.add_field(name="Confession",
-                                value=compscession.confession)
+                                value=compfession.confession)
 
-                created_at = ut.get_uk_time(compscession.created_at).strftime(
+                created_at = ut.get_uk_time(compfession.created_at).strftime(
                     "%Y-%m-%d %H:%M:%S")
-                updated_at = ut.get_uk_time(compscession.updated_at).strftime(
+                updated_at = ut.get_uk_time(compfession.updated_at).strftime(
                     "%Y-%m-%d %H:%M:%S")
                 embed.set_footer(text=f"Created {created_at}\n"
                                       f"Approved {updated_at}")
                 await confession_channel.send(embed=embed)
             else:
-                ut.log(f"Guild {guild.id} is missing 'compscessions' channel")
+                ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
 
 
 def setup(bot):
@@ -105,4 +105,4 @@ def setup(bot):
     This function is necessary for every cog file, multiple classes in the
     same file all need adding and each file must have their own setup function.
     """
-    bot.add_cog(CompscessionsCog(bot))
+    bot.add_cog(CompfessionsCog(bot))
