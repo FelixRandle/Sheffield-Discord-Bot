@@ -13,8 +13,6 @@ import aiohttp
 import discord
 from discord.ext import commands, tasks
 
-import utils as ut
-
 
 GITHUB_LINK_REGEX = re.compile(
     r"github.com/(?P<owner>[a-zA-Z0-9-]+)/(?P<repo>[a-zA-Z0-9-_]+)")

@@ -9,7 +9,6 @@ import asyncio
 import datetime as dt
 
 import discord
-import utils as ut
 from discord.ext import commands
 
 
