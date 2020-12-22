@@ -7,8 +7,8 @@ A cog to support users sending anonymous confessions to the bot.
 import discord
 from discord.ext import commands
 
-from models.compscession import Compscession
 import utils as ut
+from models.compscession import Compscession
 
 
 class CompscessionsCog(commands.Cog):
