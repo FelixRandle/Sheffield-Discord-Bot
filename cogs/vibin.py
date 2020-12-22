@@ -40,7 +40,7 @@ class VibinCog(commands.Cog, name="Vibin"):
                 guild.voice_channels, name="vibin")
             if text_channel is None or voice_channel is None:
                 return
-            member_role = ut.find_role_by_name("Member", guild)
+            member_role = discord.utils.get(guild.roles, name="Member")
             if member_role is None:
                 return
             if visibility:

@@ -103,18 +103,6 @@ def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     return utc_time.astimezone(tz)
 
 
-def find_role_by_name(
-    name: str,
-    guild: discord.Guild,
-) -> Optional[discord.Role]:
-    """
-    Finds a role within a guild by name. Name is case-insensitive.
-    """
-    for role in guild.roles:
-        if role.name.lower() == name.lower():
-            return role
-
-
 class RemoveReaction:
     """
     A context manager that removes a reaction on exit.
