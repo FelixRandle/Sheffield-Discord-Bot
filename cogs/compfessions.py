@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 import utils as ut
-from models.compfession import Compscession
+from models.compfession import Compfession
 
 
 class CompfessionsCog(commands.Cog):
@@ -31,7 +31,7 @@ class CompfessionsCog(commands.Cog):
         This command adds some help text and also required that the user
         have the Member role, this is case-sensitive.
         """
-        compfession = Compscession()
+        compfession = Compfession()
 
         compfession.confession = message
 
@@ -55,7 +55,7 @@ class CompfessionsCog(commands.Cog):
     )
     @commands.has_role("Admin")
     async def moderate_confessions(self, ctx):
-        compfessions = Compscession.where('approved', False).get()
+        compfessions = Compfession.where('approved', False).get()
 
         for compfession in compfessions:
             embed = discord.Embed(color=0xf71e1e)

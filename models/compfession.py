@@ -3,7 +3,7 @@ from orator.orm import belongs_to
 from .base import BaseModel
 
 
-class Compscession(BaseModel):
+class Compfession(BaseModel):
 
     __timestamps__ = True
 
