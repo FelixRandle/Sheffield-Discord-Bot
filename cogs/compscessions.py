@@ -3,7 +3,7 @@
 """
 A cog to support users sending anonymous confessions to the bot.
 """
-# In this case, discord import is not needed, in some cases it may be.
+
 import discord
 from discord.ext import commands
 
