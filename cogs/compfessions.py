@@ -12,7 +12,9 @@ from models.compfession import Compfession
 
 
 class CompfessionsCog(commands.Cog):
-    """The ping to your pong"""
+    """
+    Sheffessions but for computer science
+    """
 
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
