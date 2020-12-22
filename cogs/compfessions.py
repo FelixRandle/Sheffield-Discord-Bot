@@ -34,9 +34,7 @@ class CompfessionsCog(commands.Cog):
         have the Member role, this is case-sensitive.
         """
         compfession = Compfession()
-
         compfession.confession = message
-
         compfession.save()
 
         await ctx.send("Sent your confession, it will need to get "
@@ -64,10 +62,8 @@ class CompfessionsCog(commands.Cog):
             embed.add_field(name="Confession",
                             value=compfession.confession)
 
-            result, reason = await ut.get_confirmation(ctx.channel,
-                                                       ctx.author,
-                                                       self.bot,
-                                                       None, embed)
+            result, reason = await ut.get_confirmation(
+                ctx.channel, ctx.author, self.bot, None, embed)
 
             if result:
                 compfession.approved = True
