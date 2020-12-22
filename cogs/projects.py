@@ -100,7 +100,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
     async def update_repo_stats(self):
         async with aiohttp.ClientSession() as session:
             for guild in self.bot.guilds:
-                projects_channel = ut.find_channel_by_name("projects", guild)
+                projects_channel = discord.utils.get(
+                    guild.text_channels, name="projects")
                 if projects_channel is None:
                     continue
 
@@ -125,7 +126,8 @@ class ProjectsCog(commands.Cog, name="Projects"):
 
         Extracts info from the repo and displays it in an embed
         """
-        projects_channel = ut.find_channel_by_name("projects", ctx.guild)
+        projects_channel = discord.utils.get(
+            ctx.guild.text_channels, name="projects")
         if projects_channel is None:
             return await ctx.send(
                 "Could not find projects channel to post project in")

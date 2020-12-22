@@ -14,7 +14,7 @@ from discord.ext import commands
 
 
 PLAYLIST_LINK = "https://open.spotify.com/playlist/45ugA3rSKs5C9jpuC8ihva"
-START_TIME = dt.time(hour=1, minute=0, second=0)
+START_TIME = dt.time(hour=9, minute=23, second=0)
 END_TIME = dt.time(hour=4, minute=0, second=0)
 
 
@@ -35,9 +35,9 @@ class VibinCog(commands.Cog, name="Vibin"):
         delay = (next_time - now).total_seconds() % 86400
         await asyncio.sleep(delay)
         for guild in self.bot.guilds:
-            text_channel = ut.find_channel_by_name("vibin", guild)
-            voice_channel = ut.find_channel_by_name(
-                "vibin", guild, channel_types=discord.VoiceChannel)
+            text_channel = discord.utils.get(guild.text_channels, name="vibin")
+            voice_channel = discord.utils.get(
+                guild.voice_channels, name="vibin")
             if text_channel is None or voice_channel is None:
                 return
             member_role = ut.find_role_by_name("Member", guild)
