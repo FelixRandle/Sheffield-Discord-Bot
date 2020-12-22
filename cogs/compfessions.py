@@ -20,7 +20,7 @@ class CompfessionsCog(commands.Cog):
 
     @commands.command(
         name="confess",
-        alias=["compfession", "sheffession"],
+        aliases=["compfession", "sheffession"],
         help="Confess your darkest secrets and have"
              " them broadcast anonymously.")
     @commands.dm_only()
