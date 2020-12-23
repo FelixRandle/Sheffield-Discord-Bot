@@ -62,8 +62,9 @@ async def find_id(msg):
     return False
 
 
-async def get_confirmation(channel, user, bot, message):
-    confirm_message = await channel.send(message)
+async def get_confirmation(channel, user, bot, message,
+                           embed: discord.Embed = None):
+    confirm_message = await channel.send(message, embed=embed)
     await confirm_message.add_reaction("👍")
     await confirm_message.add_reaction("👎")
 
