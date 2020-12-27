@@ -20,7 +20,6 @@ class ExampleCog(commands.Cog):
     @commands.command(
         name="ping",
         help="The pong to your ping, let's you know that the bot is alive.")
-    @commands.has_role("Member")
     async def ping(self, ctx):
         """
         Create a simple ping pong command.

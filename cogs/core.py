@@ -231,7 +231,6 @@ class CoreCog(commands.Cog):
     @commands.command(
         name="whois",
         help="Gives you information about a specific user")
-    @commands.has_role("Member")
     async def who_is(self, ctx):
         if not ctx.message.mentions:
             raise commands.errors.UserInputError(message="Please tag a user")
@@ -284,7 +283,6 @@ class CoreCog(commands.Cog):
         name="serverinfo",
         aliases=["server"],
         help="Gives you information about the current server")
-    @commands.has_role("Member")
     async def server_info(self, ctx):
         guild = ctx.guild
 

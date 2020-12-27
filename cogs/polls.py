@@ -465,7 +465,6 @@ class PollsCog(commands.Cog, name="Polls"):
     @commands.command(
         name="createpoll",
         help="Creates a poll. You can add choices to it later")
-    @commands.has_role("Member")
     async def create_poll(self, ctx, duration, *, title):
         """
         Allows a user to create a poll.

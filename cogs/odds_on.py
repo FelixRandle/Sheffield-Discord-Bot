@@ -22,7 +22,6 @@ class OddsOnCog(commands.Cog):
     @commands.command(
         name="oddsOn",
         help="Let's you play Odds On against other members")
-    @commands.has_role("Member")
     async def odds_on(self, ctx, *, wager: str):
         """
         Challenge a user to odds on

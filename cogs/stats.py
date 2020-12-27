@@ -26,7 +26,6 @@ class StatsCog(commands.Cog, name="Statistics"):
             "Defaults to messages in the last 30 days in the current channel"
         )
     )
-    @commands.has_role("Member")
     async def channel_activity(self, ctx, days: int = 30, channel=None):
         """
         A command that generates a graph of message frequency against date.
@@ -106,7 +105,6 @@ class StatsCog(commands.Cog, name="Statistics"):
         name="channelHistory",
         help=("Shows a visualisation of a channel's history "
               "by which member sent those messages"))
-    @commands.has_role("Member")
     async def channel_history(self, ctx, limit: int = 500, channel=None):
         if not ctx.message.channel_mentions:
             channel = ctx.channel
@@ -158,7 +156,6 @@ class StatsCog(commands.Cog, name="Statistics"):
         name="channelSummary",
         help=("Shows a visualisation of members and the number of messages "
               "they've sent in a channel."))
-    @commands.has_role("Member")
     async def channel_summary(self, ctx, limit: int = 500, channel=None):
         if not ctx.message.channel_mentions:
             channel = ctx.channel

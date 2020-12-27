@@ -22,7 +22,6 @@ class PrivateChannels(commands.Cog):
     @commands.command(
         name="newChannel",
         help="Creates a new private voice channel for you to use.")
-    @commands.has_role("Member")
     async def new_channel(self, ctx, limit: int = 0):
         """
         Creates a new voice channel.
@@ -55,7 +54,6 @@ class PrivateChannels(commands.Cog):
     @commands.command(
         name="deleteChannel",
         help="Deletes your channel if you have one.")
-    @commands.has_role("Member")
     async def delete_channel(self, ctx):
         channel = Channel.where('creator_id', ctx.author.id).first()
         if not channel:

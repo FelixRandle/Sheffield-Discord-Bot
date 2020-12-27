@@ -217,7 +217,6 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         name="getRole",
         help="Gives the issuing user a custom role",
         aliases=["iam", "iama", "gimme"])
-    @commands.has_role("Member")
     async def get_role(self, ctx, *, role_name):
         """
         Gives the user the requested custom role if not locked..
@@ -279,7 +278,6 @@ class RoleAssignmentCog(commands.Cog, name="Role Assignment"):
         name="removeRole",
         help="Takes the custom role from the issuing user",
         aliases=["iamnot", "iamnota", "takie"])
-    @commands.has_role("Member")
     async def remove_role(self, ctx, *, role_name):
         """
         Removes the given role from the user.

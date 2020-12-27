@@ -118,7 +118,6 @@ class ProjectsCog(commands.Cog, name="Projects"):
         await self.bot.wait_until_ready()
 
     @commands.command(help="Showcase your projects on GitHub")
-    @commands.has_role("Member")
     async def project(self, ctx, *, repo_link: str):
         """
         Allows users to showcase projects from GitHub using GitHub repo links
