@@ -123,9 +123,9 @@ class CompfessionsCog(commands.Cog):
             compfession = Compfession.order_by('approved_id', 'desc').first()
 
         if searching_id is not None or compfession is not None:
-            compfession = Compfession.where(
-                "approved_id", searching_id).first() \
-                if compfession is None else compfession
+            if compfession is None:
+                compfession = Compfession.where(
+                    "approved_id", searching_id).first()
 
             if compfession is not None:
                 embed = generate_compfession_embed(compfession)
