@@ -107,7 +107,6 @@ class CompfessionsCog(commands.Cog):
             else:
                 ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
 
-
     @commands.Cog.listener('on_message')
     async def on_message(self, message):
         content = message.content.lower()
