@@ -11,6 +11,21 @@ import utils as ut
 from models.compfession import Compfession
 
 
+def generate_compfession_embed(compfession):
+    embed = discord.Embed(color=0xf71e1e)
+    embed.add_field(name=f"Confession #{compfession.approved_id}",
+                    value=compfession.confession)
+
+    created_at = ut.get_uk_time(compfession.created_at).strftime(
+        "%Y-%m-%d %H:%M:%S")
+    updated_at = ut.get_uk_time(compfession.updated_at).strftime(
+        "%Y-%m-%d %H:%M:%S")
+    embed.set_footer(text=f"Created {created_at}\n"
+                          f"Approved {updated_at}")
+
+    return embed
+
+
 class CompfessionsCog(commands.Cog):
     """
     Sheffessions but for computer science
@@ -66,6 +81,12 @@ class CompfessionsCog(commands.Cog):
                 ctx.channel, ctx.author, self.bot, None, embed)
 
             if result:
+                last_compfession = Compfession.where(
+                    "approved", True).order_by('id', 'desc').first()
+                if last_compfession is not None:
+                    compfession.approved_id = last_compfession.approved_id + 1
+                else:
+                    compfession.approved_id = 1
                 compfession.approved = True
                 compfession.approved_by = ctx.author.id
                 compfession.save()
@@ -81,19 +102,38 @@ class CompfessionsCog(commands.Cog):
                                                    name="compfessions")
 
             if confession_channel:
-                embed = discord.Embed(color=0xf71e1e)
-                embed.add_field(name="Confession",
-                                value=compfession.confession)
-
-                created_at = ut.get_uk_time(compfession.created_at).strftime(
-                    "%Y-%m-%d %H:%M:%S")
-                updated_at = ut.get_uk_time(compfession.updated_at).strftime(
-                    "%Y-%m-%d %H:%M:%S")
-                embed.set_footer(text=f"Created {created_at}\n"
-                                      f"Approved {updated_at}")
+                embed = generate_compfession_embed(compfession)
                 await confession_channel.send(embed=embed)
             else:
                 ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
+
+
+    @commands.Cog.listener('on_message')
+    async def on_message(self, message):
+        content = message.content.lower()
+        searching_id = None
+        compfession = None
+        if content.startswith('@compfession'):
+            searching_id = content.split(" ")[0][12:]
+        elif content.startswith('@confession'):
+            searching_id = content.split(" ")[0][11:]
+        elif content.startswith('@recentcompfession') \
+                or content.startswith('@recentconfession') \
+                or content.startswith('@latestconfession') \
+                or content.startswith('@latestconfession'):
+            compfession = Compfession.order_by('approved_id', 'desc').first()
+
+        if searching_id is not None or compfession is not None:
+            compfession = Compfession.where(
+                "approved_id", searching_id).first() \
+                if compfession is None else compfession
+
+            if compfession is not None:
+                embed = generate_compfession_embed(compfession)
+                await message.channel.send(embed=embed)
+            else:
+                await message.channel.send(
+                    "Sorry, I couldn't find a compfession with that ID")
 
 
 def setup(bot):
