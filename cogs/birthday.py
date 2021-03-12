@@ -67,6 +67,17 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
         except ValueError:
             return await ctx.send("Birthday given is an invalid date")
 
+        today = dt.date.today()
+        if (
+            (date.month, date.day) == (today.month, today.day)
+            or (
+                not isleap(today.year)
+                and (date.month, date.day) == (2, 29)
+                and (today.month, today.day) == FEB_29_DAY
+            )
+        ):
+            self._birthday_user_ids.append(ctx.author.id)
+
         user = User.find(ctx.author.id)
         user.date_of_birth = date
         user.save()
