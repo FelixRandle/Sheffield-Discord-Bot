@@ -54,7 +54,8 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
         help="Add your birthday to the bot\n\n"
              "Enter your birthday as yyyy-mm-dd to have the bot "
              "record your entire date of birth, "
-             "or just mm-dd to have it record your birthday"
+             "or just mm-dd to have it record your birthday",
+        aliases=("bday", "dateOfBirth", "dayOfMyBirth", "spawnDate")
     )
     async def birthday(self, ctx, date_of_birth):
         user = User.find(ctx.author.id)
