@@ -26,8 +26,10 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
     @tasks.loop(hours=24)
     async def birthday_task(self):
         today = dt.date.today()
-        query = User.where_raw("MONTH(date_of_birth) = %s", today.month)
-        query = query.where_raw("DAY(date_of_birth) = %s", today.day)
+        query = User.where_raw(
+            "MONTH(date_of_birth) = %s AND DAY(date_of_birth) = %s",
+            (today.month, today.day)
+        )
         birthday_users = query.get()
 
         # Stores IDs of users with birthdays for quick reference
