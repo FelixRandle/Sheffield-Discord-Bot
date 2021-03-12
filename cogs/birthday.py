@@ -8,7 +8,6 @@ A cog for providing birthday celebration features on the bot
 import asyncio
 import datetime as dt
 from calendar import isleap
-import discord
 
 from discord.ext import commands, tasks
 
