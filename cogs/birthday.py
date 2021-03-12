@@ -5,6 +5,7 @@
 A cog for providing birthday celebration features on the bot
 """
 
+import asyncio
 import datetime as dt
 from calendar import isleap
 
@@ -44,6 +45,18 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
 
         # Stores IDs of users with birthdays for quick reference
         self._birthday_user_ids = [user.id for user in birthday_users]
+
+    @birthday_task.before_loop
+    async def before_birthday_task_loop(self):
+        # One-time call to birthday_task coroutine
+        await self.birthday_task.coro(self)
+        # Waits until midnight to start the task loop
+        now = dt.datetime.now()
+        tomorrow = (now + dt.timedelta(days=1))
+        midnight_tomorrow = tomorrow.replace(
+            hour=0, minute=0, second=0, microsecond=0)
+        sleep_time = (midnight_tomorrow - now).total_seconds()
+        await asyncio.sleep(sleep_time)
 
     @commands.Cog.listener()
     async def on_message(self, message):
