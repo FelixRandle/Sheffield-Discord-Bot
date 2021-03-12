@@ -9,6 +9,8 @@ import datetime as dt
 from calendar import isleap
 
 from discord.ext import commands, tasks
+
+import utils as ut
 from models import User
 
 # A leap year to store in place of an actual birth year
@@ -55,6 +57,12 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
              "or just mm-dd to have it record your birthday"
     )
     async def birthday(self, ctx, date_of_birth):
+        user = User.find(ctx.author.id)
+        if user.date_of_birth is not None:
+            return await ctx.send(
+                "Your birthday has already been set. "
+                "Contact an admin if you've made a mistake."
+            )
         try:
             date = dt.datetime.strptime(
                 (
@@ -67,6 +75,18 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
         except ValueError:
             return await ctx.send("Birthday given is an invalid date")
 
+        result, _ = await ut.get_confirmation(
+            ctx.channel,
+            ctx.author,
+            self.bot,
+            (
+                f"Set your birthday as **{date_of_birth}**? "
+                "You can't change once you've set it!"
+            )
+        )
+        if not result:
+            return
+
         today = dt.date.today()
         if (
             (date.month, date.day) == (today.month, today.day)
@@ -78,7 +98,6 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
         ):
             self._birthday_user_ids.append(ctx.author.id)
 
-        user = User.find(ctx.author.id)
         user.date_of_birth = date
         user.save()
         await ctx.send("Added your birthday!")
