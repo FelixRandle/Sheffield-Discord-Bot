@@ -13,7 +13,7 @@ from discord.ext import commands
 
 
 PLAYLIST_LINK = "https://open.spotify.com/playlist/45ugA3rSKs5C9jpuC8ihva"
-START_TIME = dt.time(hour=9, minute=23, second=0)
+START_TIME = dt.time(hour=1, minute=0, second=0)
 END_TIME = dt.time(hour=4, minute=0, second=0)
 
 
