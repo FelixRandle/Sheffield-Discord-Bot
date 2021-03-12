@@ -7,7 +7,7 @@ A cog for providing birthday celebration features on the bot
 
 import datetime as dt
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from models import User
 
@@ -19,6 +19,19 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
 
     def __init__(self, bot):
         self.bot = bot
+        self._birthday_user_ids = []
+
+        self.birthday_task.start()
+
+    @tasks.loop(hours=24)
+    async def birthday_task(self):
+        today = dt.date.today()
+        query = User.where_raw("MONTH(date_of_birth) = %s", today.month)
+        query = query.where_raw("DAY(date_of_birth) = %s", today.day)
+        birthday_users = query.get()
+
+        # Stores IDs of users with birthdays for quick reference
+        self._birthday_user_ids = [user.id for user in birthday_users]
 
     @commands.command(
         help="Add your birthday to the bot\n\n"
