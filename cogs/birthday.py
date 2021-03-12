@@ -8,6 +8,7 @@ A cog for providing birthday celebration features on the bot
 import asyncio
 import datetime as dt
 from calendar import isleap
+import discord
 
 from discord.ext import commands, tasks
 
@@ -67,6 +68,8 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if message.author.bot:
+            return
         if message.author.id in self._birthday_user_ids:
             await message.add_reaction("🎂")
 
