@@ -6,13 +6,16 @@ A cog for providing birthday celebration features on the bot
 """
 
 import datetime as dt
+from calendar import isleap
 
 from discord.ext import commands, tasks
-
 from models import User
 
 # A leap year to store in place of an actual birth year
 LEAP_YEAR = 1600
+# Day that 02-29 birthdays are celebrated on non-leap years
+# Format is (month, day)
+FEB_29_DAY = (2, 28)
 
 
 class BirthdayCog(commands.Cog, name="Birthdays"):
@@ -29,10 +32,12 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
     @tasks.loop(hours=24)
     async def birthday_task(self):
         today = dt.date.today()
-        query = User.where_raw(
-            "MONTH(date_of_birth) = %s AND DAY(date_of_birth) = %s",
-            (today.month, today.day)
-        )
+        raw_where_clause = \
+            "(MONTH(date_of_birth) = %s AND DAY(date_of_birth) = %s)"
+        if (today.month, today.day) == FEB_29_DAY and not isleap(today.year):
+            raw_where_clause += \
+                " OR (MONTH(date_of_birth) = 2 AND DAY(date_of_birth) = 29)"
+        query = User.where_raw(raw_where_clause, [today.month, today.day])
         birthday_users = query.get()
 
         # Stores IDs of users with birthdays for quick reference
