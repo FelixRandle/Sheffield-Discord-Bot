@@ -28,7 +28,7 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
     )
     async def birthday(self, ctx, date_of_birth):
         try:
-            date = dt.datetime.strptime(
+            date = dt.date.strptime(
                 date_of_birth,
                 "%Y-%m-%d" if len(date_of_birth) > 5 else "%m-%d")
         except ValueError:
