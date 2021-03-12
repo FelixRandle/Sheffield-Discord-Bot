@@ -33,6 +33,11 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
         # Stores IDs of users with birthdays for quick reference
         self._birthday_user_ids = [user.id for user in birthday_users]
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.id in self._birthday_user_ids:
+            await message.add_reaction("🎂")
+
     @commands.command(
         help="Add your birthday to the bot\n\n"
              "Enter your birthday as yyyy-mm-dd to have the bot "
