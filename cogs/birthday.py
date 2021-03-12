@@ -11,6 +11,9 @@ from discord.ext import commands, tasks
 
 from models import User
 
+# A leap year to store in place of an actual birth year
+LEAP_YEAR = 1600
+
 
 class BirthdayCog(commands.Cog, name="Birthdays"):
     """
@@ -49,8 +52,13 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
     async def birthday(self, ctx, date_of_birth):
         try:
             date = dt.datetime.strptime(
-                date_of_birth,
-                "%Y-%m-%d" if len(date_of_birth) > 5 else "%m-%d")
+                (
+                    date_of_birth
+                    if len(date_of_birth) > 5
+                    else f"{LEAP_YEAR}-{date_of_birth}"
+                ),
+                "%Y-%m-%d"
+            )
         except ValueError:
             return await ctx.send("Birthday given is an invalid date")
 
