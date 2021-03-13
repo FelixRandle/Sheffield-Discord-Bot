@@ -5,13 +5,14 @@ Utility commands to be used throughout the cogs
 """
 
 import asyncio
+from collections import defaultdict
 import datetime
 import os
 import re
 import sys
 import traceback as tb
 from enum import Enum
-from typing import Optional, Tuple, Union
+from typing import DefaultDict, Optional, Tuple, Union
 
 import discord
 from pytz import timezone
@@ -24,6 +25,15 @@ EMOJI_REGEX = re.compile(
     "\U0001F1E0-\U0001F1FF"  # flags (iOS)
     "]+",
     flags=re.UNICODE,
+)
+
+CARDINAL_ENDING_TO_SUFFIX = defaultdict(
+    lambda: "th",
+    {
+        1: "st",
+        2: "nd",
+        3: "rd",
+    }
 )
 
 
@@ -199,3 +209,16 @@ async def send_and_delete_file(messageable: discord.abc.Messageable,
     finally:
         if os.path.exists(filename):
             os.remove(filename)
+
+
+def cardinal_to_ordinal(number: int) -> str:
+    """
+    Converts an integer to a string and appends st, nd, rd or th,
+    depending on the integer to make it ordinal
+    """
+    if number % 100 in (11, 12, 13):
+        prefix = "th"
+    else:
+        ending = number % 10
+        prefix = CARDINAL_ENDING_TO_SUFFIX[ending]
+    return f"{number}{prefix}"
