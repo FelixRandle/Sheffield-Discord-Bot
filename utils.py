@@ -213,8 +213,8 @@ async def send_and_delete_file(messageable: discord.abc.Messageable,
 
 def cardinal_to_ordinal(number: int) -> str:
     """
-    Converts an integer to a string and appends st, nd, rd or th,
-    depending on the integer to make it ordinal
+    Converts an integer to a string and appends st, nd, rd or th to it,
+    depending on the integer, to make it ordinal
     """
     if number <= 0:
         raise ValueError("Negative values cannot be ordinalised")
