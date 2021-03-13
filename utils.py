@@ -5,14 +5,14 @@ Utility commands to be used throughout the cogs
 """
 
 import asyncio
-from collections import defaultdict
 import datetime
 import os
 import re
 import sys
 import traceback as tb
+from collections import defaultdict
 from enum import Enum
-from typing import DefaultDict, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import discord
 from pytz import timezone
