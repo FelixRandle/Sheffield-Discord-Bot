@@ -32,10 +32,16 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
 
         self.birthday_task.start()
 
-    async def _say_happy_birthday(self, user):
+    async def _say_happy_birthday(self, user, dob):
         if isinstance(user, int):
             user = self.bot.get_user(user)
-        await user.send("Happy birthday!")
+        if dob.year == LEAP_YEAR:
+            msg = "Happy birthday!"
+        else:
+            year_diff = dt.date.today().year - dob.year
+            ordinal = ut.cardinal_to_ordinal(year_diff)
+            msg = f"Happy {ordinal} birthday"
+        await user.send(msg)
 
     @tasks.loop(hours=24)
     async def birthday_task(self):
@@ -50,8 +56,8 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
 
         # Stores IDs of users with birthdays for quick reference
         self._birthday_user_ids = [user.id for user in birthday_users]
-        for user_id in self._birthday_user_ids:
-            await self._say_happy_birthday(user_id)
+        for user in birthday_users:
+            await self._say_happy_birthday(user.id, user.date_of_birth)
 
     @birthday_task.before_loop
     async def before_birthday_task_loop(self):
@@ -120,7 +126,7 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
             )
         ):
             self._birthday_user_ids.append(ctx.author.id)
-            await self._say_happy_birthday(ctx.author)
+            await self._say_happy_birthday(ctx.author, date)
 
         user.date_of_birth = date
         user.save()
