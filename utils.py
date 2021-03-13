@@ -216,6 +216,8 @@ def cardinal_to_ordinal(number: int) -> str:
     Converts an integer to a string and appends st, nd, rd or th,
     depending on the integer to make it ordinal
     """
+    if number <= 0:
+        raise ValueError("Negative values cannot be ordinalised")
     if number % 100 in (11, 12, 13):
         prefix = "th"
     else:
