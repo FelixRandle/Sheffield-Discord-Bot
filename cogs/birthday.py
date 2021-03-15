@@ -68,7 +68,7 @@ class BirthdayCog(commands.Cog, name="Birthdays"):
         tomorrow = (now + dt.timedelta(days=1))
         midnight_tomorrow = tomorrow.replace(
             hour=0, minute=0, second=0, microsecond=0)
-        sleep_time = (midnight_tomorrow - now).total_seconds()
+        sleep_time = (midnight_tomorrow - now).total_seconds() + 1
         await asyncio.sleep(sleep_time)
 
     @commands.Cog.listener()
