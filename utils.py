@@ -26,6 +26,9 @@ EMOJI_REGEX = re.compile(
     flags=re.UNICODE,
 )
 
+# Sentinel for get_choice if user makes no choice
+NO_CHOICE = object()
+
 
 class LogLevel(Enum):
     INFO = 1
@@ -84,6 +87,41 @@ async def get_confirmation(channel, user, bot, message,
         if str(reaction.emoji) == "👍":
             return True, None
         return False, "Rejected"
+
+
+async def get_choice(channel, user, bot, choices, message=None):
+    """
+    Gets a choice from the user, sending an optional message,
+    followed by a list of choices to the specified channel,
+    using the specified bot instance
+
+    Returns a sentinel value `utils.NO_CHOICE` if no choice is made
+    in the event of timeout.
+    """
+
+    def check(message):
+        if message.author != user:
+            return False
+        try:
+            int(message.content)
+            return True
+        except ValueError:
+            return False
+
+    if message:
+        await channel.send(message)
+
+    choices_list = f"Send a number between 1 and {len(choices)}"
+    choices_list += "\n".join(
+        f"{i + 1}: {choice}" for i, choice in enumerate(choices)
+    )
+    await channel.send(choices_list)
+    try:
+        message = await bot.wait_for('message', timeout=30, check=check)
+        return choices[int(message) - 1]
+    except asyncio.TimeoutError:
+        pass
+    return NO_CHOICE
 
 
 def get_utc_time(timestamp: int = None) -> datetime.datetime:
