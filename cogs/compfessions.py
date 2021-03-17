@@ -107,10 +107,11 @@ class CompfessionsCog(commands.Cog):
                     compfession.approved_id = last_compfession.approved_id + 1
                 else:
                     compfession.approved_id = 1
+                msg = await self.publish_compfession(compfession, ctx.guild)
                 compfession.approved = True
                 compfession.approved_by = ctx.author.id
+                compfession.message_id = msg.id
                 compfession.save()
-                await self.publish_compfession(compfession, ctx.guild)
             elif reason == "Timeout":
                 return
             else:
@@ -122,7 +123,8 @@ class CompfessionsCog(commands.Cog):
 
         if confession_channel:
             embed = generate_compfession_embed(compfession)
-            await confession_channel.send(embed=embed)
+            msg = await confession_channel.send(embed=embed)
+            return msg
         else:
             ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
 
