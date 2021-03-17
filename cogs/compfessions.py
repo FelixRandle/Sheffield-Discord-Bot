@@ -84,7 +84,10 @@ class CompfessionsCog(commands.Cog):
     )
     @commands.has_role("Admin")
     async def moderate_confessions(self, ctx):
-        compfessions = Compfession.where('approved', False).get()
+        compfessions = Compfession \
+            .where('approved', False) \
+            .where('guild_id', ctx.guild.id) \
+            .get()
 
         for compfession in compfessions:
             embed = discord.Embed(color=0xf71e1e)
@@ -95,8 +98,11 @@ class CompfessionsCog(commands.Cog):
                 ctx.channel, ctx.author, self.bot, None, embed)
 
             if result:
-                last_compfession = Compfession.where(
-                    "approved", True).order_by('id', 'desc').first()
+                last_compfession = Compfession \
+                    .where('approved', True) \
+                    .where('guild_id', ctx.guild.id) \
+                    .order_by('id', 'desc') \
+                    .first()
                 if last_compfession is not None:
                     compfession.approved_id = last_compfession.approved_id + 1
                 else:
@@ -104,22 +110,21 @@ class CompfessionsCog(commands.Cog):
                 compfession.approved = True
                 compfession.approved_by = ctx.author.id
                 compfession.save()
-                await self.publish_compfession(compfession)
+                await self.publish_compfession(compfession, ctx.guild)
             elif reason == "Timeout":
                 return
             else:
                 compfession.delete()
 
-    async def publish_compfession(self, compfession):
-        for guild in self.bot.guilds:
-            confession_channel = discord.utils.get(guild.text_channels,
-                                                   name="compfessions")
+    async def publish_compfession(self, compfession, guild):
+        confession_channel = discord.utils.get(guild.text_channels,
+                                               name="compfessions")
 
-            if confession_channel:
-                embed = generate_compfession_embed(compfession)
-                message = await confession_channel.send(embed=embed)
-            else:
-                ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
+        if confession_channel:
+            embed = generate_compfession_embed(compfession)
+            await confession_channel.send(embed=embed)
+        else:
+            ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
 
     @commands.Cog.listener('on_message')
     async def on_message(self, message):
