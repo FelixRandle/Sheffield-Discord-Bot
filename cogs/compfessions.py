@@ -103,7 +103,7 @@ class CompfessionsCog(commands.Cog):
 
             if confession_channel:
                 embed = generate_compfession_embed(compfession)
-                await confession_channel.send(embed=embed)
+                message = await confession_channel.send(embed=embed)
             else:
                 ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
 
