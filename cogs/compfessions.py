@@ -48,21 +48,35 @@ class CompfessionsCog(commands.Cog):
         This command adds some help text and also required that the user
         have the Member role, this is case-sensitive.
         """
-        compfession = Compfession()
-        compfession.confession = message
-        compfession.save()
+        # XXX: Temporary solution before discord.py==1.7.0 release
+        mutual_guilds = list(
+            filter(lambda guild: ctx.author in guild.members, self.bot.guilds)
+        )
+        if not mutual_guilds:
+            return await ctx.send("You don't share any guilds with the bot!")
+        if len(mutual_guilds) > 1:
+            guild = await ut.get_choice(
+                ctx.channel, ctx.author, self.bot, mutual_guilds,
+            )
+            if guild is ut.NO_CHOICE:
+                return await ctx.send(
+                    "You didn't choose a server in time, "
+                    "so your compfession hasn't be submitted"
+                )
+        else:
+            guild = mutual_guilds[0]
 
+        Compfession.create(confession=message, guild_id=guild.id)
         await ctx.send("Sent your confession, it will need to get "
                        "moderated before it is posted to servers.")
 
-        for guild in self.bot.guilds:
-            confession_channel = discord.utils.get(
-                guild.text_channels,
-                name="compfessions-notifications")
+        confession_channel = discord.utils.get(
+            guild.text_channels,
+            name="compfessions-notifications")
 
-            if confession_channel:
-                await confession_channel.send(
-                    "There is a new confession to be checked")
+        if confession_channel:
+            await confession_channel.send(
+                "There is a new confession to be checked")
 
     @commands.command(
         name="moderateConfessions",
