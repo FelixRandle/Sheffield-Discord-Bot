@@ -111,14 +111,14 @@ async def get_choice(channel, user, bot, choices, message=None):
     if message:
         await channel.send(message)
 
-    choices_list = f"Send a number between 1 and {len(choices)}"
+    choices_list = f"Send a number between 1 and {len(choices)}:\n"
     choices_list += "\n".join(
-        f"{i + 1}: {choice}" for i, choice in enumerate(choices)
+        f"{i + 1}: '{choice}'" for i, choice in enumerate(choices)
     )
     await channel.send(choices_list)
     try:
         message = await bot.wait_for('message', timeout=30, check=check)
-        return choices[int(message) - 1]
+        return choices[int(message.content) - 1]
     except asyncio.TimeoutError:
         pass
     return NO_CHOICE
