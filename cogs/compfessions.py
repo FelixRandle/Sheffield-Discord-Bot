@@ -45,6 +45,42 @@ class CompfessionsCog(commands.Cog):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
 
+    async def _get_compfession_mention(
+        self,
+        content: str,
+        guild: discord.Guild,
+        channel: discord.TextChannel,
+    ) -> Tuple[discord.Message, Compfession]:
+        """
+        Takes a compfession's content, and looks for a mention
+        for other compfessions.
+
+        Matches with `@<id>`, `@compfession<id>` or similar,
+        and `@lastcompfession` or similar.
+
+        Only returns with the first mention found.
+        Subsequent mentions are ignored
+        """
+        content = content.lower()
+        match = MENTION_REGEX.search(content)
+        if not match:
+            return None, None
+        if match.group('last'):
+            compfession = Compfession \
+                .where('approved', True) \
+                .where('guild_id', guild.id) \
+                .order_by('id', 'desc') \
+                .first()
+            message = await channel.fetch_message(compfession.id)
+        else:
+            compfession = Compfession \
+                .where('guild_id', guild.id) \
+                .where('approved_id', match.group('id')) \
+                .first()
+            message = await channel.fetch_message(compfession.id)
+
+        return message, compfession
+
     @commands.command(
         name="confess",
         aliases=["compfession", "sheffession"],
