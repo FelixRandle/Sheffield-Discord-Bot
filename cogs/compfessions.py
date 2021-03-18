@@ -37,6 +37,52 @@ def generate_compfession_embed(compfession):
     return embed
 
 
+async def get_compfession_mention(
+    content: str,
+    guild: discord.Guild,
+    channel: discord.TextChannel = None,
+    *,
+    before: dt.datetime = None,
+) -> Tuple[discord.Message, Compfession]:
+    """
+    Takes a compfession's content, and looks for a mention
+    for other compfessions.
+
+    Matches with `@<id>`, `@compfession<id>` or similar,
+    and `@lastcompfession` or similar.
+
+    Only returns with the first mention found.
+    Subsequent mentions are ignored.
+
+    If specified channel is `None`,
+    then corresponding message is not fetched
+    """
+    content = content.lower()
+    match = MENTION_REGEX.search(content)
+    if not match:
+        return None, None
+    if match.group('last'):
+        query = Compfession \
+            .where('guild_id', guild.id)
+        if before is not None:
+            query = query.where('updated_at', '<=', before)
+        compfession = query \
+            .order_by('approved_id', 'desc') \
+            .first()
+    else:
+        query = Compfession \
+            .where('guild_id', guild.id) \
+            .where('approved_id', match.group('id'))
+
+        compfession = query.first()
+
+    if channel is not None and compfession.message_id is not None:
+        message = await channel.fetch_message(compfession.message_id)
+    else:
+        message = None
+    return message, compfession
+
+
 class CompfessionsCog(commands.Cog):
     """
     Sheffessions but for computer science
@@ -45,52 +91,6 @@ class CompfessionsCog(commands.Cog):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
-
-    async def _get_compfession_mention(
-        self,
-        content: str,
-        guild: discord.Guild,
-        channel: discord.TextChannel = None,
-        *,
-        before: dt.datetime = None,
-    ) -> Tuple[discord.Message, Compfession]:
-        """
-        Takes a compfession's content, and looks for a mention
-        for other compfessions.
-
-        Matches with `@<id>`, `@compfession<id>` or similar,
-        and `@lastcompfession` or similar.
-
-        Only returns with the first mention found.
-        Subsequent mentions are ignored.
-
-        If specified channel is `None`,
-        then corresponding message is not fetched
-        """
-        content = content.lower()
-        match = MENTION_REGEX.search(content)
-        if not match:
-            return None, None
-        if match.group('last'):
-            query = Compfession \
-                .where('guild_id', guild.id)
-            if before is not None:
-                query = query.where('updated_at', '<=', before)
-            compfession = query \
-                .order_by('approved_id', 'desc') \
-                .first()
-        else:
-            query = Compfession \
-                .where('guild_id', guild.id) \
-                .where('approved_id', match.group('id'))
-
-            compfession = query.first()
-
-        if channel is not None and compfession.message_id is not None:
-            message = await channel.fetch_message(compfession.message_id)
-        else:
-            message = None
-        return message, compfession
 
     @commands.command(
         name="confess",
@@ -178,7 +178,7 @@ class CompfessionsCog(commands.Cog):
             ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
 
         embed = generate_compfession_embed(compfession)
-        reference, _ = await self._get_compfession_mention(
+        reference, _ = await get_compfession_mention(
             compfession.confession,
             guild,
             confession_channel,
@@ -194,7 +194,7 @@ class CompfessionsCog(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot or not message.guild:
             return
-        _, compfession = await self._get_compfession_mention(
+        _, compfession = await get_compfession_mention(
             message.content, message.guild)
         if compfession is not None:
             embed = generate_compfession_embed(compfession)
