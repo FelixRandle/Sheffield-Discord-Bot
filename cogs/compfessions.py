@@ -4,6 +4,7 @@
 A cog to support users sending anonymous confessions to the bot.
 """
 
+import datetime as dt
 import re
 from typing import Tuple
 
@@ -36,25 +37,6 @@ def generate_compfession_embed(compfession):
     return embed
 
 
-class LastCompfessionsCache:
-    def __init__(self):
-        self._cache = {}
-
-    def __getitem__(self, guild):
-        if guild.id in self._cache:
-            return self._cache[guild.id]
-        last_compfession = Compfession \
-            .where('guild_id', guild.id) \
-            .order_by('approved_id', 'desc') \
-            .first()
-        self._cache[guild.id] = last_compfession
-
-        return last_compfession
-
-    def __setitem__(self, guild, last_compfession):
-        self._cache[guild.id] = last_compfession
-
-
 class CompfessionsCog(commands.Cog):
     """
     Sheffessions but for computer science
@@ -63,13 +45,14 @@ class CompfessionsCog(commands.Cog):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
-        self._last_compfessions = LastCompfessionsCache()
 
     async def _get_compfession_mention(
         self,
         content: str,
         guild: discord.Guild,
         channel: discord.TextChannel = None,
+        *,
+        before: dt.datetime = None,
     ) -> Tuple[discord.Message, Compfession]:
         """
         Takes a compfession's content, and looks for a mention
@@ -89,12 +72,20 @@ class CompfessionsCog(commands.Cog):
         if not match:
             return None, None
         if match.group('last'):
-            compfession = self._last_compfessions[guild]
-        else:
-            compfession = Compfession \
-                .where('guild_id', guild.id) \
-                .where('approved_id', match.group('id')) \
+            query = Compfession \
+                .where('guild_id', guild.id)
+            if before is not None:
+                query = query.where('updated_at', '<=', before)
+            compfession = query \
+                .order_by('approved_id', 'desc') \
                 .first()
+        else:
+            query = Compfession \
+                .where('guild_id', guild.id) \
+                .where('approved_id', match.group('id'))
+
+            compfession = query.first()
+
         if channel is not None and compfession.message_id is not None:
             message = await channel.fetch_message(compfession.message_id)
         else:
@@ -172,7 +163,10 @@ class CompfessionsCog(commands.Cog):
                 compfession.delete()
 
     async def publish_compfession(self, compfession, guild, moderator):
-        last_compfession = self._last_compfessions[guild]
+        last_compfession = Compfession \
+            .where('guild_id', guild.id) \
+            .order_by('approved_id', 'desc') \
+            .first()
         if last_compfession is not None:
             compfession.approved_id = last_compfession.approved_id + 1
         else:
@@ -185,14 +179,16 @@ class CompfessionsCog(commands.Cog):
 
         embed = generate_compfession_embed(compfession)
         reference, _ = await self._get_compfession_mention(
-            compfession.confession, guild, confession_channel)
+            compfession.confession,
+            guild,
+            confession_channel,
+            before=compfession.created_at,
+        )
         msg = await confession_channel.send(embed=embed, reference=reference)
         compfession.approved = True
         compfession.approved_by = moderator.id
         compfession.message_id = msg.id
         compfession.save()
-
-        self._last_compfessions[guild] = compfession
 
     @commands.Cog.listener('on_message')
     async def on_message(self, message: discord.Message):
