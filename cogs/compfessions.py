@@ -11,7 +11,7 @@ import discord
 from discord.ext import commands
 
 import utils as ut
-from models.compfession import Compfession
+from models import Compfession
 
 MENTION_REGEX = re.compile(
     "@"  # Starting @ symbol
