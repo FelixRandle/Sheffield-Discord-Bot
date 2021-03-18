@@ -195,8 +195,8 @@ class CompfessionsCog(commands.Cog):
         self._last_compfessions[guild] = compfession
 
     @commands.Cog.listener('on_message')
-    async def on_message(self, message):
-        if message.author.bot:
+    async def on_message(self, message: discord.Message):
+        if message.author.bot or not message.guild:
             return
         _, compfession = await self._get_compfession_mention(
             message.content, message.guild)
