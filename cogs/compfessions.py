@@ -71,14 +71,12 @@ class CompfessionsCog(commands.Cog):
                 .where('guild_id', guild.id) \
                 .order_by('id', 'desc') \
                 .first()
-            message = await channel.fetch_message(compfession.id)
         else:
             compfession = Compfession \
                 .where('guild_id', guild.id) \
                 .where('approved_id', match.group('id')) \
                 .first()
-            message = await channel.fetch_message(compfession.id)
-
+        message = await channel.fetch_message(compfession.message_id)
         return message, compfession
 
     @commands.command(
@@ -169,7 +167,10 @@ class CompfessionsCog(commands.Cog):
 
         if confession_channel:
             embed = generate_compfession_embed(compfession)
-            msg = await confession_channel.send(embed=embed)
+            reference, _ = await self._get_compfession_mention(
+                compfession.confession, guild, confession_channel)
+            msg = await confession_channel.send(
+                embed=embed, reference=reference)
             return msg
         else:
             ut.log(f"Guild {guild.id} is missing 'compfessions' channel")
