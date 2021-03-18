@@ -70,7 +70,7 @@ class CompfessionsCog(commands.Cog):
         self,
         content: str,
         guild: discord.Guild,
-        channel: discord.TextChannel,
+        channel: discord.TextChannel = None,
     ) -> Tuple[discord.Message, Compfession]:
         """
         Takes a compfession's content, and looks for a mention
@@ -80,7 +80,10 @@ class CompfessionsCog(commands.Cog):
         and `@lastcompfession` or similar.
 
         Only returns with the first mention found.
-        Subsequent mentions are ignored
+        Subsequent mentions are ignored.
+
+        If specified channel is `None`,
+        then corresponding message is not fetched
         """
         content = content.lower()
         match = MENTION_REGEX.search(content)
@@ -93,7 +96,10 @@ class CompfessionsCog(commands.Cog):
                 .where('guild_id', guild.id) \
                 .where('approved_id', match.group('id')) \
                 .first()
-        message = await channel.fetch_message(compfession.message_id)
+        if channel is not None:
+            message = await channel.fetch_message(compfession.message_id)
+        else:
+            message = None
         return message, compfession
 
     @commands.command(
