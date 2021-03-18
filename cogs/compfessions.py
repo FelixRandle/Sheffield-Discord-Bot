@@ -4,6 +4,7 @@
 A cog to support users sending anonymous confessions to the bot.
 """
 
+from collections import defaultdict
 import re
 from typing import Tuple
 
@@ -86,15 +87,12 @@ class CompfessionsCog(commands.Cog):
         if not match:
             return None, None
         if match.group('last'):
-            query = Compfession \
-                .where('approved', True) \
-                .where('guild_id', guild.id) \
-                .order_by('id', 'desc')
+            compfession = self._last_compfessions[guild]
         else:
-            query = Compfession \
+            compfession = Compfession \
                 .where('guild_id', guild.id) \
-                .where('approved_id', match.group('id'))
-        compfession = query.first()
+                .where('approved_id', match.group('id')) \
+                .first()
         message = await channel.fetch_message(compfession.message_id)
         return message, compfession
 
@@ -161,11 +159,7 @@ class CompfessionsCog(commands.Cog):
                 ctx.channel, ctx.author, self.bot, None, embed)
 
             if result:
-                last_compfession = Compfession \
-                    .where('approved', True) \
-                    .where('guild_id', ctx.guild.id) \
-                    .order_by('id', 'desc') \
-                    .first()
+                last_compfession = self._last_compfessions[ctx.guild]
                 if last_compfession is not None:
                     compfession.approved_id = last_compfession.approved_id + 1
                 else:
@@ -175,6 +169,8 @@ class CompfessionsCog(commands.Cog):
                 compfession.approved_by = ctx.author.id
                 compfession.message_id = msg.id
                 compfession.save()
+
+                self._last_compfessions[ctx.guild] = compfession
             elif reason == "Timeout":
                 return
             else:
