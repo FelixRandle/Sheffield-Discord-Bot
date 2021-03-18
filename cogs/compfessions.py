@@ -4,11 +4,21 @@
 A cog to support users sending anonymous confessions to the bot.
 """
 
+import re
+from typing import Tuple
+
 import discord
 from discord.ext import commands
 
 import utils as ut
 from models.compfession import Compfession
+
+MENTION_REGEX = re.compile(
+    "@"  # Starting @ symbol
+    r"((?P<last>last|latest|recent)?"  # Checks for references to most recent
+    r"(confession|compfession|sheffession)?)?"  # Optional confession word
+    r"(?P<id>(?(last)|\d+))(\s+|$)"  # ID is matched if 'last' is not matched
+)
 
 
 def generate_compfession_embed(compfession):
