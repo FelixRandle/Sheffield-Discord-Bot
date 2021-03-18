@@ -198,30 +198,13 @@ class CompfessionsCog(commands.Cog):
 
     @commands.Cog.listener('on_message')
     async def on_message(self, message):
-        content = message.content.lower()
-        searching_id = None
-        compfession = None
-        if content.startswith('@compfession'):
-            searching_id = content.split(" ")[0][12:]
-        elif content.startswith('@confession'):
-            searching_id = content.split(" ")[0][11:]
-        elif content.startswith('@recentcompfession') \
-                or content.startswith('@recentconfession') \
-                or content.startswith('@latestconfession') \
-                or content.startswith('@latestconfession'):
-            compfession = Compfession.order_by('approved_id', 'desc').first()
-
-        if searching_id is not None or compfession is not None:
-            if compfession is None:
-                compfession = Compfession.where(
-                    "approved_id", searching_id).first()
-
-            if compfession is not None:
-                embed = generate_compfession_embed(compfession)
-                await message.channel.send(embed=embed)
-            else:
-                await message.channel.send(
-                    "Sorry, I couldn't find a compfession with that ID")
+        if message.author.bot:
+            return
+        _, compfession = await self._get_compfession_mention(
+            message.content, message.guild)
+        if compfession is not None:
+            embed = generate_compfession_embed(compfession)
+            await message.channel.send(embed=embed)
 
 
 def setup(bot):
