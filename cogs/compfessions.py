@@ -36,6 +36,25 @@ def generate_compfession_embed(compfession):
     return embed
 
 
+class LastCompfessionsCache:
+    def __init__(self):
+        self._cache = {}
+
+    def __getitem__(self, guild):
+        if guild.id in self._cache:
+            return self._cache[guild.id]
+        last_compfession = Compfession \
+            .where('guild_id', guild.id) \
+            .order_by('approved_id', 'desc') \
+            .first()
+        self._cache[guild.id] = last_compfession
+
+        return last_compfession
+
+    def __setitem__(self, guild, last_compfession):
+        self._cache[guild.id] = last_compfession
+
+
 class CompfessionsCog(commands.Cog):
     """
     Sheffessions but for computer science
@@ -44,6 +63,7 @@ class CompfessionsCog(commands.Cog):
     def __init__(self, bot):
         """Save our bot argument that is passed in to the class."""
         self.bot = bot
+        self._last_compfessions = LastCompfessionsCache()
 
     async def _get_compfession_mention(
         self,
