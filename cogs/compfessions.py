@@ -66,16 +66,15 @@ class CompfessionsCog(commands.Cog):
         if not match:
             return None, None
         if match.group('last'):
-            compfession = Compfession \
+            query = Compfession \
                 .where('approved', True) \
                 .where('guild_id', guild.id) \
-                .order_by('id', 'desc') \
-                .first()
+                .order_by('id', 'desc')
         else:
-            compfession = Compfession \
+            query = Compfession \
                 .where('guild_id', guild.id) \
-                .where('approved_id', match.group('id')) \
-                .first()
+                .where('approved_id', match.group('id'))
+        compfession = query.first()
         message = await channel.fetch_message(compfession.message_id)
         return message, compfession
 
