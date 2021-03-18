@@ -95,7 +95,7 @@ class CompfessionsCog(commands.Cog):
                 .where('guild_id', guild.id) \
                 .where('approved_id', match.group('id')) \
                 .first()
-        if channel is not None:
+        if channel is not None and compfession.message_id is not None:
             message = await channel.fetch_message(compfession.message_id)
         else:
             message = None
