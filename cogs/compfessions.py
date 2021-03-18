@@ -4,7 +4,6 @@
 A cog to support users sending anonymous confessions to the bot.
 """
 
-from collections import defaultdict
 import re
 from typing import Tuple
 
