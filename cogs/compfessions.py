@@ -141,7 +141,8 @@ class CompfessionsCog(commands.Cog):
                 "There is a new confession to be checked")
 
     @commands.command(
-        name="moderateConfessions",
+        name="moderateCompfessions",
+        aliases=("moderateConfessions",),
         help="Moderate outstanding confessions."
     )
     @commands.has_role("Admin")
