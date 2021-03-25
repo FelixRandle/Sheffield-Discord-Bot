@@ -10,6 +10,7 @@ from typing import Tuple
 
 import discord
 from discord.ext import commands
+from discord.ext.commands.errors import MessageNotFound
 
 import utils as ut
 from models import Compfession
@@ -165,6 +166,41 @@ class CompfessionsCog(commands.Cog):
                 return
             else:
                 compfession.delete()
+
+    @commands.command(
+        name="deleteCompfession",
+        aliases=("deleteConfession",),
+    )
+    @commands.has_role("Admin")
+    async def delete_confession(self, ctx, id: int):
+        compfession = Compfession \
+            .where('approved_id', id) \
+            .where('guild_id', ctx.guild.id) \
+            .first()
+        if compfession is None:
+            return await ctx.send(f"Compfession with ID {id} was not found")
+        result, _ = await ut.get_confirmation(
+            ctx.channel,
+            ctx.author,
+            self.bot,
+            "Are you sure you want to delete this compfession?"
+        )
+        if not result:
+            return
+
+        compfession.delete()
+        if compfession.message_id is not None:
+            channel = discord.utils.get(
+                ctx.guild.text_channels, name="compfessions")
+            if channel is not None:
+                try:
+                    compfession_msg = await channel.fetch_message(
+                        compfession.message_id)
+                except MessageNotFound:
+                    pass
+                else:
+                    await compfession_msg.delete()
+        await ctx.send("Compfession deleted")
 
     async def publish_compfession(self, compfession, guild, moderator):
         last_compfession = Compfession \
