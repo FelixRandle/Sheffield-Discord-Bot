@@ -76,7 +76,11 @@ async def get_compfession_mention(
 
         compfession = query.first()
 
-    if channel is not None and compfession.message_id is not None:
+    if (
+        channel is not None
+        and compfession is not None
+        and compfession.message_id is not None
+    ):
         message = await channel.fetch_message(compfession.message_id)
     else:
         message = None
