@@ -188,13 +188,7 @@ class CompfessionsCog(commands.Cog):
         aliases=("deleteConfession",),
     )
     @commands.has_role("Admin")
-    async def delete_confession(self, ctx, id: int):
-        compfession = Compfession \
-            .where('approved_id', id) \
-            .where('guild_id', ctx.guild.id) \
-            .first()
-        if compfession is None:
-            return await ctx.send(f"Compfession with ID {id} was not found")
+    async def delete_compfession(self, ctx, compfession: Compfession):
         result, _ = await ut.get_confirmation(
             ctx.channel,
             ctx.author,
