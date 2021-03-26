@@ -15,11 +15,26 @@ from discord.ext import commands
 import utils as ut
 from models import Compfession
 
+# Compfession mention mini-language
+#
+# mention          = at_symbol identifier terminator ;
+# identifer        = id | last_word compfession_word | compfession_word id ;
+# terminator       = whitespace+ | end-of-string ;
+# id               = digit+ ;
+# at_symbol        = "@" ;
+# last_word        = "last" | "latest" | "recent" ;
+# compfession_word = "compfession" | "confession" | "sheffession" ;
+# whitespace       = " " | "\t" | "\n" | "\r" | "\f" | "\v" ;
+# digit            = "0" | "1" | "2" | "3" | "4"
+#                  | "5" | "6" | "7" | "8" | "9" ;
+
+COMPFESSION_REGEX = r"((confe|compfe|sheffe)ssion)"
 MENTION_REGEX = re.compile(
-    "@"  # Starting @ symbol
-    r"((?P<last>last|latest|recent)?"  # Checks for references to most recent
-    r"(confession|compfession|sheffession)?)?"  # Optional confession word
-    r"(?P<id>(?(last)|\d+))(\s+|$)"  # ID is matched if 'last' is not matched
+    "@"
+    # Checks for references to most recent
+    rf"(?P<last>(last|latest|recent){COMPFESSION_REGEX})?"
+    # ID mentions are matched if 'last' is not matched
+    rf"(?(last)|{COMPFESSION_REGEX}?(?P<id>\d+))(\s+|$)"
 )
 
 
