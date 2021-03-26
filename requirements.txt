@@ -1,9 +1,9 @@
 aiohttp==3.6.3
 discord.py==1.6.0
-discord-pretty-help==1.2.2
+discord-pretty-help==1.2.3
 pytz==2020.4
 orator==0.9.9
 python-dotenv==0.15.0
 mysqlclient==2.0.3
 python-levenshtein==0.12.2
-matplotlib==3.3.3
+matplotlib==3.3.4

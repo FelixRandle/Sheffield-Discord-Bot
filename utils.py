@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import traceback as tb
+from collections import defaultdict
 from enum import Enum
 from typing import Optional, Tuple, Union
 
@@ -28,6 +29,14 @@ EMOJI_REGEX = re.compile(
 
 # Sentinel for get_choice if user makes no choice
 NO_CHOICE = object()
+CARDINAL_ENDING_TO_SUFFIX = defaultdict(
+    lambda: "th",
+    {
+        1: "st",
+        2: "nd",
+        3: "rd",
+    }
+)
 
 
 class LogLevel(Enum):
@@ -142,40 +151,6 @@ def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     return utc_time.astimezone(tz)
 
 
-ChannelType = Union[discord.abc.GuildChannel,
-                    Tuple[discord.abc.GuildChannel, ...]]
-
-
-def find_channel_by_name(
-    name: str,
-    guild: discord.Guild,
-    channel_types: ChannelType = discord.TextChannel
-) -> Optional[discord.abc.GuildChannel]:
-    """
-    Finds a channel within a guild by name. Name is case-insensitive.
-
-    Optionally specify type(s) that the channel.
-    """
-    for channel in guild.channels:
-        if (
-            isinstance(channel, channel_types)
-            and channel.name.lower() == name.lower()
-        ):
-            return channel
-
-
-def find_role_by_name(
-    name: str,
-    guild: discord.Guild,
-) -> Optional[discord.Role]:
-    """
-    Finds a role within a guild by name. Name is case-insensitive.
-    """
-    for role in guild.roles:
-        if role.name.lower() == name.lower():
-            return role
-
-
 class RemoveReaction:
     """
     A context manager that removes a reaction on exit.
@@ -237,3 +212,18 @@ async def send_and_delete_file(messageable: discord.abc.Messageable,
     finally:
         if os.path.exists(filename):
             os.remove(filename)
+
+
+def cardinal_to_ordinal(number: int) -> str:
+    """
+    Converts an integer to a string and appends st, nd, rd or th to it,
+    depending on the integer, to make it ordinal
+    """
+    if number <= 0:
+        raise ValueError("Negative values cannot be ordinalised")
+    if number % 100 in (11, 12, 13):
+        prefix = "th"
+    else:
+        ending = number % 10
+        prefix = CARDINAL_ENDING_TO_SUFFIX[ending]
+    return f"{number}{prefix}"
