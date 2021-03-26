@@ -394,11 +394,6 @@ class PollsCog(commands.Cog, name="Polls"):
 
     @poll_daemon.before_loop
     async def before_poll_daemon_start(self):
-        # Adds a callback for when the task has ended to raise errors
-        # Can be replaced with coro decorated with @poll_daemon.after_loop
-        # on release of discord.py 1.4.0
-        self.poll_daemon.get_task() \
-            .add_done_callback(self.after_poll_daemon_end)
         # Waits until the bot is ready before starting the task loop
         await self.bot.wait_until_ready()
 
