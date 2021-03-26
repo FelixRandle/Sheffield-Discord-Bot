@@ -9,7 +9,6 @@ import asyncio
 import datetime as dt
 
 import discord
-import utils as ut
 from discord.ext import commands
 
 
@@ -35,12 +34,12 @@ class VibinCog(commands.Cog, name="Vibin"):
         delay = (next_time - now).total_seconds() % 86400
         await asyncio.sleep(delay)
         for guild in self.bot.guilds:
-            text_channel = ut.find_channel_by_name("vibin", guild)
-            voice_channel = ut.find_channel_by_name(
-                "vibin", guild, channel_types=discord.VoiceChannel)
+            text_channel = discord.utils.get(guild.text_channels, name="vibin")
+            voice_channel = discord.utils.get(
+                guild.voice_channels, name="vibin")
             if text_channel is None or voice_channel is None:
                 return
-            member_role = ut.find_role_by_name("Member", guild)
+            member_role = discord.utils.get(guild.roles, name="Member")
             if member_role is None:
                 return
             if visibility:
