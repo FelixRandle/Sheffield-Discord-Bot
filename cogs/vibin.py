@@ -9,8 +9,7 @@ import asyncio
 import datetime as dt
 
 import discord
-from discord.ext import commands
-
+from discord.ext import commands, tasks
 
 PLAYLIST_LINK = "https://open.spotify.com/playlist/45ugA3rSKs5C9jpuC8ihva"
 START_TIME = dt.time(hour=1, minute=0, second=0)
@@ -22,6 +21,9 @@ class VibinCog(commands.Cog, name="Vibin"):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.first_loop = True
+
+        self.vibin_loop.start()
 
     async def change_vibin_at(
         self,
@@ -55,17 +57,19 @@ class VibinCog(commands.Cog, name="Vibin"):
             await voice_channel.set_permissions(
                 member_role, view_channel=visibility)
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        first_loop = True
-        while True:
-            if (
-                not first_loop
-                or not START_TIME <= dt.datetime.now().time() <= END_TIME
-            ):
-                await self.change_vibin_at(START_TIME, True)
-                first_loop = False
-            await self.change_vibin_at(END_TIME, False)
+    @tasks.loop()
+    async def vibin_loop(self):
+        if (
+            not self.first_loop
+            or not START_TIME <= dt.datetime.now().time() <= END_TIME
+        ):
+            await self.change_vibin_at(START_TIME, True)
+            self.first_loop = False
+        await self.change_vibin_at(END_TIME, False)
+
+    @vibin_loop.before_loop
+    async def before_vibin_loop(self):
+        await self.bot.wait_until_ready()
 
 
 def setup(bot: commands.Bot):
