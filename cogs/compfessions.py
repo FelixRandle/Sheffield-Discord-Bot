@@ -9,8 +9,8 @@ import re
 from typing import Tuple
 
 import discord
+from discord.errors import NotFound
 from discord.ext import commands
-from discord.ext.commands.errors import MessageNotFound
 
 import utils as ut
 from models import Compfession
@@ -197,7 +197,7 @@ class CompfessionsCog(commands.Cog):
                 try:
                     compfession_msg = await channel.fetch_message(
                         compfession.message_id)
-                except MessageNotFound:
+                except NotFound:
                     pass
                 else:
                     await compfession_msg.delete()
