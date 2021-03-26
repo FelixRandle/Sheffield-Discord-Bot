@@ -1,5 +1,5 @@
-from discord.ext.commands.converter import Converter
-from discord.ext.commands.errors import BadArgument
+from discord.ext.commands import Converter
+from discord.ext.commands import BadArgument
 from orator.orm import belongs_to
 
 from .base import BaseModel

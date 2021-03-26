@@ -9,7 +9,7 @@ import re
 from typing import Tuple
 
 import discord
-from discord.errors import NotFound
+from discord import NotFound
 from discord.ext import commands
 
 import utils as ut
