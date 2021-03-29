@@ -134,14 +134,22 @@ async def get_choice(channel, user, bot, choices, message=None):
 
 
 def get_utc_time(timestamp: int = None) -> datetime.datetime:
+    """
+    Returns a naive datetime object in UTC from the current time,
+    or the specified POSIX timestamp
+    """
     if timestamp is None:
         return datetime.datetime.utcnow()
-
     return datetime.datetime.utcfromtimestamp(timestamp)
 
 
 def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
-    # Converts a naive datetime to an aware datetime in UTC
+    """
+    Returns an aware datetime object for the UK timezone
+    from a naive UTC datetime, adjusted for DST.
+
+    If no datetime object is provided, the current UTC datetime is used
+    """
     tz = timezone('Europe/London')
     if utc_time is None:
         utc_time = get_utc_time()
