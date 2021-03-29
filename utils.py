@@ -153,8 +153,7 @@ def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     tz = timezone('Europe/London')
     if utc_time is None:
         utc_time = get_utc_time()
-    else:
-        utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
+    utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
     return utc_time.astimezone(tz)
 
 
