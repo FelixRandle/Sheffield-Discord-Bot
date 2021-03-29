@@ -142,12 +142,11 @@ def get_utc_time(timestamp: int = None) -> datetime.datetime:
 
 def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
     # Converts a naive datetime to an aware datetime in UTC
-    utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
-
     tz = timezone('Europe/London')
     if utc_time is None:
-        return get_utc_time().astimezone(tz)
-
+        utc_time = get_utc_time()
+    else:
+        utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
     return utc_time.astimezone(tz)
 
 
