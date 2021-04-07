@@ -12,7 +12,6 @@ import sys
 import traceback as tb
 from collections import defaultdict
 from enum import Enum
-from typing import Optional, Tuple, Union
 
 import discord
 from pytz import timezone
@@ -155,6 +154,14 @@ def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
         utc_time = get_utc_time()
     utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
     return utc_time.astimezone(tz)
+
+
+def uk_normalize_time(uk_time: datetime.datetime = None) -> datetime.datetime:
+    """
+    Normalises an aware UK time for DST
+    """
+    tz = timezone('Europe/London')
+    return tz.normalize(uk_time)
 
 
 class RemoveReaction:
