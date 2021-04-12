@@ -12,7 +12,6 @@ import sys
 import traceback as tb
 from collections import defaultdict
 from enum import Enum
-from typing import Optional, Tuple, Union
 
 import discord
 from pytz import timezone
@@ -134,21 +133,35 @@ async def get_choice(channel, user, bot, choices, message=None):
 
 
 def get_utc_time(timestamp: int = None) -> datetime.datetime:
+    """
+    Returns a naive datetime object in UTC from the current time,
+    or the specified POSIX timestamp
+    """
     if timestamp is None:
         return datetime.datetime.utcnow()
-
     return datetime.datetime.utcfromtimestamp(timestamp)
 
 
 def get_uk_time(utc_time: datetime.datetime = None) -> datetime.datetime:
-    # Converts a naive datetime to an aware datetime in UTC
-    utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
+    """
+    Returns an aware datetime object for the UK timezone
+    from a naive UTC datetime, adjusted for DST.
 
+    If no datetime object is provided, the current UTC datetime is used
+    """
     tz = timezone('Europe/London')
     if utc_time is None:
-        return get_utc_time().astimezone(tz)
-
+        utc_time = get_utc_time()
+    utc_time = utc_time.replace(tzinfo=datetime.timezone.utc)
     return utc_time.astimezone(tz)
+
+
+def uk_normalize_time(uk_time: datetime.datetime = None) -> datetime.datetime:
+    """
+    Normalises an aware UK time for DST
+    """
+    tz = timezone('Europe/London')
+    return tz.normalize(uk_time)
 
 
 class RemoveReaction:

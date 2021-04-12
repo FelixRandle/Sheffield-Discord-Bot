@@ -217,7 +217,10 @@ class CompfessionsCog(commands.Cog):
             .where('guild_id', guild.id) \
             .order_by('approved_id', 'desc') \
             .first()
-        if last_compfession is not None:
+        if (
+            last_compfession is not None
+            and last_compfession.approved_id is not None
+        ):
             compfession.approved_id = last_compfession.approved_id + 1
         else:
             compfession.approved_id = 1
