@@ -6,4 +6,4 @@ orator==0.9.9
 python-dotenv==0.19.2
 mysqlclient==2.0.3
 python-levenshtein==0.12.2
-matplotlib==3.3.4
+matplotlib==3.5.0
