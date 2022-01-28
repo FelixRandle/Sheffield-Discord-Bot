@@ -97,6 +97,28 @@ async def get_confirmation(channel, user, bot, message,
         return False, "Rejected"
 
 
+async def get_react(channel, user, bot, message, reactions,
+                               embed: discord.Embed = None):
+    confirm_message = await channel.send(message, embed=embed)
+    for reaction in reactions:
+        await confirm_message.add_reaction(reaction)
+
+    def check(check_reaction, check_user):
+        return ((check_user == user)
+                and check_reaction.message.id == confirm_message.id
+                and str(check_reaction.emoji) in reactions)
+
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0,
+                                            check=check)
+    except asyncio.TimeoutError:
+        await confirm_message.delete()
+        return None
+    else:
+        await confirm_message.delete()
+        return str(reaction.emoji)
+
+
 async def get_choice(channel, user, bot, choices, message=None):
     """
     Gets a choice from the user, sending an optional message,

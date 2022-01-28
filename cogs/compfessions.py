@@ -172,16 +172,26 @@ class CompfessionsCog(commands.Cog):
             embed.add_field(name="Confession",
                             value=compfession.confession)
 
-            result, reason = await ut.get_confirmation(
-                ctx.channel, ctx.author, self.bot, None, embed)
+            result = await ut.get_react(
+                ctx.channel, ctx.author, self.bot, None, ["👍", "👎", "➡️"], embed)
 
-            if result:
-                await self.publish_compfession(
-                    compfession, ctx.guild, ctx.author)
-            elif reason == "Timeout":
-                return
-            else:
+            if result == "👍":
+                last_compfession = Compfession.where(
+                    "approved", True).order_by('id', 'desc').first()
+                if last_compfession is not None:
+                    compfession.approved_id = last_compfession.approved_id + 1
+                else:
+                    compfession.approved_id = 1
+                compfession.approved = True
+                compfession.approved_by = ctx.author.id
+                compfession.save()
+                print(compfession.created_at)
+                print(compfession.updated_at)
+                await self.publish_compfession(compfession, ctx.guild, ctx.author)
+            elif result == "👎":
                 compfession.delete()
+            else:
+                continue
 
     @commands.command(
         name="deleteCompfession",
@@ -237,6 +247,7 @@ class CompfessionsCog(commands.Cog):
             confession_channel,
             before=compfession.created_at,
         )
+        compfession.save()
         msg = await confession_channel.send(embed=embed, reference=reference)
         compfession.approved = True
         compfession.approved_by = moderator.id
