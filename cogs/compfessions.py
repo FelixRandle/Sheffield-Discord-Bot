@@ -190,7 +190,7 @@ class CompfessionsCog(commands.Cog):
                 await self.publish_compfession(compfession, ctx.guild, ctx.author)
             elif result == "👎":
                 compfession.delete()
-            else:
+            elif result == "➡️":
                 continue
 
     @commands.command(
