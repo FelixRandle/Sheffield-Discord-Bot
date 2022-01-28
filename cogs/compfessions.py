@@ -178,7 +178,7 @@ class CompfessionsCog(commands.Cog):
 
             if result == "👍":
                 last_compfession = Compfession.where(
-                    "approved", True).order_by('id', 'desc').first()
+                    "approved", True).order_by('approved_id', 'desc').first()
                 if last_compfession is not None:
                     compfession.approved_id = last_compfession.approved_id + 1
                 else:
@@ -193,6 +193,8 @@ class CompfessionsCog(commands.Cog):
                 compfession.delete()
             elif result == "➡️":
                 continue
+            else:
+                break
 
     @commands.command(
         name="deleteCompfession",
