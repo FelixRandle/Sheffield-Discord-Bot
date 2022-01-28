@@ -39,7 +39,8 @@ MENTION_REGEX = re.compile(
 
 
 def generate_compfession_embed(compfession):
-    embed = discord.Embed(color=0xf71e1e)
+    embed_colour = 0xFFD700 if 999 <= compfession.approved_id <= 1023 else 0xf71e1e
+    embed = discord.Embed(color=embed_colour)
     embed.add_field(name=f"Confession #{compfession.approved_id}",
                     value=compfession.confession)
 
