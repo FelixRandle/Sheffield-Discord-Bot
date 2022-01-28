@@ -90,7 +90,7 @@ class OddsOnCog(commands.Cog):
                                       "do anything.")
             await ctx.send(f"<@{ctx.author.id}> chose {author_value[1]}, "
                            f"<@{target_user_id}> chose {target_value[1]}"
-                           f"<@{winning_statement}>")
+                           f"{winning_statement}")
 
     async def get_number_in_dm(self, user, max_value):
         dm_channel = user.dm_channel
