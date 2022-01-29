@@ -177,17 +177,6 @@ class CompfessionsCog(commands.Cog):
                 ctx.channel, ctx.author, self.bot, None, ["👍", "👎", "➡️"], embed)
 
             if result == "👍":
-                last_compfession = Compfession.where(
-                    "approved", True).order_by('approved_id', 'desc').first()
-                if last_compfession is not None:
-                    compfession.approved_id = last_compfession.approved_id + 1
-                else:
-                    compfession.approved_id = 1
-                compfession.approved = True
-                compfession.approved_by = ctx.author.id
-                compfession.save()
-                print(compfession.created_at)
-                print(compfession.updated_at)
                 await self.publish_compfession(compfession, ctx.guild, ctx.author)
             elif result == "👎":
                 compfession.delete()
@@ -250,7 +239,7 @@ class CompfessionsCog(commands.Cog):
             confession_channel,
             before=compfession.created_at,
         )
-        compfession.save()
+        compfession.updated_at = dt.datetime.now()
         msg = await confession_channel.send(embed=embed, reference=reference)
         compfession.approved = True
         compfession.approved_by = moderator.id
