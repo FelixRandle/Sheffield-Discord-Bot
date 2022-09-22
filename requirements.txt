@@ -1,4 +1,4 @@
-aiohttp==3.6.3
+aiohttp==3.8.3
 discord.py==1.7.3
 discord-pretty-help==1.2.2
 pytz==2020.4
